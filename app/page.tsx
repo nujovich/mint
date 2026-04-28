@@ -8,6 +8,7 @@ import TokenPreview from '@/components/TokenPreview'
 import ExportPanel from '@/components/ExportPanel'
 import CoffeeLoader from '@/components/CoffeeLoader'
 import StepBar from '@/components/StepBar'
+import CliPromo from '@/components/CliPromo'
 
 type WizardStep = 'input' | 'audit' | 'tokens'
 type PreviewTab = 'visual' | 'json' | 'export'
@@ -151,6 +152,7 @@ export default function Home() {
       <div>
         {loading && <CoffeeLoader />}
         <CssInput onAudit={handleAudit} loading={loading} compact={hasHistory} />
+        <CliPromo />
         {hasHistory && (
           <RecentAudits history={auditHistory} onRestore={restoreAudit} onClear={clearHistory} />
         )}

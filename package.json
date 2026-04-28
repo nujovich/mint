@@ -2,10 +2,34 @@
   "name": "mint",
   "version": "0.1.0",
   "private": true,
+  "description": "Audit legacy CSS, curate the chaos, and generate a clean design system. CLI + web playground.",
+  "keywords": [
+    "css",
+    "scss",
+    "design-system",
+    "design-tokens",
+    "tailwind",
+    "audit",
+    "cli",
+    "claude"
+  ],
+  "license": "MIT",
+  "bin": {
+    "mint": "bin/mint.mjs"
+  },
+  "files": [
+    "bin",
+    "lib/prompts.mjs",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "mint": "node bin/mint.mjs"
   },
   "dependencies": {
     "next": "^15.1.0",

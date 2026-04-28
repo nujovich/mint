@@ -2,7 +2,12 @@
 
 **Mint** audits your legacy CSS and generates a clean, exportable design system from the chaos.
 
-Paste any CSS, SCSS, or HTML — messy legacy code, Bootstrap overrides, years of accumulated styles. Claude identifies near-duplicate color clusters, off-scale spacing values, and mixed font families. You review the analysis, decide what to keep, and Mint generates canonical design tokens ready to ship.
+It ships in two flavors:
+
+- **CLI** — `npx mint audit ./src/styles && npx mint export --target tailwind`. Run it against a whole directory, scriptable, no UI.
+- **Web playground** — paste a snippet, walk through the 3-step wizard, preview tokens visually before exporting.
+
+Both share the same prompts and Claude pipeline.
 
 ## How it works
 
@@ -11,8 +16,57 @@ CSS / SCSS / HTML  →  Claude Audit  →  Review & curate  →  Clean tokens  �
 ```
 
 1. **Audit** — Claude analyzes your CSS, groups near-duplicate colors into clusters, detects fonts, and flags spacing values that don't fit a 4px grid.
-2. **Curate** — Review each cluster. Pick the canonical color, rename tokens, include or exclude entries, and select which fonts to keep.
+2. **Curate** — Review each cluster. Pick the canonical color, rename tokens, include or exclude entries, and select which fonts to keep. (CLI applies sensible defaults: include every cluster, keep non-system fonts, use the suggested 4px scale.)
 3. **Export** — Generate production-ready output in any format.
+
+## CLI
+
+```bash
+# Analyze every CSS/SCSS/HTML file in a directory and write mint.tokens.json
+npx mint audit ./src/styles
+
+# Generate exports from the resulting tokens
+npx mint export --target tailwind     # → tailwind.config.js
+npx mint export --target react        # → components.tsx
+npx mint export --target css          # → variables.css
+```
+
+### All commands
+
+| Command | Description |
+|---------|-------------|
+| `mint audit <dir>` | Walk `<dir>` for `.css`, `.scss`, `.sass`, `.less`, `.html` files, audit them with Claude, and write `mint.tokens.json` |
+| `mint export --target <name>` | Read `mint.tokens.json` and generate the chosen format |
+| `mint --help` | Show full usage |
+
+### Audit options
+
+| Flag | Description |
+|------|-------------|
+| `--out <file>` | Tokens output path (default: `mint.tokens.json`) |
+| `--report <file>` | Also write the raw `AuditReport` JSON for inspection |
+| `--quiet` | Skip the chaos summary printout |
+
+### Export options
+
+| Flag | Description |
+|------|-------------|
+| `--target <name>` | **Required.** Accepts: `tailwind`, `react`, `vue`, `svelte`, `astro`, `css`, `scss`, `ts`, `css-modules`, `styled`, `emotion` (full names like `tailwind-config`, `react-component` also work) |
+| `--tokens <file>` | Tokens input path (default: `mint.tokens.json`) |
+| `--out <file>` | Override the default output filename |
+| `--stdout` | Print to stdout instead of writing a file |
+
+### Local development without publishing
+
+The CLI runs straight from a clone:
+
+```bash
+git clone https://github.com/nujovich/mint.git && cd mint
+export ANTHROPIC_API_KEY=sk-ant-...
+node bin/mint.mjs audit ./examples/site
+node bin/mint.mjs export --target tailwind
+# or `npm link` to expose `mint` globally for testing.
+```
 
 ## Export formats
 
@@ -33,7 +87,7 @@ CSS / SCSS / HTML  →  Claude Audit  →  Review & curate  →  Clean tokens  �
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20+ (the CLI uses native `fetch` and recursive `fs.readdir`)
 - An [Anthropic API key](https://console.anthropic.com/)
 
 ### Setup
@@ -58,12 +112,14 @@ Open [http://localhost:3000](http://localhost:3000).
 ## Project structure
 
 ```
+bin/
+  mint.mjs             — CLI entry point (audit + export commands)
 app/
   api/
     audit/route.ts     — POST /api/audit   → AuditReport
     resolve/route.ts   — POST /api/resolve → DSTokens
     export/route.ts    — POST /api/export  → generated code string
-  page.tsx             — 3-step wizard state machine
+  page.tsx             — 3-step playground wizard + CLI promo
   layout.tsx
   globals.css
 components/
@@ -71,11 +127,13 @@ components/
   AuditView.tsx        — Step 2: review clusters, fonts, spacing
   TokenPreview.tsx     — Step 3: visual token preview
   ExportPanel.tsx      — Step 3: format picker + code viewer
+  CliPromo.tsx         — "Try the CLI" block on the playground root
   StepBar.tsx          — Progress indicator
   CoffeeLoader.tsx     — Full-screen loading overlay
   CodeViewer.tsx       — Syntax-highlighted code output
 lib/
   types.ts             — DSTokens, AuditReport, ExportTarget and all shared types
+  prompts.mjs          — Prompt builders + Claude helper, shared by API routes and CLI
 ```
 
 ## Contributing

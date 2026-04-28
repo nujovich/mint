@@ -39,10 +39,13 @@ export default function CssInput({ onAudit, loading, compact = false }: Props) {
             <path d="M19 19l1 1 2-2" stroke="#818cf8" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-0.02em' }}>Mint</span>
+          <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '2px 7px', borderRadius: 5, background: 'rgba(129,140,248,0.18)', color: 'var(--accent-strong)' }}>
+            Playground
+          </span>
         </div>
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', maxWidth: 440, lineHeight: 1.6 }}>
-          Paste your real CSS, SCSS, or HTML — legacy, Bootstrap, whatever.<br />
-          Claude identifies the chaos and generates the design system that should have existed.
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', maxWidth: 460, lineHeight: 1.6 }}>
+          Paste your CSS, SCSS, or HTML to try Mint right here.<br />
+          Prefer your terminal? The full audit + export pipeline ships as a CLI — see below.
         </p>
       </div>
 
