@@ -1,0 +1,208 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Fragment+Mono&display=swap');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #16161e;
+  --panel: #1e1e2a;
+  --surface: #26263a;
+  --surface-2: #30304a;
+  --border: rgba(255, 255, 255, 0.11);
+  --border-hover: rgba(255, 255, 255, 0.22);
+  --text: #eaeaf8;
+  --text-muted: #8888c0;
+  --text-faint: #606090;
+  --font: 'Outfit', sans-serif;
+  --mono: 'Fragment Mono', monospace;
+  --radius: 10px;
+  --radius-sm: 7px;
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+/* Focus */
+:focus-visible {
+  outline: 2px solid rgba(99, 102, 241, 0.6);
+  outline-offset: 2px;
+}
+
+/* Inputs */
+input,
+textarea,
+select {
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--border-hover);
+  outline: none;
+}
+
+button {
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+pre,
+code {
+  font-family: var(--mono);
+}
+
+/* ─── Responsive layout utilities ───────────────────────────────────────────── */
+
+/* Body padding */
+.mint-body {
+  padding: 28px 36px;
+}
+@media (max-width: 640px) {
+  .mint-body {
+    padding: 16px;
+  }
+}
+
+/* 2-column grid → 1-column on mobile */
+.mint-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 640px) {
+  .mint-grid-2 {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+/* 3-column grid → 1-column on mobile */
+.mint-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+@media (max-width: 640px) {
+  .mint-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Export button grid — tighter min on mobile */
+.mint-export-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 8px;
+}
+@media (max-width: 640px) {
+  .mint-export-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Audit cluster row — wraps on mobile */
+.mint-cluster-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+@media (max-width: 640px) {
+  .mint-cluster-row {
+    flex-wrap: wrap;
+  }
+  .mint-cluster-row > button {
+    margin-left: auto;
+  }
+}
+
+/* Header — allow wrapping on very small screens */
+.mint-header {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  height: 50px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+  flex-shrink: 0;
+  gap: 12px;
+}
+@media (max-width: 768px) {
+  .mint-header {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 50px;
+    padding: 8px 14px;
+    gap: 8px;
+  }
+}
+
+/* Hide secondary detail text on small screens */
+@media (max-width: 480px) {
+  .mint-header-detail {
+    display: none;
+  }
+}
+
+/* Input container — tighter padding on mobile */
+.mint-input-wrap {
+  width: 100%;
+  max-width: 700px;
+}
+@media (max-width: 640px) {
+  .mint-input-wrap {
+    max-width: 100%;
+  }
+}
+
+/* Spacing scale grid */
+.mint-scale-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 6px;
+}
+
+/* Step bar hides on very small screens to save space */
+@media (max-width: 480px) {
+  .mint-stepbar-hide {
+    display: none;
+  }
+}
