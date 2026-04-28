@@ -29,3 +29,8 @@ Thumbs.db
 
 # Windows Zone Identifier files (WSL artifact)
 *:Zone.Identifier
+
+# Local POC / scratch fixtures and packaging artifacts
+poc/
+*.tgz
+mint.tokens.json
