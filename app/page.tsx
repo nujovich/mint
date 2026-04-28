@@ -178,7 +178,7 @@ export default function Home() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ width: 7, height: 7, borderRadius: '50%', background: chaosColor, flexShrink: 0 }} />
-            <span style={{ fontSize: 13, fontWeight: 500 }}>{audit.brand || 'CSS Audit'}</span>
+            <span style={{ fontSize: 13, fontWeight: 500 }}>{audit.brand || 'Asset Audit'}</span>
             <span className="mint-header-detail" style={{ fontSize: 11, color: 'var(--text-faint)' }}>
               — {audit.colorClusters.length} clusters · chaos {audit.chaosScore}/10
             </span>
