@@ -78,6 +78,8 @@ export default function AuditView({ audit, onResolve }: Props) {
             const decision = colorDecisions[i]
             const included = decision.include
 
+            const dimmedStyle = { opacity: included ? 1 : 0.5, transition: 'opacity 0.2s' }
+
             return (
               <div
                 key={cluster.id}
@@ -85,14 +87,13 @@ export default function AuditView({ audit, onResolve }: Props) {
                 style={{
                   padding: '14px 16px',
                   borderRadius: 10,
-                  border: `1px solid ${included ? 'var(--border)' : 'rgba(255,255,255,0.05)'}`,
+                  border: `1px solid ${included ? 'var(--border)' : 'rgba(255,255,255,0.08)'}`,
                   background: included ? 'var(--panel)' : 'var(--surface)',
-                  opacity: included ? 1 : 0.45,
-                  transition: 'opacity 0.2s, border-color 0.2s',
+                  transition: 'border-color 0.2s, background 0.2s',
                 }}
               >
                 {/* Swatches */}
-                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', flex: '0 0 auto' }}>
+                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', flex: '0 0 auto', ...dimmedStyle }}>
                   {cluster.samples.slice(0, 6).map((s) => (
                     <button
                       key={s.hex}
@@ -117,7 +118,7 @@ export default function AuditView({ audit, onResolve }: Props) {
                 </div>
 
                 {/* Name + contexts */}
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ flex: 1, minWidth: 0, ...dimmedStyle }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                     <input
                       value={decision.name}
@@ -173,18 +174,18 @@ export default function AuditView({ audit, onResolve }: Props) {
                   }
                   style={{
                     fontSize: 11,
-                    padding: '4px 10px',
+                    fontWeight: included ? 400 : 600,
+                    padding: included ? '4px 10px' : '5px 14px',
                     borderRadius: 6,
                     border: included
                       ? '1px solid var(--border)'
-                      : '1px solid rgba(99,102,241,0.3)',
-                    background: included
-                      ? 'transparent'
-                      : 'rgba(99,102,241,0.06)',
-                    color: included ? 'var(--text-faint)' : '#818cf8',
+                      : '1px solid rgba(129,140,248,0.6)',
+                    background: included ? 'transparent' : '#6366f1',
+                    color: included ? 'var(--text-muted)' : '#fff',
                     cursor: 'pointer',
                     flexShrink: 0,
                     fontFamily: 'var(--font)',
+                    boxShadow: included ? 'none' : '0 1px 2px rgba(0,0,0,0.25)',
                     transition: 'all 0.15s',
                   }}
                 >

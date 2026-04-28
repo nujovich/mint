@@ -71,7 +71,7 @@ export default function HtmlInput({ onParse, loading }: Props) {
               </span>
             )}
             <label style={{ fontSize: 11, color: 'rgba(99,102,241,0.8)', cursor: 'pointer', padding: '3px 8px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.25)', background: 'rgba(99,102,241,0.06)' }}>
-              Subir archivo
+              Upload File
               <input
                 type="file"
                 accept=".html,.htm"

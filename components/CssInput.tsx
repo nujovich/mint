@@ -5,9 +5,10 @@ import { useRef, useState, type DragEvent } from 'react'
 interface Props {
   onAudit: (css: string) => void
   loading: boolean
+  compact?: boolean
 }
 
-export default function CssInput({ onAudit, loading }: Props) {
+export default function CssInput({ onAudit, loading, compact = false }: Props) {
   const [css, setCss] = useState('')
   const [dragging, setDragging] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -26,10 +27,10 @@ export default function CssInput({ onAudit, loading }: Props) {
   const hasContent = css.trim().length > 100
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '40px 16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: compact ? 'flex-start' : 'center', minHeight: compact ? 'auto' : '100vh', padding: compact ? '48px 16px 24px' : '40px 16px' }}>
 
       {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: 40 }}>
+      <div style={{ textAlign: 'center', marginBottom: compact ? 24 : 40 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 12 }}>
           <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
             <rect width="28" height="28" rx="8" fill="rgba(99,102,241,0.15)" />
@@ -37,11 +38,14 @@ export default function CssInput({ onAudit, loading }: Props) {
             <circle cx="20" cy="19" r="3.5" fill="rgba(99,102,241,0.3)" stroke="#818cf8" strokeWidth="1" />
             <path d="M19 19l1 1 2-2" stroke="#818cf8" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-0.02em' }}>CSS Audit</span>
+          <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-0.02em' }}>Mint</span>
+          <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '2px 7px', borderRadius: 5, background: 'rgba(129,140,248,0.18)', color: 'var(--accent-strong)' }}>
+            Playground
+          </span>
         </div>
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', maxWidth: 440, lineHeight: 1.6 }}>
-          Paste your real CSS, SCSS, or HTML — legacy, Bootstrap, whatever.<br />
-          Claude identifies the chaos and generates the design system that should have existed.
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', maxWidth: 460, lineHeight: 1.6 }}>
+          Paste your CSS, SCSS, or HTML to try Mint right here.<br />
+          Prefer your terminal? The full audit + export pipeline ships as a CLI — see below.
         </p>
       </div>
 
@@ -69,7 +73,7 @@ export default function CssInput({ onAudit, loading }: Props) {
               </span>
             )}
             <label style={{ fontSize: 11, color: 'rgba(99,102,241,0.8)', cursor: 'pointer', padding: '3px 8px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.25)', background: 'rgba(99,102,241,0.06)' }}>
-              Subir archivo
+              Upload File
               <input
                 type="file"
                 accept=".css,.scss,.html,.htm"
