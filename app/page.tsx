@@ -29,8 +29,33 @@ export default function Home() {
   const [error, setError] = useState('')
   const [previewTab, setPreviewTab] = useState<PreviewTab>('visual')
   const [auditHistory, setAuditHistory] = useState<AuditHistoryEntry[]>([])
+  const [historyHydrated, setHistoryHydrated] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const historyRef = useRef<HTMLDivElement>(null)
+
+  // Hydrate history from localStorage once on mount.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('mint-audit-history')
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed)) setAuditHistory(parsed)
+      }
+    } catch {
+      // ignore corrupt storage
+    }
+    setHistoryHydrated(true)
+  }, [])
+
+  // Persist history (cap at 10 most recent) whenever it changes.
+  useEffect(() => {
+    if (!historyHydrated) return
+    try {
+      localStorage.setItem('mint-audit-history', JSON.stringify(auditHistory.slice(0, 10)))
+    } catch {
+      // storage may be full or disabled
+    }
+  }, [auditHistory, historyHydrated])
 
   useEffect(() => {
     if (!historyOpen) return
@@ -64,7 +89,7 @@ export default function Home() {
         css: inputCss,
         audit: data.audit,
       }
-      setAuditHistory((prev) => [entry, ...prev])
+      setAuditHistory((prev) => [entry, ...prev].slice(0, 10))
       setAudit(data.audit)
       setStep('audit')
     } catch (err) {
@@ -99,6 +124,14 @@ export default function Home() {
   const restoreAudit = (entry: AuditHistoryEntry) => {
     setAudit(entry.audit)
     setCss(entry.css)
+    setTokens(null)
+    setError('')
+    setStep('audit')
+    setHistoryOpen(false)
+  }
+
+  const clearHistory = () => {
+    setAuditHistory([])
     setHistoryOpen(false)
   }
 
@@ -113,10 +146,14 @@ export default function Home() {
 
   // ── Step: input ──────────────────────────────────────────────────────────────
   if (step === 'input') {
+    const hasHistory = auditHistory.length > 0
     return (
       <div>
         {loading && <CoffeeLoader />}
-        <CssInput onAudit={handleAudit} loading={loading} />
+        <CssInput onAudit={handleAudit} loading={loading} compact={hasHistory} />
+        {hasHistory && (
+          <RecentAudits history={auditHistory} onRestore={restoreAudit} onClear={clearHistory} />
+        )}
         {error && <ErrorToast message={error} />}
       </div>
     )
@@ -344,8 +381,90 @@ export default function Home() {
 
 function ErrorToast({ message }: { message: string }) {
   return (
-    <div style={{ position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', padding: '10px 18px', borderRadius: 8, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171', fontSize: 12, zIndex: 1000 }}>
+    <div style={{ position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', padding: '10px 18px', borderRadius: 8, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', color: '#fca5a5', fontSize: 12, zIndex: 1000 }}>
       {message}
     </div>
+  )
+}
+
+interface RecentAuditsProps {
+  history: AuditHistoryEntry[]
+  onRestore: (entry: AuditHistoryEntry) => void
+  onClear: () => void
+}
+
+function RecentAudits({ history, onRestore, onClear }: RecentAuditsProps) {
+  return (
+    <section
+      aria-label="Recent audits"
+      style={{
+        maxWidth: 760,
+        margin: '0 auto',
+        padding: '0 16px 56px',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
+        <h2 style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.07em', color: 'var(--text-faint)', textTransform: 'uppercase', margin: 0 }}>
+          Recent audits
+        </h2>
+        <button
+          onClick={onClear}
+          style={{
+            fontSize: 11,
+            padding: '3px 9px',
+            borderRadius: 6,
+            border: '1px solid var(--border)',
+            background: 'transparent',
+            color: 'var(--text-muted)',
+            fontFamily: 'var(--font)',
+          }}
+        >
+          Clear
+        </button>
+      </div>
+
+      <ul style={{ listStyle: 'none', display: 'grid', gap: 8, gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', padding: 0, margin: 0 }}>
+        {history.map((entry) => {
+          const ec = entry.chaosScore <= 3 ? '#5ee29a' : entry.chaosScore <= 6 ? '#fcd34d' : '#fca5a5'
+          return (
+            <li key={entry.id}>
+              <button
+                onClick={() => onRestore(entry)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  width: '100%',
+                  padding: '12px 14px',
+                  borderRadius: 10,
+                  border: '1px solid var(--border)',
+                  background: 'var(--panel)',
+                  color: 'var(--text)',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontFamily: 'var(--font)',
+                  transition: 'border-color 0.15s, transform 0.15s',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border-hover)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)' }}
+              >
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: ec, flexShrink: 0 }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {entry.brand}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                    chaos {entry.chaosScore}/10 · {entry.audit.colorClusters.length} clusters
+                  </div>
+                </div>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--text-faint)', flexShrink: 0 }}>
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+            </li>
+          )
+        })}
+      </ul>
+    </section>
   )
 }

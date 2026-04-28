@@ -5,9 +5,10 @@ import { useRef, useState, type DragEvent } from 'react'
 interface Props {
   onAudit: (css: string) => void
   loading: boolean
+  compact?: boolean
 }
 
-export default function CssInput({ onAudit, loading }: Props) {
+export default function CssInput({ onAudit, loading, compact = false }: Props) {
   const [css, setCss] = useState('')
   const [dragging, setDragging] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -26,10 +27,10 @@ export default function CssInput({ onAudit, loading }: Props) {
   const hasContent = css.trim().length > 100
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '40px 16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: compact ? 'flex-start' : 'center', minHeight: compact ? 'auto' : '100vh', padding: compact ? '48px 16px 24px' : '40px 16px' }}>
 
       {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: 40 }}>
+      <div style={{ textAlign: 'center', marginBottom: compact ? 24 : 40 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 12 }}>
           <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
             <rect width="28" height="28" rx="8" fill="rgba(99,102,241,0.15)" />

@@ -9,15 +9,17 @@
 }
 
 :root {
-  --bg: #16161e;
-  --panel: #1e1e2a;
-  --surface: #26263a;
-  --surface-2: #30304a;
-  --border: rgba(255, 255, 255, 0.11);
-  --border-hover: rgba(255, 255, 255, 0.22);
-  --text: #eaeaf8;
-  --text-muted: #8888c0;
-  --text-faint: #606090;
+  --bg: #1c2030;
+  --panel: #272c40;
+  --surface: #333852;
+  --surface-2: #424866;
+  --border: rgba(255, 255, 255, 0.16);
+  --border-hover: rgba(255, 255, 255, 0.32);
+  --text: #f5f6fc;
+  --text-muted: #c8cce0;
+  --text-faint: #a0a5c0;
+  --accent: #818cf8;
+  --accent-strong: #a5b0ff;
   --font: 'Outfit', sans-serif;
   --mono: 'Fragment Mono', monospace;
   --radius: 10px;
@@ -44,13 +46,13 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.18);
   border-radius: 2px;
 }
 
 /* Focus */
 :focus-visible {
-  outline: 2px solid rgba(99, 102, 241, 0.6);
+  outline: 2px solid rgba(165, 176, 255, 0.85);
   outline-offset: 2px;
 }
 
