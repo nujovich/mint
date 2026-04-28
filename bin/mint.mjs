@@ -59,8 +59,12 @@ ${styles.bold('EXPORT OPTIONS')}
   --out <file>                 Override the generated filename
   --stdout                     Print to stdout instead of writing a file
 
+${styles.bold('AUTH (any command)')}
+  --api-key <value>            Anthropic API key (overrides ANTHROPIC_API_KEY env var)
+
 ${styles.bold('ENVIRONMENT')}
-  ANTHROPIC_API_KEY            Required. Get one at https://console.anthropic.com
+  ANTHROPIC_API_KEY            Required unless --api-key is passed.
+                               Get a key at https://console.anthropic.com
 
 ${styles.bold('EXAMPLES')}
   npx mint audit ./src/styles
@@ -89,6 +93,18 @@ function parseFlags(argv) {
     }
   }
   return { flags, rest }
+}
+
+const API_KEY_HELP =
+  'ANTHROPIC_API_KEY is required. Set it in your environment or pass --api-key <value>.\n' +
+  '  macOS/Linux:  export ANTHROPIC_API_KEY=sk-ant-...\n' +
+  '  PowerShell:   $env:ANTHROPIC_API_KEY = "sk-ant-..."\n' +
+  '  Windows CMD:  set ANTHROPIC_API_KEY=sk-ant-...\n' +
+  '  Get a key at https://console.anthropic.com'
+
+function resolveApiKey(flags) {
+  const fromFlag = typeof flags['api-key'] === 'string' ? flags['api-key'] : null
+  return fromFlag || process.env.ANTHROPIC_API_KEY || null
 }
 
 async function* walk(dir) {
@@ -177,8 +193,8 @@ async function cmdAudit(argv) {
   const { files, css } = await collectSources(target)
   log(styles.dim(`  ${files.length} file(s), ${(css.length / 1000).toFixed(1)}k chars`))
 
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) die('ANTHROPIC_API_KEY is required (export it before running, or pass it inline)')
+  const apiKey = resolveApiKey(flags)
+  if (!apiKey) die(API_KEY_HELP)
 
   log(styles.cyan('→') + ' Auditing with Claude…')
   const auditText = await callAnthropic({ apiKey, prompt: buildAuditPrompt(css), maxTokens: 3000 })
@@ -230,8 +246,8 @@ async function cmdExport(argv) {
     die(`Unknown --target "${targetInput}". Try one of: ${ADVERTISED_TARGETS.join(', ')}`)
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) die('ANTHROPIC_API_KEY is required')
+  const apiKey = resolveApiKey(flags)
+  if (!apiKey) die(API_KEY_HELP)
 
   const tokensPath = String(flags.tokens || DEFAULT_TOKENS_FILE)
   const tokensRaw = await fs.readFile(tokensPath, 'utf8').catch(() => null)
