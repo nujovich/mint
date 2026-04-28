@@ -5,13 +5,12 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
-import { fileURLToPath } from 'node:url'
 import {
   buildAuditPrompt,
   buildResolvePrompt,
   buildExportPrompt,
   EXPORT_OUTPUT,
-  TARGET_ALIASES,
+  ADVERTISED_TARGETS,
   resolveTarget,
   callAnthropic,
   stripFences,
@@ -54,8 +53,8 @@ ${styles.bold('AUDIT OPTIONS')}
   --quiet                      Suppress chaos summary
 
 ${styles.bold('EXPORT OPTIONS')}
-  --target <name>              Required. tailwind, react, vue, svelte, astro,
-                                 css, scss, ts, css-modules, styled, emotion
+  --target <name>              Required. ${ADVERTISED_TARGETS.slice(0, 5).join(', ')},
+                                 ${ADVERTISED_TARGETS.slice(5).join(', ')}
   --tokens <file>              Tokens input path (default: ${DEFAULT_TOKENS_FILE})
   --out <file>                 Override the generated filename
   --stdout                     Print to stdout instead of writing a file
@@ -170,9 +169,6 @@ async function cmdAudit(argv) {
   const target = rest[0]
   if (!target) die('Usage: mint audit <directory>')
 
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) die('ANTHROPIC_API_KEY is required (export it before running, or pass it inline)')
-
   const outFile = String(flags.out || DEFAULT_TOKENS_FILE)
   const reportFile = flags.report ? String(flags.report) : null
   const quiet = Boolean(flags.quiet)
@@ -180,6 +176,9 @@ async function cmdAudit(argv) {
   log(styles.cyan('→') + ` Reading sources from ${styles.bold(target)}…`)
   const { files, css } = await collectSources(target)
   log(styles.dim(`  ${files.length} file(s), ${(css.length / 1000).toFixed(1)}k chars`))
+
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) die('ANTHROPIC_API_KEY is required (export it before running, or pass it inline)')
 
   log(styles.cyan('→') + ' Auditing with Claude…')
   const auditText = await callAnthropic({ apiKey, prompt: buildAuditPrompt(css), maxTokens: 3000 })
@@ -228,8 +227,7 @@ async function cmdExport(argv) {
 
   const target = resolveTarget(String(targetInput))
   if (!target) {
-    const known = [...new Set([...Object.keys(EXPORT_OUTPUT), ...Object.keys(TARGET_ALIASES)])].sort().join(', ')
-    die(`Unknown --target "${targetInput}". Try one of: ${known}`)
+    die(`Unknown --target "${targetInput}". Try one of: ${ADVERTISED_TARGETS.join(', ')}`)
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY
@@ -287,6 +285,4 @@ async function main() {
   }
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
-  main()
-}
+main()
