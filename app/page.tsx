@@ -12,6 +12,7 @@ import CliPromo from '@/components/CliPromo'
 
 type WizardStep = 'input' | 'audit' | 'tokens'
 type PreviewTab = 'visual' | 'json' | 'export'
+type Flavor = 'playground' | 'cli'
 
 interface AuditHistoryEntry {
   id: string
@@ -32,7 +33,27 @@ export default function Home() {
   const [auditHistory, setAuditHistory] = useState<AuditHistoryEntry[]>([])
   const [historyHydrated, setHistoryHydrated] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [flavor, setFlavor] = useState<Flavor>('playground')
   const historyRef = useRef<HTMLDivElement>(null)
+
+  // Restore flavor preference from localStorage.
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('mint-flavor')
+      if (stored === 'playground' || stored === 'cli') setFlavor(stored)
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  const selectFlavor = (next: Flavor) => {
+    setFlavor(next)
+    try {
+      localStorage.setItem('mint-flavor', next)
+    } catch {
+      // ignore
+    }
+  }
 
   // Hydrate history from localStorage once on mount.
   useEffect(() => {
@@ -149,10 +170,20 @@ export default function Home() {
   if (step === 'input') {
     const hasHistory = auditHistory.length > 0
     return (
-      <div>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         {loading && <CoffeeLoader />}
-        <CssInput onAudit={handleAudit} loading={loading} compact={hasHistory} />
-        <CliPromo />
+
+        <Hero />
+        <FlavorSwitcher flavor={flavor} onChange={selectFlavor} />
+
+        <main style={{ flex: 1, padding: '8px 0 40px' }}>
+          {flavor === 'playground' ? (
+            <CssInput onAudit={handleAudit} loading={loading} headerless />
+          ) : (
+            <CliFlavorPanel />
+          )}
+        </main>
+
         {hasHistory && (
           <RecentAudits history={auditHistory} onRestore={restoreAudit} onClear={clearHistory} />
         )}
@@ -379,6 +410,137 @@ export default function Home() {
   }
 
   return null
+}
+
+function Hero() {
+  return (
+    <div style={{ textAlign: 'center', padding: '48px 16px 24px' }}>
+      <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 14 }}>
+        <svg width="34" height="34" viewBox="0 0 28 28" fill="none">
+          <rect width="28" height="28" rx="8" fill="rgba(99,102,241,0.18)" />
+          <path d="M8 9h12M8 14h6M8 19h9" stroke="#818cf8" strokeWidth="1.5" strokeLinecap="round" />
+          <circle cx="20" cy="19" r="3.5" fill="rgba(99,102,241,0.3)" stroke="#818cf8" strokeWidth="1" />
+          <path d="M19 19l1 1 2-2" stroke="#818cf8" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <span style={{ fontSize: 26, fontWeight: 600, letterSpacing: '-0.025em' }}>Mint</span>
+      </div>
+      <p style={{ fontSize: 14, color: 'var(--text-muted)', maxWidth: 520, lineHeight: 1.6, margin: '0 auto' }}>
+        Audit your legacy CSS, curate the chaos, and ship a clean design system.
+      </p>
+      <p style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 10, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+        Available in two flavors — pick yours
+      </p>
+    </div>
+  )
+}
+
+interface FlavorSwitcherProps {
+  flavor: Flavor
+  onChange: (next: Flavor) => void
+}
+
+function FlavorSwitcher({ flavor, onChange }: FlavorSwitcherProps) {
+  const options: { key: Flavor; title: string; subtitle: string; icon: React.ReactNode }[] = [
+    {
+      key: 'playground',
+      title: 'Playground',
+      subtitle: 'Try Mint right in your browser — paste a snippet & go.',
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="4" width="18" height="14" rx="2" />
+          <path d="M2 20h20" />
+          <path d="M9 9l-2 2 2 2M13 9l2 2-2 2" />
+        </svg>
+      ),
+    },
+    {
+      key: 'cli',
+      title: 'CLI',
+      subtitle: 'Run Mint over a whole repo from your terminal — CI-ready.',
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="4 17 10 11 4 5" />
+          <line x1="12" y1="19" x2="20" y2="19" />
+        </svg>
+      ),
+    },
+  ]
+
+  return (
+    <div
+      role="tablist"
+      aria-label="Choose flavor"
+      className="mint-grid-2"
+      style={{ maxWidth: 720, width: '100%', margin: '0 auto', padding: '8px 16px 0' }}
+    >
+      {options.map((opt) => {
+        const active = flavor === opt.key
+        return (
+          <button
+            key={opt.key}
+            role="tab"
+            aria-selected={active}
+            onClick={() => onChange(opt.key)}
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 12,
+              padding: '14px 16px',
+              borderRadius: 12,
+              border: `1.5px solid ${active ? 'rgba(129,140,248,0.7)' : 'var(--border)'}`,
+              background: active ? 'rgba(99,102,241,0.10)' : 'var(--panel)',
+              color: 'var(--text)',
+              textAlign: 'left',
+              fontFamily: 'var(--font)',
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+              boxShadow: active ? '0 0 0 4px rgba(99,102,241,0.10)' : 'none',
+            }}
+          >
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 36,
+              height: 36,
+              borderRadius: 9,
+              background: active ? 'rgba(99,102,241,0.20)' : 'var(--surface)',
+              color: active ? '#a5b0ff' : 'var(--text-muted)',
+              flexShrink: 0,
+            }}>
+              {opt.icon}
+            </span>
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                <span style={{ fontSize: 14, fontWeight: 600 }}>{opt.title}</span>
+                {active && (
+                  <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '2px 6px', borderRadius: 4, background: 'rgba(129,140,248,0.20)', color: 'var(--accent-strong)' }}>
+                    Selected
+                  </span>
+                )}
+              </span>
+              <span style={{ display: 'block', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                {opt.subtitle}
+              </span>
+            </span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function CliFlavorPanel() {
+  return (
+    <div style={{ padding: '24px 0 0' }}>
+      <div style={{ maxWidth: 720, margin: '0 auto 18px', padding: '0 16px', textAlign: 'center' }}>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
+          The full audit + export pipeline ships as a CLI you can drop into any project or CI job.
+        </p>
+      </div>
+      <CliPromo />
+    </div>
+  )
 }
 
 function ErrorToast({ message }: { message: string }) {
