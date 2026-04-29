@@ -192,6 +192,8 @@ The committed artifacts ([`mint-ds.tokens.json`](examples/frankenstein/mint-ds.t
 
 ## CLI
 
+> **Pre-release.** `mint-ds` isn't on npm yet, so the `npx mint-ds …` commands below won't resolve. Run it from a clone or use `npm link` while we're publishing — see [Local development without publishing](#local-development-without-publishing).
+
 ```bash
 # Analyze every CSS/SCSS/HTML file in a directory and write mint-ds.tokens.json
 npx mint-ds audit ./src/styles
