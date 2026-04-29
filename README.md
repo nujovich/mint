@@ -101,6 +101,80 @@ p, span, li  { font-family: Arial, sans-serif; }
 
 </details>
 
+### Generated exports
+
+The same tokens were exported in two flavors and committed alongside, so you can see the full pipeline without running it:
+
+<details>
+<summary><a href="examples/frankenstein/tailwind.config.js"><code>examples/frankenstein/tailwind.config.js</code></a> — <code>--target tailwind</code></summary>
+
+```js
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    './src/**/*.{html,js,jsx,ts,tsx,vue}',
+    './components/**/*.{html,js,jsx,ts,tsx,vue}',
+    './pages/**/*.{html,js,jsx,ts,tsx,vue}',
+    './app/**/*.{html,js,jsx,ts,tsx,vue}'
+  ],
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: '#e3f2fd', 100: '#bbdefb', /* …300–800 */ 900: '#08357d',
+          DEFAULT: '#1976d2'
+        },
+        // error, background, text, border, surface, muted — same shape
+      },
+      fontFamily: {
+        display: ['Helvetica Neue', 'sans-serif'],
+        body:    ['Helvetica Neue', 'sans-serif']
+      },
+      spacing:      { '1': '4px', '2': '8px', '3': '12px', '5': '20px', '6': '24px' },
+      borderRadius: { sm: '4px', md: '8px' },
+      boxShadow:    { sm: '0 2px 4px rgba(0,0,0,0.1)' }
+    }
+  },
+  safelist: ['bg-primary-500', 'text-error-500', /* … */ 'font-extrabold'],
+  plugins: []
+}
+```
+
+Each color collapses 3–6 source aliases into one named scale; `safelist` covers the utilities the source CSS used so Tailwind's JIT keeps them.
+
+</details>
+
+<details>
+<summary><a href="examples/frankenstein/components.astro"><code>examples/frankenstein/components.astro</code></a> — <code>--target astro</code></summary>
+
+A single file with four ready-to-use Astro components — `Button`, `Card`, `Badge`, `Input` — wired to the design tokens via CSS variables. Excerpt:
+
+```astro
+---
+interface Props extends HTMLAttributes<'button'> {
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
+}
+const { variant = 'primary', size = 'md', ...rest } = Astro.props;
+---
+
+<button class:list={['btn', `btn--${variant}`, `btn--${size}`]} {...rest}>
+  <slot />
+</button>
+
+<style>
+  .btn--md      { padding: var(--spacing-3) var(--spacing-5); }
+  .btn--primary { background-color: var(--color-primary-500); color: white; }
+  .btn--primary:hover:not(:disabled) { background-color: var(--color-primary-600); }
+  /* secondary, ghost, danger variants follow the same token references */
+</style>
+```
+
+Notice how every value references a token (`var(--color-primary-500)`, `var(--spacing-3)`) — there are no hardcoded hexes or magic numbers in the generated components.
+
+</details>
+
 ### Reproduce it locally
 
 ```bash
@@ -109,11 +183,12 @@ npx mint-ds audit examples/frankenstein
 
 # 2. Pick the export your stack needs
 npx mint-ds export --target tailwind   # → tailwind.config.js
+npx mint-ds export --target astro      # → components.astro
 npx mint-ds export --target css        # → variables.css
 npx mint-ds export --target react      # → components.tsx
 ```
 
-The committed [`mint-ds.tokens.json`](examples/frankenstein/mint-ds.tokens.json) is what the audit produced on the maintainer's machine — your run will land in the same shape, with minor variation in scale stops if Claude picks slightly different intermediate stops.
+The committed artifacts ([`mint-ds.tokens.json`](examples/frankenstein/mint-ds.tokens.json), [`tailwind.config.js`](examples/frankenstein/tailwind.config.js), [`components.astro`](examples/frankenstein/components.astro)) are what the audit and exports produced on the maintainer's machine — your run will land in the same shape, with minor variation in scale stops if Claude picks slightly different intermediate values.
 
 ## CLI
 
