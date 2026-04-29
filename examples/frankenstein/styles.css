@@ -1,0 +1,95 @@
+/* ============================================================
+   FRANKENSTEIN DESIGN SYSTEM  v0.1 — poor by design
+   ============================================================ */
+
+/* --- COLORES: mismo azul, 5 formatos distintos ------------- */
+:root {
+  --color-primary:       #1976d2;
+  --color-primary-caps:  #1976D2;              /* mismo, caps */
+  --color-primary-rgb:   rgb(25, 118, 210);    /* mismo, rgb */
+  --color-primary-rgba:  rgba(25,118,210,1);   /* mismo, rgba */
+  --color-primary-hsl:   hsl(211, 79%, 46%);   /* mismo, hsl */
+  --color-blue:          #1976d2;              /* alias extra */
+
+  --color-danger:        #e53935;
+  --color-error:         rgb(229, 57, 53);     /* mismo que danger */
+  --color-red:           #E53935;              /* mismo, caps */
+
+  --color-bg:            #f5f5f5;
+  --color-background:    rgb(245, 245, 245);   /* mismo que bg */
+  --color-surface:       #F5F5F5;              /* mismo, caps */
+
+  --color-text:          #212121;
+  --color-text-dark:     rgb(33, 33, 33);      /* mismo que text */
+  --color-foreground:    #212121;              /* alias */
+
+  --color-border:        #dddddd;
+  --color-divider:       #DDD;                 /* mismo, shorthand */
+  --color-separator:     rgb(221, 221, 221);   /* mismo, rgb */
+}
+
+/* --- FUENTES: misma familia, declarada 5 veces ------------- */
+body {
+  font-family: 'Arial', sans-serif !important;
+}
+.app-root {
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+h1, h2, h3 {
+  font-family: "Arial", "Helvetica Neue", Helvetica, sans-serif !important;
+}
+p, span, li {
+  font-family: Arial, sans-serif;
+}
+.card {
+  font-family: 'Arial', Helvetica, sans-serif !important;
+}
+
+/* --- SPACING: escala completamente inconsistente ----------- */
+/*   mezcla px / rem / em, números impares y aleatorios       */
+.section        { margin-bottom: 24px; }
+.card           { padding: 13px; }           /* 13, no 12 ni 16 */
+.card-inner     { padding: 1rem; }           /* rem mezclado */
+.table-cell     { padding: 7px 11px; }       /* primos */
+.nav            { padding: 12px 24px; }
+.nav-item       { margin: 0 3px; }           /* 3 */
+.input-field    { padding: 0.5em 8px; }      /* em + px en shorthand */
+.metric-card    { padding: 19px; }           /* impar */
+.metric-label   { margin-bottom: 6px; }
+.badge          { padding: 2px 5px; }
+.btn            { padding: 4px 12px; }
+.btn-lg         { padding: 11px 20px; }      /* 11 en vez de 12 */
+.sidebar        { width: 13rem; }            /* rem */
+.modal          { padding: 1.5em; }          /* em */
+.modal-footer   { margin-top: 17px; }        /* 17 */
+.tooltip        { padding: 5px 9px; }        /* 9 */
+.tag            { margin: 0 3px 7px; }       /* 3 y 7 mezclados */
+
+/* --- !important: defensivo y ofensivo ---------------------- */
+.text-primary   { color: #1976d2 !important; }
+.text-danger    { color: rgb(229, 57, 53) !important; }
+.text-muted     { color: #666666 !important; }
+.bg-light       { background: #f5f5f5 !important; }
+.bg-primary     { background: hsl(211, 79%, 46%) !important; }
+.bg-white       { background: #ffffff !important; }
+.rounded        { border-radius: 4px !important; }
+.rounded-lg     { border-radius: 8px !important; }
+.bold           { font-weight: bold !important; }
+.font-bold      { font-weight: 700 !important; }    /* igual que .bold */
+.font-heavy     { font-weight: 800 !important; }
+.shadow         { box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important; }
+.shadow-md      { box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important; }  /* igual a .shadow */
+.w-full         { width: 100% !important; }
+.box-border     { box-sizing: border-box !important; }
+.flex           { display: flex !important; }
+.cursor-pointer { cursor: pointer !important; }
+
+table           { border-collapse: collapse !important; }
+th              { text-align: left !important; padding: 8px !important; border-bottom: 1px solid #dddddd !important; }
+td              { padding: 7px 11px !important; }
+
+input           { padding: 8px !important; box-sizing: border-box !important; width: 100% !important; }
+
+/* --- Overrides que pisan los overrides --------------------- */
+.nav .btn        { background: transparent !important; color: white !important; border: 1px solid white !important; }
+.nav .btn.active { background: white !important; color: #1976D2 !important; }

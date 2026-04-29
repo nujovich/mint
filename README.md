@@ -19,6 +19,102 @@ CSS / SCSS / HTML  →  Claude Audit  →  Review & curate  →  Clean tokens  �
 2. **Curate** — Review each cluster. Pick the canonical color, rename tokens, include or exclude entries, and select which fonts to keep. (CLI applies sensible defaults: include every cluster, keep non-system fonts, use the suggested 4px scale.)
 3. **Export** — Generate production-ready output in any format.
 
+## Example — Frankenstein
+
+A bundled example of the kind of CSS that grows organically over a few years: the **same blue declared in 6 aliases**, the **same Arial family duplicated across 5 selectors**, spacing values like `7px`, `11px`, `13px`, `17px`, `19px` mixed with `rem` and `em`, and `!important` everywhere. Full input in [`examples/frankenstein/styles.css`](examples/frankenstein/styles.css).
+
+### Before — `examples/frankenstein/styles.css`
+
+```css
+:root {
+  --color-primary:       #1976d2;
+  --color-primary-caps:  #1976D2;              /* same color, caps */
+  --color-primary-rgb:   rgb(25, 118, 210);    /* same color, rgb */
+  --color-primary-rgba:  rgba(25,118,210,1);   /* same color, rgba */
+  --color-primary-hsl:   hsl(211, 79%, 46%);   /* same color, hsl */
+  --color-blue:          #1976d2;              /* extra alias */
+  /* …same pattern for danger, bg, text, border */
+}
+
+body         { font-family: 'Arial', sans-serif !important; }
+.app-root    { font-family: Arial, Helvetica, sans-serif !important; }
+h1, h2, h3   { font-family: "Arial", "Helvetica Neue", Helvetica, sans-serif !important; }
+p, span, li  { font-family: Arial, sans-serif; }
+.card        { font-family: 'Arial', Helvetica, sans-serif !important; }
+
+.card        { padding: 13px; }            /* odd */
+.card-inner  { padding: 1rem; }            /* unit mixed */
+.table-cell  { padding: 7px 11px; }        /* primes */
+.metric-card { padding: 19px; }            /* odd */
+.btn-lg      { padding: 11px 20px; }       /* 11 instead of 12 */
+.sidebar     { width: 13rem; }
+.modal       { padding: 1.5em; }
+.modal-footer{ margin-top: 17px; }
+.tooltip     { padding: 5px 9px; }
+```
+
+### What Mint sees
+
+| Signal | What's in the source | What Mint outputs |
+|---|---|---|
+| **Colors** | 6 aliases for `#1976d2`, 3 for `#e53935`, 3 for `#f5f5f5`, 3 for `#212121`, 3 for `#dddddd` — all formatted differently (hex caps, hex lower, `rgb`, `rgba`, `hsl`, `#DDD` shorthand) | 7 named colors (`primary`, `error`, `background`, `text`, `border`, `surface`, `muted`), each with a 50–900 scale |
+| **Fonts** | 5 `font-family` declarations, all Arial-family permutations | 1 body family |
+| **Spacing** | 20+ values mixed across `px` / `rem` / `em`, including primes `7`, `11`, `13`, `17`, `19` | 5-step scale snapped to 4px: `4 / 8 / 12 / 20 / 24` |
+| **Border radius** | `4px` and `8px` scattered with `!important` | `sm: 4px`, `md: 8px` |
+| **Shadows** | `.shadow` and `.shadow-md` define the same value twice | one `sm` token |
+| **Weights** | `bold` and `700` declared as separate utilities (same thing) | `bold: 700`, `extrabold: 800` |
+
+### After — `examples/frankenstein/mint-ds.tokens.json`
+
+<details>
+<summary>Click to expand the full tokens output</summary>
+
+```json
+{
+  "brand": "frankenstein",
+  "colors": [
+    {
+      "name": "primary",
+      "value": "#1976d2",
+      "scale": {
+        "50":  "#e3f2fd", "100": "#bbdefb", "200": "#90caf9",
+        "300": "#64b5f6", "400": "#42a5f5", "500": "#1976d2",
+        "600": "#1565c0", "700": "#0d47a1", "800": "#0a3f8f", "900": "#08357d"
+      }
+    },
+    { "name": "error",      "value": "#e53935", "scale": { "50": "#ffebee", "...": "...", "900": "#a01818" } },
+    { "name": "background", "value": "#f5f5f5", "scale": { "50": "#fefefe", "...": "...", "900": "#a8a8a8" } },
+    { "name": "text",       "value": "#212121", "scale": { "50": "#f5f5f5", "...": "...", "900": "#141414" } },
+    { "name": "border",     "value": "#dddddd", "scale": { "50": "#f9f9f9", "...": "...", "900": "#6c6c6c" } },
+    { "name": "surface",    "value": "#ffffff", "scale": { "50": "#ffffff", "...": "...", "900": "#999999" } },
+    { "name": "muted",      "value": "#666666", "scale": { "50": "#f2f2f2", "...": "...", "900": "#333333" } }
+  ],
+  "typography": {
+    "fontFamilies": { "body": "Helvetica Neue" },
+    "fontWeights":  { "bold": 700, "extrabold": 800 }
+  },
+  "spacing":      { "1": "4px", "2": "8px", "3": "12px", "5": "20px", "6": "24px" },
+  "borderRadius": { "sm": "4px", "md": "8px" },
+  "shadows":      { "sm": "0 2px 4px rgba(0,0,0,0.1)" }
+}
+```
+
+</details>
+
+### Reproduce it locally
+
+```bash
+# 1. Audit the bundled example
+npx mint-ds audit examples/frankenstein
+
+# 2. Pick the export your stack needs
+npx mint-ds export --target tailwind   # → tailwind.config.js
+npx mint-ds export --target css        # → variables.css
+npx mint-ds export --target react      # → components.tsx
+```
+
+The committed [`mint-ds.tokens.json`](examples/frankenstein/mint-ds.tokens.json) is what the audit produced on the maintainer's machine — your run will land in the same shape, with minor variation in scale stops if Claude picks slightly different intermediate stops.
+
 ## CLI
 
 ```bash
