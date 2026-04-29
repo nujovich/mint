@@ -539,8 +539,60 @@ function CliFlavorPanel() {
         </p>
       </div>
 
+      <PreReleaseNotice />
+
       <CliPromo />
     </div>
+  )
+}
+
+function PreReleaseNotice() {
+  return (
+    <section
+      role="note"
+      aria-label="Pre-release notice"
+      style={{
+        maxWidth: 720,
+        margin: '0 auto 18px',
+        padding: '0 16px',
+      }}
+    >
+      <div
+        style={{
+          borderRadius: 12,
+          border: '1px solid rgba(251,191,36,0.30)',
+          background: 'rgba(251,191,36,0.07)',
+          overflow: 'hidden',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 16px 8px' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
+            <path d="M12 9v4M12 17h.01" />
+            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+          </svg>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#fbbf24', marginBottom: 3 }}>
+              Pre-release — mint-ds isn&apos;t on npm yet
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.55 }}>
+              The <code style={{ fontFamily: 'var(--mono)', fontSize: 11.5, padding: '1px 5px', borderRadius: 4, background: 'rgba(255,255,255,0.06)' }}>npx mint-ds</code> commands below won&apos;t resolve until we publish. In the meantime, run it from a clone or use <code style={{ fontFamily: 'var(--mono)', fontSize: 11.5, padding: '1px 5px', borderRadius: 4, background: 'rgba(255,255,255,0.06)' }}>npm link</code>.
+            </div>
+          </div>
+        </div>
+
+        <pre style={{ margin: 0, padding: '4px 16px 14px', fontFamily: 'var(--mono)', fontSize: 11.5, lineHeight: 1.8, color: 'var(--text-muted)', background: 'transparent', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+          <span style={{ color: 'var(--text-faint)' }}># Clone &amp; run from source</span>{'\n'}
+          <span style={{ color: 'var(--text-faint)' }}>$</span> git clone https://github.com/nujovich/mint.git &amp;&amp; cd mint{'\n'}
+          <span style={{ color: 'var(--text-faint)' }}>$</span> export ANTHROPIC_API_KEY=sk-ant-...{'\n'}
+          <span style={{ color: 'var(--text-faint)' }}>$</span> node bin/mint-ds.mjs audit ./examples/frankenstein{'\n'}
+          <span style={{ color: 'var(--text-faint)' }}>$</span> node bin/mint-ds.mjs export --target tailwind{'\n'}
+          {'\n'}
+          <span style={{ color: 'var(--text-faint)' }}># Or expose `mint-ds` globally with npm link</span>{'\n'}
+          <span style={{ color: 'var(--text-faint)' }}>$</span> npm link{'\n'}
+          <span style={{ color: 'var(--text-faint)' }}>$</span> mint-ds audit ./examples/frankenstein
+        </pre>
+      </div>
+    </section>
   )
 }
 
