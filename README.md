@@ -1,4 +1,4 @@
-# Mint
+# Mint 🎨
 
 **Mint** audits your legacy CSS and generates a clean, exportable design system from the chaos.
 
