@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/nujovich/mint#readme",
   "bin": {
-    "mint": "bin/mint.mjs"
+    "mint-ds": "bin/mint-ds.mjs"
   },
   "files": [
     "bin",
@@ -36,7 +36,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "mint": "node bin/mint.mjs"
+    "mint-ds": "node bin/mint-ds.mjs"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
