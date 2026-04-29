@@ -1,0 +1,101 @@
+name: Bug report
+description: Something in mint-ds doesn't work the way you expected
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug! A few things up front:
+        - **Search first** — there may already be an open issue for this.
+        - **Don't paste your `ANTHROPIC_API_KEY`** anywhere in this report. If you accidentally do, rotate it at [console.anthropic.com](https://console.anthropic.com).
+        - The more reproducible the report, the faster we can fix it. A minimal CSS snippet that triggers the bug is gold.
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where did you hit this?
+      description: Pick the surface where the bug shows up.
+      options:
+        - CLI (`mint-ds audit` / `mint-ds export`)
+        - Web playground
+        - Both CLI and web
+        - Documentation / README
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: mint-ds version
+      description: Run `mint-ds --version` — or `node bin/mint-ds.mjs --version` if you're working from a clone. Use `n/a` for web-only or docs bugs.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: node
+    attributes:
+      label: Node.js version
+      description: Output of `node --version`. Skip if this is a web-only or docs bug.
+      placeholder: "v20.11.1"
+
+  - type: input
+    id: env
+    attributes:
+      label: OS & shell
+      description: e.g. `macOS 14.4 / zsh`, `Ubuntu 22.04 / bash`, `Windows 11 / PowerShell 7`, `WSL2 Ubuntu / bash`. For web bugs, give the browser instead (e.g. `Firefox 124 on macOS 14`).
+      placeholder: "macOS 14.4 / zsh"
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: A numbered list of what you did. Include the exact command you ran (with API key redacted) or what you clicked in the playground.
+      placeholder: |
+        1. Cloned the repo and ran `npm install`.
+        2. Ran `node bin/mint-ds.mjs audit ./examples/frankenstein`.
+        3. Saw the audit complete but the resulting `mint-ds.tokens.json` is missing the `spacing` key.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: What happened instead. Include error messages, unexpected output, or a screenshot for UI bugs.
+    validations:
+      required: true
+
+  - type: textarea
+    id: input
+    attributes:
+      label: Minimal CSS / HTML input that reproduces the bug
+      description: If the bug is triggered by a specific input, paste the smallest possible snippet that still reproduces. For web-only bugs you can leave this blank.
+      render: css
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or stack traces
+      description: Paste raw output from the failing command, browser console errors, or network response bodies. Don't include your API key.
+      render: shell
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Sanity checks
+      options:
+        - label: I'm running Node 20 or newer (CLI requirement).
+          required: false
+        - label: I confirmed `ANTHROPIC_API_KEY` is set (or I'm passing `--api-key`) and the key is valid.
+          required: false
+        - label: I searched existing issues and didn't find this bug already reported.
+          required: true
