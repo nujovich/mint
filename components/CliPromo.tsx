@@ -3,9 +3,9 @@
 import { useState } from 'react'
 
 const COMMANDS = [
-  'npx mint audit ./src/styles',
-  'npx mint export --target tailwind',
-  'npx mint export --target react',
+  'npx mint-ds audit ./src/styles',
+  'npx mint-ds export --target tailwind',
+  'npx mint-ds export --target react',
 ]
 
 const DOCS_URL = 'https://github.com/nujovich/mint#cli'

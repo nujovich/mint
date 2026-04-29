@@ -1,7 +1,6 @@
 {
-  "name": "mint",
+  "name": "mint-ds",
   "version": "0.1.0",
-  "private": true,
   "description": "Audit legacy CSS, curate the chaos, and generate a clean design system. CLI + web playground.",
   "keywords": [
     "css",
@@ -14,6 +13,14 @@
     "claude"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nujovich/mint.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nujovich/mint/issues"
+  },
+  "homepage": "https://github.com/nujovich/mint#readme",
   "bin": {
     "mint": "bin/mint.mjs"
   },
@@ -31,15 +38,13 @@
     "start": "next start",
     "mint": "node bin/mint.mjs"
   },
-  "dependencies": {
-    "next": "^15.1.0",
-    "react": "^18.3.0",
-    "react-dom": "^18.3.0"
-  },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
+    "next": "^15.1.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
     "typescript": "^5.0.0"
   }
 }

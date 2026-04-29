@@ -41,7 +41,7 @@ function printHelp() {
   process.stdout.write(`${styles.bold('mint')} — CSS audit & design system generator (v${VERSION})
 
 ${styles.bold('USAGE')}
-  npx mint <command> [options]
+  npx mint-ds <command> [options]
 
 ${styles.bold('COMMANDS')}
   audit <dir>                  Analyze CSS/SCSS files in <dir> and write ${DEFAULT_TOKENS_FILE}
@@ -67,10 +67,10 @@ ${styles.bold('ENVIRONMENT')}
                                Get a key at https://console.anthropic.com
 
 ${styles.bold('EXAMPLES')}
-  npx mint audit ./src/styles
-  npx mint export --target tailwind
-  npx mint export --target react --out ui/Components.tsx
-  npx mint export --target css --stdout > variables.css
+  npx mint-ds audit ./src/styles
+  npx mint-ds export --target tailwind
+  npx mint-ds export --target react --out ui/Components.tsx
+  npx mint-ds export --target css --stdout > variables.css
 `)
 }
 
@@ -233,7 +233,7 @@ async function cmdAudit(argv) {
     log('')
   }
   log(styles.green('✓') + ` Tokens written to ${styles.bold(outFile)}`)
-  log(styles.dim(`  next: npx mint export --target tailwind`))
+  log(styles.dim(`  next: npx mint-ds export --target tailwind`))
 }
 
 async function cmdExport(argv) {
