@@ -18,7 +18,7 @@ import {
 
 const VERSION = '0.1.0'
 const SOURCE_EXTS = new Set(['.css', '.scss', '.sass', '.less', '.html', '.htm'])
-const DEFAULT_TOKENS_FILE = 'mint.tokens.json'
+const DEFAULT_TOKENS_FILE = 'mint-ds.tokens.json'
 const MAX_CSS_CHARS = 120_000
 
 const styles = process.stdout.isTTY
@@ -38,10 +38,10 @@ function log(...args) { process.stderr.write(args.join(' ') + '\n') }
 function die(msg, code = 1) { log(styles.red('✗ ' + msg)); process.exit(code) }
 
 function printHelp() {
-  process.stdout.write(`${styles.bold('mint')} — CSS audit & design system generator (v${VERSION})
+  process.stdout.write(`${styles.bold('mint-ds')} — CSS audit & design system generator (v${VERSION})
 
 ${styles.bold('USAGE')}
-  npx mint <command> [options]
+  npx mint-ds <command> [options]
 
 ${styles.bold('COMMANDS')}
   audit <dir>                  Analyze CSS/SCSS files in <dir> and write ${DEFAULT_TOKENS_FILE}
@@ -67,10 +67,10 @@ ${styles.bold('ENVIRONMENT')}
                                Get a key at https://console.anthropic.com
 
 ${styles.bold('EXAMPLES')}
-  npx mint audit ./src/styles
-  npx mint export --target tailwind
-  npx mint export --target react --out ui/Components.tsx
-  npx mint export --target css --stdout > variables.css
+  npx mint-ds audit ./src/styles
+  npx mint-ds export --target tailwind
+  npx mint-ds export --target react --out ui/Components.tsx
+  npx mint-ds export --target css --stdout > variables.css
 `)
 }
 
@@ -183,7 +183,7 @@ function chaosBadge(score) {
 async function cmdAudit(argv) {
   const { flags, rest } = parseFlags(argv)
   const target = rest[0]
-  if (!target) die('Usage: mint audit <directory>')
+  if (!target) die('Usage: mint-ds audit <directory>')
 
   const outFile = String(flags.out || DEFAULT_TOKENS_FILE)
   const reportFile = flags.report ? String(flags.report) : null
@@ -233,13 +233,13 @@ async function cmdAudit(argv) {
     log('')
   }
   log(styles.green('✓') + ` Tokens written to ${styles.bold(outFile)}`)
-  log(styles.dim(`  next: npx mint export --target tailwind`))
+  log(styles.dim(`  next: npx mint-ds export --target tailwind`))
 }
 
 async function cmdExport(argv) {
   const { flags } = parseFlags(argv)
   const targetInput = flags.target
-  if (!targetInput || targetInput === true) die('Usage: mint export --target <name>  (e.g. tailwind, react, css)')
+  if (!targetInput || targetInput === true) die('Usage: mint-ds export --target <name>  (e.g. tailwind, react, css)')
 
   const target = resolveTarget(String(targetInput))
   if (!target) {
@@ -252,7 +252,7 @@ async function cmdExport(argv) {
   const tokensPath = String(flags.tokens || DEFAULT_TOKENS_FILE)
   const tokensRaw = await fs.readFile(tokensPath, 'utf8').catch(() => null)
   if (tokensRaw === null) {
-    die(`Tokens file not found: ${tokensPath}\n  Run "mint audit <dir>" first, or pass --tokens <file>.`)
+    die(`Tokens file not found: ${tokensPath}\n  Run "mint-ds audit <dir>" first, or pass --tokens <file>.`)
   }
 
   let tokens
@@ -287,7 +287,7 @@ async function main() {
     return
   }
   if (argv[0] === '-v' || argv[0] === '--version') {
-    process.stdout.write(`mint ${VERSION}\n`)
+    process.stdout.write(`mint-ds ${VERSION}\n`)
     return
   }
 
