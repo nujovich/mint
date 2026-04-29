@@ -539,34 +539,6 @@ function CliFlavorPanel() {
         </p>
       </div>
 
-      <div
-        role="note"
-        style={{
-          maxWidth: 720,
-          margin: '0 auto 18px',
-          padding: '12px 16px',
-          borderRadius: 10,
-          border: '1px solid rgba(251,191,36,0.25)',
-          background: 'rgba(251,191,36,0.08)',
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: 10,
-          marginLeft: 16,
-          marginRight: 16,
-        }}
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}>
-          <path d="M12 9v4M12 17h.01" />
-          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-        </svg>
-        <div style={{ fontSize: 12.5, color: 'var(--text-muted)', lineHeight: 1.55 }}>
-          <strong style={{ color: '#fbbf24', fontWeight: 600 }}>Heads up:</strong>{' '}
-          Mint isn&apos;t published to npm yet, so the commands below won&apos;t resolve via{' '}
-          <code style={{ fontFamily: 'var(--mono)', fontSize: 11.5, padding: '1px 5px', borderRadius: 4, background: 'rgba(255,255,255,0.06)' }}>npx</code>{' '}
-          today. Sneak preview only — clone the repo to try it locally.
-        </div>
-      </div>
-
       <CliPromo />
     </div>
   )
