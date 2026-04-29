@@ -67,6 +67,9 @@ export default function CliPromo() {
           ))}
         </pre>
 
+        {/* Authentication */}
+        <AuthBlock />
+
         {/* Actions */}
         <div style={{ display: 'flex', gap: 8, padding: '10px 12px', borderTop: '1px solid var(--border)', background: 'var(--surface)' }}>
           <button
@@ -130,11 +133,67 @@ export default function CliPromo() {
             View docs on GitHub
           </a>
 
-          <span style={{ marginLeft: 'auto', alignSelf: 'center', fontSize: 11, color: 'var(--text-faint)', fontFamily: 'var(--mono)' }}>
-            ANTHROPIC_API_KEY required
-          </span>
         </div>
       </div>
     </section>
+  )
+}
+
+const AUTH_SHELLS: { label: string; prompt: string; cmd: string }[] = [
+  { label: 'bash · zsh · WSL', prompt: '$', cmd: 'export ANTHROPIC_API_KEY=sk-ant-...' },
+  { label: 'PowerShell',       prompt: '>', cmd: '$env:ANTHROPIC_API_KEY = "sk-ant-..."' },
+  { label: 'Windows CMD',      prompt: '>', cmd: 'set ANTHROPIC_API_KEY=sk-ant-...' },
+]
+
+function AuthBlock() {
+  const [shellIdx, setShellIdx] = useState(0)
+  const active = AUTH_SHELLS[shellIdx]
+
+  return (
+    <div style={{ borderTop: '1px solid var(--border)', padding: '12px 16px 14px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
+        <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-faint)' }}>
+          Authentication
+        </span>
+        <div role="tablist" aria-label="Shell" style={{ display: 'flex', gap: 2, background: 'var(--surface)', borderRadius: 7, padding: 2, border: '1px solid var(--border)' }}>
+          {AUTH_SHELLS.map((s, i) => (
+            <button
+              key={s.label}
+              role="tab"
+              aria-selected={i === shellIdx}
+              onClick={() => setShellIdx(i)}
+              style={{
+                padding: '3px 9px',
+                borderRadius: 5,
+                border: 'none',
+                background: i === shellIdx ? 'var(--surface-2)' : 'transparent',
+                color: i === shellIdx ? 'var(--text)' : 'var(--text-muted)',
+                fontSize: 10.5,
+                fontFamily: 'var(--font)',
+                fontWeight: i === shellIdx ? 500 : 400,
+                cursor: 'pointer',
+              }}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <pre style={{ margin: 0, fontFamily: 'var(--mono)', fontSize: 12, lineHeight: 1.7, color: 'var(--text)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <span style={{ color: 'var(--text-faint)', userSelect: 'none' }}>{active.prompt}</span>
+          <span>{active.cmd}</span>
+        </div>
+      </pre>
+
+      <p style={{ marginTop: 8, fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.55 }}>
+        Or pass the key per-command with{' '}
+        <code style={{ fontFamily: 'var(--mono)', fontSize: 11, padding: '1px 5px', borderRadius: 4, background: 'var(--surface)', color: 'var(--accent-strong)' }}>
+          --api-key sk-ant-...
+        </code>{' '}
+        — handy for CI or one-off runs.
+      </p>
+    </div>
   )
 }
