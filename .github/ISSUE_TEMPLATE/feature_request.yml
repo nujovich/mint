@@ -1,0 +1,70 @@
+name: Feature request
+description: Propose a new export target, CLI flag, playground improvement, or other enhancement
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for thinking about how to make mint-ds better. To help triage:
+        - Lead with the **problem**, not the solution. The clearer the problem, the easier it is to evaluate alternatives.
+        - **Search first** — there may already be an open issue for this idea.
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Which surface does this affect?
+      options:
+        - CLI (commands, flags, output formats)
+        - Web playground (UI, wizard flow)
+        - Audit / token-generation pipeline (prompts, clustering, scales)
+        - Export targets (new framework, new file format)
+        - Documentation
+        - Build / release / packaging
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the situation today and what's painful about it. Skip the proposed solution for now — that's the next field.
+      placeholder: |
+        I'm migrating a Bootstrap 4 codebase. After running `mint-ds audit`, the spacing scale comes out clean but I can't tell which legacy classes (`mb-3`, `pt-2`, etc.) map to which new spacing tokens.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Concretely, what would you like to happen? CLI flag? New export format? UI element? Be as specific as you can.
+      placeholder: |
+        Add a `--target bootstrap-mapping` export that emits a JSON file pairing each legacy class name with the new token, e.g. `{ "mb-3": "var(--spacing-3)" }`.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+      description: Other ways to solve the same problem, and why you ruled them out. Optional but useful.
+      placeholder: |
+        - Manually grepping the source for class usages — too noisy on a large codebase.
+        - Using a separate tool like `purgecss` — doesn't know about the new token names.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Mockups, screenshots, links to similar features in other tools, sample input/output, etc. Optional.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Sanity checks
+      options:
+        - label: I searched existing issues and didn't find this proposal.
+          required: true
+        - label: This isn't something I could solve with existing CLI flags or playground options.
+          required: false
