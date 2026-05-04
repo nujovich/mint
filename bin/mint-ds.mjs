@@ -3,12 +3,14 @@
 // Requires Node 20+ for fs.promises.readdir({ recursive: true }) and global fetch.
 
 import { promises as fs } from 'node:fs'
+import { createHash } from 'node:crypto'
 import path from 'node:path'
 import process from 'node:process'
 import {
   buildAuditPrompt,
   buildResolvePrompt,
   buildExportPrompt,
+  preprocessCss,
   EXPORT_OUTPUT,
   ADVERTISED_TARGETS,
   resolveTarget,
@@ -19,7 +21,24 @@ import {
 const VERSION = '0.1.0'
 const SOURCE_EXTS = new Set(['.css', '.scss', '.sass', '.less', '.html', '.htm'])
 const DEFAULT_TOKENS_FILE = 'mint-ds.tokens.json'
+const CACHE_FILE = 'mint-ds.cache.json'
 const MAX_CSS_CHARS = 120_000
+
+function hashCss(css) {
+  return createHash('sha256').update(css).digest('hex')
+}
+
+async function readCache() {
+  try {
+    return JSON.parse(await fs.readFile(CACHE_FILE, 'utf8'))
+  } catch {
+    return {}
+  }
+}
+
+async function writeCache(cache) {
+  await fs.writeFile(CACHE_FILE, JSON.stringify(cache, null, 2) + '\n', 'utf8')
+}
 
 const styles = process.stdout.isTTY
   ? {
@@ -46,11 +65,13 @@ ${styles.bold('USAGE')}
 ${styles.bold('COMMANDS')}
   audit <dir>                  Analyze CSS/SCSS files in <dir> and write ${DEFAULT_TOKENS_FILE}
   export --target <name>       Generate exports from ${DEFAULT_TOKENS_FILE}
+  cache --clear                Delete the local ${CACHE_FILE}
 
 ${styles.bold('AUDIT OPTIONS')}
   --out <file>                 Tokens output path (default: ${DEFAULT_TOKENS_FILE})
   --report <file>              Also write the raw audit report to <file>
   --quiet                      Suppress chaos summary
+  --no-cache                   Skip cache lookup and overwrite any existing entry
 
 ${styles.bold('EXPORT OPTIONS')}
   --target <name>              Required. ${ADVERTISED_TARGETS.slice(0, 5).join(', ')},
@@ -188,10 +209,26 @@ async function cmdAudit(argv) {
   const outFile = String(flags.out || DEFAULT_TOKENS_FILE)
   const reportFile = flags.report ? String(flags.report) : null
   const quiet = Boolean(flags.quiet)
+  const noCache = Boolean(flags['no-cache'])
 
   log(styles.cyan('→') + ` Reading sources from ${styles.bold(target)}…`)
   const { files, css } = await collectSources(target)
   log(styles.dim(`  ${files.length} file(s), ${(css.length / 1000).toFixed(1)}k chars`))
+
+  const processedCss = preprocessCss(css)
+  const cssHash = hashCss(processedCss)
+
+  if (!noCache) {
+    const cache = await readCache()
+    if (cache[cssHash]) {
+      const { tokens } = cache[cssHash]
+      await fs.writeFile(outFile, JSON.stringify(tokens, null, 2) + '\n', 'utf8')
+      log(styles.dim(`  cache hit (${cssHash.slice(0, 8)}…)`))
+      log(styles.green('✓') + ` Tokens written to ${styles.bold(outFile)} (from cache)`)
+      log(styles.dim(`  next: npx mint-ds export --target tailwind`))
+      return
+    }
+  }
 
   const apiKey = resolveApiKey(flags)
   if (!apiKey) die(API_KEY_HELP)
@@ -223,6 +260,12 @@ async function cmdAudit(argv) {
     die('Could not parse tokens JSON from Claude response')
   }
 
+  if (!noCache) {
+    const cache = await readCache()
+    cache[cssHash] = { tokens, savedAt: new Date().toISOString() }
+    await writeCache(cache)
+  }
+
   await fs.writeFile(outFile, JSON.stringify(tokens, null, 2) + '\n', 'utf8')
 
   if (!quiet) {
@@ -234,6 +277,25 @@ async function cmdAudit(argv) {
   }
   log(styles.green('✓') + ` Tokens written to ${styles.bold(outFile)}`)
   log(styles.dim(`  next: npx mint-ds export --target tailwind`))
+}
+
+async function cmdCache(argv) {
+  const { flags } = parseFlags(argv)
+  if (flags.clear) {
+    await fs.unlink(CACHE_FILE).catch(() => {})
+    log(styles.green('✓') + ` Cache cleared (${CACHE_FILE})`)
+  } else {
+    const cache = await readCache()
+    const entries = Object.keys(cache)
+    if (entries.length === 0) {
+      log(styles.dim('Cache is empty.'))
+    } else {
+      log(styles.bold(`${entries.length} cached audit(s):`))
+      for (const hash of entries) {
+        log(styles.dim(`  ${hash.slice(0, 8)}…  saved ${cache[hash].savedAt ?? 'unknown'}`))
+      }
+    }
+  }
 }
 
 async function cmdExport(argv) {
@@ -295,6 +357,7 @@ async function main() {
   try {
     if (cmd === 'audit') await cmdAudit(rest)
     else if (cmd === 'export') await cmdExport(rest)
+    else if (cmd === 'cache') await cmdCache(rest)
     else { printHelp(); die(`Unknown command: ${cmd}`) }
   } catch (err) {
     die(err && err.message ? err.message : String(err))

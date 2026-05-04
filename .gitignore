@@ -34,3 +34,4 @@ Thumbs.db
 poc/
 *.tgz
 mint.tokens.json
+mint-ds.cache.json
