@@ -157,36 +157,6 @@ Add a note that `npm run build` is the final gate and must pass before opening a
 
 ---
 
-## Section 6: Pre-commit Hook (lint-only)
-
-### New dev dependencies
-
-- `husky`
-- `lint-staged`
-
-### Setup
-
-`husky` manages the git hook; `lint-staged` runs `next lint` only on staged files so the hook stays fast regardless of codebase size.
-
-`package.json` additions:
-
-```json
-"prepare": "husky",
-"lint-staged": {
-  "*.{js,mjs,cjs,ts,tsx}": "next lint --file"
-}
-```
-
-`.husky/pre-commit` (created by `husky init`):
-
-```sh
-npx lint-staged
-```
-
-**Why lint-only:** Typecheck needs the full project context so it can't be scoped to staged files — it would run on everything on every commit and grow slower as the codebase scales. Typecheck is the right gate for CI; the pre-commit hook is for fast "did you forget a lint error" feedback.
-
----
-
 ## Acceptance Criteria
 
 - `npm install` succeeds with no peer warnings
@@ -196,12 +166,11 @@ npx lint-staged
 - `npm run test:coverage` reports ≥80% across lines, functions, branches, statements
 - `npm run build` still succeeds
 - CI workflow runs green on a real PR
-- Pre-commit hook blocks commits with lint errors on staged files
 - No production logic in `lib/`, `bin/`, `app/`, or `components/` is modified
 
 ## Out of Scope
 
-- Pre-commit typecheck hook
+- Pre-commit hooks
 - E2E tests
 - Mutation testing
 - Multi-version Node matrix in CI
