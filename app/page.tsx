@@ -40,6 +40,7 @@ export default function Home() {
   useEffect(() => {
     try {
       const stored = localStorage.getItem('mint-flavor')
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: hydrating state from localStorage (external system) on mount to avoid SSR mismatch
       if (stored === 'playground' || stored === 'cli') setFlavor(stored)
     } catch {
       // ignore
@@ -61,6 +62,7 @@ export default function Home() {
       const raw = localStorage.getItem('mint-audit-history')
       if (raw) {
         const parsed = JSON.parse(raw)
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: hydrating state from localStorage (external system) on mount to avoid SSR mismatch
         if (Array.isArray(parsed)) setAuditHistory(parsed)
       }
     } catch {
