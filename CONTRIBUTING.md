@@ -64,10 +64,26 @@ Add CSS utility classes to the `Responsive layout utilities` section at the bott
 ## Running checks
 
 ```bash
-npx tsc --noEmit   # must pass before opening a PR
+# Type-check
+npm run typecheck
+
+# Lint
+npm run lint
+
+# Tests
+npm test
+
+# Tests in watch mode (during development)
+npm run test:watch
+
+# Tests with coverage report
+npm run test:coverage
+
+# Full build (must pass before opening a PR)
+npm run build
 ```
 
-There is no test suite at this stage. Manual testing through the full wizard flow is the verification method.
+All four commands run automatically in CI on every PR. The pre-commit hook runs `npx lint-staged`, which lints staged files with `next lint --file`, before each commit.
 
 ## Opening a PR
 
