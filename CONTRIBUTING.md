@@ -83,7 +83,7 @@ npm run test:coverage
 npm run build
 ```
 
-All four commands run automatically in CI on every PR. The pre-commit hook runs `npm run lint` on staged files before each commit.
+All four commands run automatically in CI on every PR. The pre-commit hook runs `npx lint-staged`, which lints staged files with `next lint --file`, before each commit.
 
 ## Opening a PR
 
