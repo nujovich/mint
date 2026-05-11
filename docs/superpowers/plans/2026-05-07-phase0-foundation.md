@@ -6,7 +6,7 @@
 
 **Architecture:** All changes are additive tooling. No production logic in `lib/`, `bin/`, `app/`, or `components/` is modified except for a single `/* v8 ignore start/end */` block around `callAnthropic` to exclude the network-dependent function from coverage. Tests live in `lib/__tests__/` and exercise every pure helper in `lib/prompts.mjs`.
 
-**Tech Stack:** vitest, @vitest/coverage-v8, @eslint/eslintrc, husky, lint-staged, GitHub Actions (ubuntu-latest, Node 20)
+**Tech Stack:** vitest, @vitest/coverage-v8, @eslint/eslintrc, husky, lint-staged, GitHub Actions (ubuntu-latest, Node 24)
 
 ---
 
