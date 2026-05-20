@@ -1,4 +1,6 @@
 import type { AuditReport, DSTokens, UserDecisions } from './types'
+import { preprocessCss } from './css-utils.mjs'
+export { preprocessCss }
 
 const AUDIT_PREFIX = 'mint-audit-cache-'
 const RESOLVE_PREFIX = 'mint-resolve-cache-'
@@ -10,14 +12,6 @@ async function getSubtleCrypto(): Promise<SubtleCrypto> {
   if (typeof crypto !== 'undefined') return crypto.subtle
   const { webcrypto } = await import('node:crypto')
   return webcrypto.subtle as unknown as SubtleCrypto
-}
-
-export function preprocessCss(css: string): string {
-  return css
-    .replace(/\/\*[\s\S]*?\*\//g, ' ')
-    .replace(/\/\/[^\n]*/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
 }
 
 export async function hashContent(content: string): Promise<string> {

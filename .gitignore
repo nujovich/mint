@@ -38,6 +38,7 @@ poc/
 *.tgz
 mint.tokens.json
 mint-ds.cache.json
+mint-ds.tokens.json
 
 # Superpowers internal planning docs
 docs/superpowers/

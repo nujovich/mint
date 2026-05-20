@@ -5,8 +5,8 @@ export default defineConfig({
     environment: 'node',
     coverage: {
       provider: 'v8',
-      include: ['lib/**/*.mjs'],
-      exclude: ['lib/__tests__/**'],
+      include: ['lib/**/*.mjs', 'lib/**/*.ts'],
+      exclude: ['lib/__tests__/**', 'lib/types.ts'],
       thresholds: {
         lines: 80,
         functions: 80,
