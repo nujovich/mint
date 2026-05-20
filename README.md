@@ -235,6 +235,7 @@ These commands set the key only for the current shell session. To persist it, ad
 |---------|-------------|
 | `mint-ds audit <dir>` | Walk `<dir>` for `.css`, `.scss`, `.sass`, `.less`, `.html` files, audit them with Claude, and write `mint-ds.tokens.json` |
 | `mint-ds export --target <name>` | Read `mint-ds.tokens.json` and generate the chosen format |
+| `mint-ds cache --clear` | Delete the local `mint-ds.cache.json` cache file |
 | `mint-ds --help` | Show full usage |
 
 ### Audit options
@@ -244,6 +245,22 @@ These commands set the key only for the current shell session. To persist it, ad
 | `--out <file>` | Tokens output path (default: `mint-ds.tokens.json`) |
 | `--report <file>` | Also write the raw `AuditReport` JSON for inspection |
 | `--quiet` | Skip the chaos summary printout |
+| `--no-cache` | Skip the cache lookup and overwrite any existing cache entry for this CSS |
+
+### Cache
+
+`mint-ds` automatically caches audit results in `mint-ds.cache.json` (keyed by a SHA-256 hash of the preprocessed CSS). Subsequent runs on unchanged CSS skip the Claude API call entirely.
+
+```bash
+# Force a fresh audit, ignoring the cache
+mint-ds audit ./src/styles --no-cache
+
+# Inspect or clear the local cache
+mint-ds cache           # list cached entries with their timestamps
+mint-ds cache --clear   # delete mint-ds.cache.json
+```
+
+Add `mint-ds.cache.json` to `.gitignore` if you don't want to commit it.
 
 ### Export options
 

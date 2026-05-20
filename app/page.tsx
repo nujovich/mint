@@ -9,6 +9,7 @@ import ExportPanel from '@/components/ExportPanel'
 import CoffeeLoader from '@/components/CoffeeLoader'
 import StepBar from '@/components/StepBar'
 import CliPromo from '@/components/CliPromo'
+import { readAuditCache, writeAuditCache, readResolveCache, writeResolveCache, clearPlaygroundCache } from '@/lib/playground-cache'
 
 type WizardStep = 'input' | 'audit' | 'tokens'
 type PreviewTab = 'visual' | 'json' | 'export'
@@ -34,6 +35,8 @@ export default function Home() {
   const [historyHydrated, setHistoryHydrated] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [flavor, setFlavor] = useState<Flavor>('playground')
+  const [auditFromCache, setAuditFromCache] = useState(false)
+  const [resolveFromCache, setResolveFromCache] = useState(false)
   const historyRef = useRef<HTMLDivElement>(null)
 
   // Restore flavor preference from localStorage.
@@ -96,8 +99,17 @@ export default function Home() {
     setLoading(true)
     setError('')
     setCss(inputCss)
+    setAuditFromCache(false)
 
     try {
+      const cachedAudit = await readAuditCache(inputCss)
+      if (cachedAudit) {
+        setAudit(cachedAudit)
+        setStep('audit')
+        setAuditFromCache(true)
+        return
+      }
+
       const res = await fetch('/api/audit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -105,6 +117,8 @@ export default function Home() {
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
+
+      await writeAuditCache(inputCss, data.audit)
 
       const entry: AuditHistoryEntry = {
         id: Date.now().toString(),
@@ -126,8 +140,18 @@ export default function Home() {
   const handleResolve = async (decisions: UserDecisions) => {
     setLoading(true)
     setError('')
+    setResolveFromCache(false)
 
     try {
+      const cachedTokens = await readResolveCache(css, decisions)
+      if (cachedTokens) {
+        setTokens(cachedTokens)
+        setStep('tokens')
+        setPreviewTab('visual')
+        setResolveFromCache(true)
+        return
+      }
+
       const res = await fetch('/api/resolve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -135,6 +159,9 @@ export default function Home() {
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
+
+      await writeResolveCache(css, decisions, data.tokens)
+
       setTokens(data.tokens)
       setStep('tokens')
       setPreviewTab('visual')
@@ -152,11 +179,14 @@ export default function Home() {
     setError('')
     setStep('audit')
     setHistoryOpen(false)
+    setAuditFromCache(false)
+    setResolveFromCache(false)
   }
 
   const clearHistory = () => {
     setAuditHistory([])
     setHistoryOpen(false)
+    clearPlaygroundCache()
   }
 
   const reset = () => {
@@ -166,6 +196,8 @@ export default function Home() {
     setTokens(null)
     setError('')
     setHistoryOpen(false)
+    setAuditFromCache(false)
+    setResolveFromCache(false)
   }
 
   // ── Step: input ──────────────────────────────────────────────────────────────
@@ -217,6 +249,11 @@ export default function Home() {
             <span className="mint-header-detail" style={{ fontSize: 11, color: 'var(--text-faint)' }}>
               — {audit.colorClusters.length} clusters · chaos {audit.chaosScore}/10
             </span>
+            {auditFromCache && (
+              <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: 'rgba(99,102,241,0.12)', color: '#818cf8', fontWeight: 500, letterSpacing: '0.04em' }}>
+                cached
+              </span>
+            )}
           </div>
 
           {/* History button — only shown when there are multiple audits */}
@@ -350,6 +387,11 @@ export default function Home() {
             <span className="mint-header-detail" style={{ fontSize: 11, color: 'var(--text-faint)' }}>
               — {tokens.colors.length} colors · {Object.keys(tokens.spacing).length} spacing · {Object.keys(tokens.borderRadius).length} radii
             </span>
+            {resolveFromCache && (
+              <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: 'rgba(99,102,241,0.12)', color: '#818cf8', fontWeight: 500, letterSpacing: '0.04em' }}>
+                cached
+              </span>
+            )}
           </div>
 
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 16 }}>
