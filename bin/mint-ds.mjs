@@ -4,6 +4,7 @@
 
 import { promises as fs } from 'node:fs'
 import { createHash } from 'node:crypto'
+import { createRequire } from 'node:module'
 import path from 'node:path'
 import process from 'node:process'
 import {
@@ -18,7 +19,8 @@ import {
   stripFences,
 } from '../lib/prompts.mjs'
 
-const VERSION = '0.1.0'
+const require = createRequire(import.meta.url)
+const { version: VERSION } = require('../package.json')
 const SOURCE_EXTS = new Set(['.css', '.scss', '.sass', '.less', '.html', '.htm'])
 const DEFAULT_TOKENS_FILE = 'mint-ds.tokens.json'
 const CACHE_FILE = 'mint-ds.cache.json'

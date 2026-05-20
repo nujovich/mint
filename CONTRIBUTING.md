@@ -64,13 +64,67 @@ Add CSS utility classes to the `Responsive layout utilities` section at the bott
 ## Running checks
 
 ```bash
-npx tsc --noEmit   # must pass before opening a PR
+# Type-check
+npm run typecheck
+
+# Lint
+npm run lint
+
+# Tests
+npm test
+
+# Tests in watch mode (during development)
+npm run test:watch
+
+# Tests with coverage report
+npm run test:coverage
+
+# Full build (must pass before opening a PR)
+npm run build
 ```
 
-There is no test suite at this stage. Manual testing through the full wizard flow is the verification method.
+All four commands run automatically in CI on every PR. The pre-commit hook runs `npx lint-staged`, which lints staged files with `next lint --file`, before each commit.
 
 ## Opening a PR
 
 - Use the PR template — fill out all sections
 - Keep PRs focused: one logical change per PR
 - For anything that changes Claude prompts or the AuditReport/DSTokens shape, include a before/after example of the JSON output in the PR description
+
+## Commit message convention
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) so the changelog and GitHub Releases can be generated automatically.
+
+| Prefix | When to use |
+|--------|-------------|
+| `feat:` | New user-facing feature |
+| `fix:` | Bug fix |
+| `perf:` | Performance improvement |
+| `refactor:` | Code change with no behavior change |
+| `docs:` | Documentation only |
+| `chore:` | Tooling, deps, config (hidden in changelog) |
+| `test:` | Tests only (hidden in changelog) |
+| `ci:` | CI/CD changes (hidden in changelog) |
+
+Breaking changes: add `!` after the prefix or a `BREAKING CHANGE:` footer, e.g. `feat!: redesign token schema`.
+
+The `commit-msg` hook enforces this format automatically via commitlint.
+
+## Releasing a new version
+
+Maintainers run the release from the `main` branch. You need a `GITHUB_TOKEN` with write access to create the GitHub Release.
+
+```bash
+# Preview what would be released (no writes, no tags)
+npm run release:dry
+
+# Publish the release
+GITHUB_TOKEN=<your-token> npm run release
+```
+
+`release-it` will:
+1. Bump the version in `package.json` (patch / minor / major — it asks)
+2. Append the new section to `CHANGELOG.md`
+3. Commit both files with `chore: release vX.Y.Z`
+4. Create and push the git tag `vX.Y.Z`
+5. Publish a GitHub Release with the generated notes

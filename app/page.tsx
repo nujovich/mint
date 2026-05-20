@@ -14,6 +14,19 @@ type WizardStep = 'input' | 'audit' | 'tokens'
 type PreviewTab = 'visual' | 'json' | 'export'
 type Flavor = 'playground' | 'cli'
 
+function preprocessCssClient(css: string): string {
+  return css
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    .replace(/\/\/[^\n]*/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+async function hashContent(content: string): Promise<string> {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(content))
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
 interface AuditHistoryEntry {
   id: string
   brand: string
@@ -34,12 +47,15 @@ export default function Home() {
   const [historyHydrated, setHistoryHydrated] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [flavor, setFlavor] = useState<Flavor>('playground')
+  const [auditFromCache, setAuditFromCache] = useState(false)
+  const [resolveFromCache, setResolveFromCache] = useState(false)
   const historyRef = useRef<HTMLDivElement>(null)
 
   // Restore flavor preference from localStorage.
   useEffect(() => {
     try {
       const stored = localStorage.getItem('mint-flavor')
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: hydrating state from localStorage (external system) on mount to avoid SSR mismatch
       if (stored === 'playground' || stored === 'cli') setFlavor(stored)
     } catch {
       // ignore
@@ -61,6 +77,7 @@ export default function Home() {
       const raw = localStorage.getItem('mint-audit-history')
       if (raw) {
         const parsed = JSON.parse(raw)
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: hydrating state from localStorage (external system) on mount to avoid SSR mismatch
         if (Array.isArray(parsed)) setAuditHistory(parsed)
       }
     } catch {
@@ -94,8 +111,23 @@ export default function Home() {
     setLoading(true)
     setError('')
     setCss(inputCss)
+    setAuditFromCache(false)
 
     try {
+      const hash = await hashContent(preprocessCssClient(inputCss))
+      const cacheKey = `mint-audit-cache-${hash}`
+
+      try {
+        const hit = localStorage.getItem(cacheKey)
+        if (hit) {
+          const { audit: cachedAudit } = JSON.parse(hit)
+          setAudit(cachedAudit)
+          setStep('audit')
+          setAuditFromCache(true)
+          return
+        }
+      } catch { /* ignore corrupt cache */ }
+
       const res = await fetch('/api/audit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -103,6 +135,10 @@ export default function Home() {
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
+
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify({ audit: data.audit, savedAt: new Date().toISOString() }))
+      } catch { /* storage full or disabled */ }
 
       const entry: AuditHistoryEntry = {
         id: Date.now().toString(),
@@ -124,8 +160,24 @@ export default function Home() {
   const handleResolve = async (decisions: UserDecisions) => {
     setLoading(true)
     setError('')
+    setResolveFromCache(false)
 
     try {
+      const hash = await hashContent(preprocessCssClient(css) + '|' + JSON.stringify(decisions))
+      const cacheKey = `mint-resolve-cache-${hash}`
+
+      try {
+        const hit = localStorage.getItem(cacheKey)
+        if (hit) {
+          const { tokens: cachedTokens } = JSON.parse(hit)
+          setTokens(cachedTokens)
+          setStep('tokens')
+          setPreviewTab('visual')
+          setResolveFromCache(true)
+          return
+        }
+      } catch { /* ignore corrupt cache */ }
+
       const res = await fetch('/api/resolve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -133,6 +185,11 @@ export default function Home() {
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
+
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify({ tokens: data.tokens, savedAt: new Date().toISOString() }))
+      } catch { /* storage full or disabled */ }
+
       setTokens(data.tokens)
       setStep('tokens')
       setPreviewTab('visual')
@@ -150,11 +207,19 @@ export default function Home() {
     setError('')
     setStep('audit')
     setHistoryOpen(false)
+    setAuditFromCache(false)
+    setResolveFromCache(false)
   }
 
   const clearHistory = () => {
     setAuditHistory([])
     setHistoryOpen(false)
+    try {
+      const keys = Object.keys(localStorage).filter(
+        k => k.startsWith('mint-audit-cache-') || k.startsWith('mint-resolve-cache-')
+      )
+      keys.forEach(k => localStorage.removeItem(k))
+    } catch { /* ignore */ }
   }
 
   const reset = () => {
@@ -164,6 +229,8 @@ export default function Home() {
     setTokens(null)
     setError('')
     setHistoryOpen(false)
+    setAuditFromCache(false)
+    setResolveFromCache(false)
   }
 
   // ── Step: input ──────────────────────────────────────────────────────────────
@@ -215,6 +282,11 @@ export default function Home() {
             <span className="mint-header-detail" style={{ fontSize: 11, color: 'var(--text-faint)' }}>
               — {audit.colorClusters.length} clusters · chaos {audit.chaosScore}/10
             </span>
+            {auditFromCache && (
+              <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: 'rgba(99,102,241,0.12)', color: '#818cf8', fontWeight: 500, letterSpacing: '0.04em' }}>
+                cached
+              </span>
+            )}
           </div>
 
           {/* History button — only shown when there are multiple audits */}
@@ -348,6 +420,11 @@ export default function Home() {
             <span className="mint-header-detail" style={{ fontSize: 11, color: 'var(--text-faint)' }}>
               — {tokens.colors.length} colors · {Object.keys(tokens.spacing).length} spacing · {Object.keys(tokens.borderRadius).length} radii
             </span>
+            {resolveFromCache && (
+              <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: 'rgba(99,102,241,0.12)', color: '#818cf8', fontWeight: 500, letterSpacing: '0.04em' }}>
+                cached
+              </span>
+            )}
           </div>
 
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 16 }}>

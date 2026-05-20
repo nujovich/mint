@@ -33,6 +33,8 @@ export type ExportTarget =
   | 'vue-component'
   | 'svelte-component'
   | 'astro-component'
+  | 'angular-component'
+  | 'angular-legacy-component'
 
 export interface ExportConfig {
   target: ExportTarget
@@ -182,5 +184,21 @@ export const EXPORT_TARGETS: ExportConfig[] = [
     ext: 'astro',
     category: 'Components',
     description: '.astro components with typed props and scoped CSS',
+  },
+  {
+    target: 'angular-component',
+    label: 'Angular',
+    filename: 'components',
+    ext: 'ts',
+    category: 'Components',
+    description: 'Standalone components + signal inputs',
+  },
+  {
+    target: 'angular-legacy-component',
+    label: 'Angular (Legacy)',
+    filename: 'components.module',
+    ext: 'ts',
+    category: 'Components',
+    description: 'Classic @NgModule with @Input/@Output decorators',
   },
 ]

@@ -17,6 +17,9 @@ tsconfig.tsbuildinfo
 dist/
 build/
 
+# Test coverage
+coverage/
+
 # Logs
 *.log
 npm-debug.log*
@@ -35,3 +38,6 @@ poc/
 *.tgz
 mint.tokens.json
 mint-ds.cache.json
+
+# Superpowers internal planning docs
+docs/superpowers/
