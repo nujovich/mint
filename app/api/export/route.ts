@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import type { DSTokens, ExportTarget } from '@/lib/types'
-import { buildExportPrompt, callAnthropic, stripFences } from '@/lib/prompts.mjs'
+import { buildExportPrompt } from '@/lib/prompts.mjs'
+import { getCssAuditor } from '@/lib/css-auditor.mjs'
+
 
 export async function POST(req: NextRequest) {
   const { tokens, target }: { tokens: DSTokens; target: ExportTarget } = await req.json()
@@ -11,14 +13,12 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const text = await callAnthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
-      prompt,
-      maxTokens: 6000,
-    })
-    return NextResponse.json({ code: stripFences(text) })
+    const cssAuditor = getCssAuditor()
+    const exportResult = await cssAuditor.export(prompt)
+    return NextResponse.json({ exportResult })
   } catch (err) {
-    console.error('Export error:', err)
-    return NextResponse.json({ error: 'Error generating export' }, { status: 500 })
+    const errorMsg = 'Error exporting result'
+    console.error(errorMsg, err)
+    return NextResponse.json({ error: errorMsg }, { status: 500 })
   }
 }

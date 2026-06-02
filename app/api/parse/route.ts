@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getCssAuditor } from '@/lib/css-auditor.mjs'
+
 
 export async function POST(req: NextRequest) {
   const { html } = await req.json()
@@ -53,28 +55,12 @@ Rules:
 - Keep color names semantic (primary, secondary, accent, background, surface, text, muted, etc.)`
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY!,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 4000,
-        messages: [{ role: 'user', content: prompt }],
-      }),
-    })
-
-    const data = await res.json()
-    const raw: string = data.content?.find((b: { type: string }) => b.type === 'text')?.text ?? ''
-    const clean = raw.replace(/^```json\n?/m, '').replace(/\n?```$/m, '').trim()
-    const tokens = JSON.parse(clean)
-
-    return NextResponse.json({ tokens })
+    const cssAuditor = getCssAuditor()
+    const parseResult = await cssAuditor.parse(prompt)
+    return NextResponse.json({ parseResult })
   } catch (err) {
-    console.error('Parse error:', err)
-    return NextResponse.json({ error: 'Error al parsear el HTML' }, { status: 500 })
+    const errorMsg = 'Error parsing result'
+    console.error(errorMsg, err)
+    return NextResponse.json({ error: errorMsg }, { status: 500 })
   }
 }

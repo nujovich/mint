@@ -15,9 +15,9 @@ import {
   EXPORT_OUTPUT,
   ADVERTISED_TARGETS,
   resolveTarget,
-  callAnthropic,
-  stripFences,
 } from '../lib/prompts.mjs'
+import { getCssAuditor } from '../lib/css-auditor.mjs'
+
 
 const require = createRequire(import.meta.url)
 const { version: VERSION } = require('../package.json')
@@ -116,18 +116,6 @@ function parseFlags(argv) {
     }
   }
   return { flags, rest }
-}
-
-const API_KEY_HELP =
-  'ANTHROPIC_API_KEY is required. Set it in your environment or pass --api-key <value>.\n' +
-  '  macOS/Linux:  export ANTHROPIC_API_KEY=sk-ant-...\n' +
-  '  PowerShell:   $env:ANTHROPIC_API_KEY = "sk-ant-..."\n' +
-  '  Windows CMD:  set ANTHROPIC_API_KEY=sk-ant-...\n' +
-  '  Get a key at https://console.anthropic.com'
-
-function resolveApiKey(flags) {
-  const fromFlag = typeof flags['api-key'] === 'string' ? flags['api-key'] : null
-  return fromFlag || process.env.ANTHROPIC_API_KEY || null
 }
 
 async function* walk(dir) {
@@ -232,34 +220,21 @@ async function cmdAudit(argv) {
     }
   }
 
-  const apiKey = resolveApiKey(flags)
-  if (!apiKey) die(API_KEY_HELP)
-
-  log(styles.cyan('→') + ' Auditing with Claude…')
-  const auditText = await callAnthropic({ apiKey, prompt: buildAuditPrompt(css), maxTokens: 3000 })
-  let audit
-  try {
-    audit = JSON.parse(stripFences(auditText))
-  } catch {
-    die('Could not parse audit JSON from Claude response')
-  }
+  const cssAuditor = getCssAuditor(flags)
+  log(styles.cyan('→') + ' Auditing CSS...')
+  const audit = await cssAuditor.audit(buildAuditPrompt(css))
 
   if (reportFile) {
     await fs.writeFile(reportFile, JSON.stringify(audit, null, 2) + '\n', 'utf8')
     log(styles.dim(`  audit report → ${reportFile}`))
   }
 
-  log(styles.cyan('→') + ' Resolving tokens…')
-  const tokensText = await callAnthropic({
-    apiKey,
-    prompt: buildResolvePrompt(css, defaultDecisions(audit)),
-    maxTokens: 4000,
-  })
+  log(styles.cyan('→') + ' Processing results...')
   let tokens
   try {
-    tokens = JSON.parse(stripFences(tokensText))
+    tokens = await cssAuditor.parse(buildResolvePrompt(css, defaultDecisions(audit)))
   } catch {
-    die('Could not parse tokens JSON from Claude response')
+    die('Error parsing response')
   }
 
   if (!noCache) {
@@ -310,9 +285,6 @@ async function cmdExport(argv) {
     die(`Unknown --target "${targetInput}". Try one of: ${ADVERTISED_TARGETS.join(', ')}`)
   }
 
-  const apiKey = resolveApiKey(flags)
-  if (!apiKey) die(API_KEY_HELP)
-
   const tokensPath = String(flags.tokens || DEFAULT_TOKENS_FILE)
   const tokensRaw = await fs.readFile(tokensPath, 'utf8').catch(() => null)
   if (tokensRaw === null) {
@@ -327,9 +299,8 @@ async function cmdExport(argv) {
   }
 
   log(styles.cyan('→') + ` Generating ${styles.bold(target)}…`)
-  const code = stripFences(
-    await callAnthropic({ apiKey, prompt: buildExportPrompt(tokens, target), maxTokens: 6000 })
-  )
+  const cssAuditor = getCssAuditor(flags)
+  const code = await cssAuditor.export(buildExportPrompt(tokens, target))
 
   if (flags.stdout) {
     process.stdout.write(code + '\n')

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { AUDIT_SYSTEM_PROMPT, buildAuditPrompt, callAnthropic, stripFences } from '@/lib/prompts.mjs'
+import { buildAuditPrompt } from '@/lib/prompts.mjs'
+import { getCssAuditor } from '@/lib/css-auditor.mjs'
+
 
 export async function POST(req: NextRequest) {
   const { css } = await req.json()
@@ -9,16 +11,12 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const text = await callAnthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
-      system: AUDIT_SYSTEM_PROMPT,
-      prompt: buildAuditPrompt(css),
-      maxTokens: 3000,
-    })
-    const audit = JSON.parse(stripFences(text))
-    return NextResponse.json({ audit })
+    const cssAuditor = getCssAuditor()
+    const auditResult = await cssAuditor.audit(buildAuditPrompt(css))
+    return NextResponse.json({ auditResult })
   } catch (err) {
-    console.error('Audit error:', err)
-    return NextResponse.json({ error: 'Error auditing CSS' }, { status: 500 })
+    const errorMsg = 'Error auditing CSS'
+    console.error(errorMsg, err)
+    return NextResponse.json({ error: errorMsg }, { status: 500 })
   }
 }
