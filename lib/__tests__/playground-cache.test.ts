@@ -56,6 +56,7 @@ const AUDIT: AuditReport = {
   colorClusters: [],
   fonts: [],
   spacing: { found: [], suggestedScale: {}, nonScaleValues: [] },
+  lineHeights: { found: [], suggestedScale: {}, unitlessMix: false },
 }
 
 const TOKENS: DSTokens = {
@@ -71,6 +72,7 @@ const DECISIONS: UserDecisions = {
   colors: [{ clusterId: 'c1', name: 'primary', value: '#6366f1', include: true }],
   fonts: ['Inter'],
   spacingScale: { '1': '4px', '2': '8px' },
+  lineHeights: {},
 }
 
 const CSS = 'body { color: #6366f1; font-size: 16px; }'

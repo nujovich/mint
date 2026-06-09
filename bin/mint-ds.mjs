@@ -182,6 +182,7 @@ function defaultDecisions(audit) {
     })),
     fonts: (audit.fonts || []).filter((f) => !f.isSystemFont).map((f) => f.family),
     spacingScale: audit.spacing?.suggestedScale || {},
+    lineHeights: audit.lineHeights?.suggestedScale || {},
   }
 }
 

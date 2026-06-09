@@ -35,6 +35,7 @@ export default function AuditView({ audit, onResolve }: Props) {
   )
 
   const spacingScale = audit.spacing.suggestedScale
+  const lineHeights = audit.lineHeights?.suggestedScale ?? {}
 
   const chaosColor =
     audit.chaosScore <= 3 ? '#4ade80' : audit.chaosScore <= 6 ? '#fbbf24' : '#f87171'
@@ -46,7 +47,7 @@ export default function AuditView({ audit, onResolve }: Props) {
   }
 
   const handleResolve = () => {
-    onResolve({ colors: colorDecisions, fonts: fontDecisions, spacingScale })
+    onResolve({ colors: colorDecisions, fonts: fontDecisions, spacingScale, lineHeights })
   }
 
   const includedColors = colorDecisions.filter((d) => d.include).length

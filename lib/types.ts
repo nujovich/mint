@@ -72,6 +72,12 @@ export interface SpacingAudit {
   nonScaleValues: string[]
 }
 
+export interface LineHeightAudit {
+  found: string[]
+  suggestedScale: Record<string, string | number>
+  unitlessMix: boolean
+}
+
 export interface AuditReport {
   brand: string
   chaosScore: number
@@ -79,6 +85,7 @@ export interface AuditReport {
   colorClusters: ColorCluster[]
   fonts: FontEntry[]
   spacing: SpacingAudit
+  lineHeights: LineHeightAudit
 }
 
 export interface ColorDecision {
@@ -92,6 +99,7 @@ export interface UserDecisions {
   colors: ColorDecision[]
   fonts: string[]
   spacingScale: Record<string, string>
+  lineHeights: Record<string, string | number>
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
