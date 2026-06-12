@@ -102,6 +102,28 @@ export interface UserDecisions {
   lineHeights: Record<string, string | number>
 }
 
+// ─── LLM provider configuration ───────────────────────────────────────────────
+
+export interface ProviderDefaults {
+  url: string
+  model: string
+  maxTokens: { audit: number; parse: number; export: number }
+}
+
+export interface AnthropicConfig extends ProviderDefaults {
+  name: 'anthropic'
+  apiKey?: string
+  version: string
+}
+
+export interface OllamaConfig extends ProviderDefaults {
+  name: 'ollama'
+  apiKey?: string
+}
+
+export type LlmConfig = AnthropicConfig | OllamaConfig
+export type LlmProviderName = LlmConfig['name']
+
 // ──────────────────────────────────────────────────────────────────────────────
 
 export const EXPORT_TARGETS: ExportConfig[] = [
