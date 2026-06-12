@@ -229,6 +229,25 @@ These commands set the key only for the current shell session. To persist it, ad
 
 `--api-key` always wins over the env var when both are present. Get a key at [console.anthropic.com](https://console.anthropic.com).
 
+### LLM provider
+
+Mint talks to an LLM for audit, resolve, and export. By default it uses Anthropic Claude; you can swap to a local backend with `--provider`.
+
+| Value | Description |
+|-------|-------------|
+| `anthropic` (default) | Anthropic Claude API. Uses `API_KEY` / `--api-key`. Default model `claude-sonnet-4-20250514`. |
+| `ollama` | Local Ollama server. No API key required. Defaults to `http://localhost:11434/api/chat`, model `gemma4`. |
+
+```bash
+# Run the audit against a local Ollama instance
+npx mint-ds audit ./src/styles --provider ollama
+
+# Generate exports with a local LLM
+npx mint-ds export --target tailwind --provider ollama
+```
+
+`--provider` works on both `audit` and `export`. Passing an unknown name exits with `Unsupported LLM provider: <name>`.
+
 ### All commands
 
 | Command | Description |
@@ -244,6 +263,7 @@ These commands set the key only for the current shell session. To persist it, ad
 |------|-------------|
 | `--out <file>` | Tokens output path (default: `mint-ds.tokens.json`) |
 | `--report <file>` | Also write the raw `AuditReport` JSON for inspection |
+| `--provider <name>` | LLM backend: `anthropic` (default) or `ollama` |
 | `--quiet` | Skip the chaos summary printout |
 | `--no-cache` | Skip the cache lookup and overwrite any existing cache entry for this CSS |
 
@@ -269,6 +289,7 @@ Add `mint-ds.cache.json` to `.gitignore` if you don't want to commit it.
 | `--target <name>` | **Required.** Accepts: `tailwind`, `react`, `vue`, `svelte`, `astro`, `css`, `scss`, `ts`, `css-modules`, `styled`, `emotion` (full names like `tailwind-config`, `react-component` also work) |
 | `--tokens <file>` | Tokens input path (default: `mint-ds.tokens.json`) |
 | `--out <file>` | Override the default output filename |
+| `--provider <name>` | LLM backend: `anthropic` (default) or `ollama` |
 | `--stdout` | Print to stdout instead of writing a file |
 
 ### Local development without publishing
@@ -280,6 +301,8 @@ git clone https://github.com/nujovich/mint.git && cd mint
 export API_KEY=sk-ant-...
 node bin/mint-ds.mjs audit ./examples/site
 node bin/mint-ds.mjs export --target tailwind
+# or use a local LLM via Ollama — no API key needed
+node bin/mint-ds.mjs audit ./examples/site --provider ollama
 # or `npm link` to expose `mint-ds` globally for testing.
 ```
 
@@ -296,7 +319,7 @@ node bin/mint-ds.mjs export --target tailwind
 - [Next.js 15](https://nextjs.org/) — App Router, API routes
 - [React 18](https://react.dev/) — Client components
 - [TypeScript](https://www.typescriptlang.org/)
-- [Claude API](https://docs.anthropic.com/) — `claude-sonnet-4-20250514` for audit, resolve, and export generation
+- [Claude API](https://docs.anthropic.com/) — `claude-sonnet-4-20250514` for audit, resolve, and export generation by default; [Ollama](https://ollama.com/) is also supported as an alternative local backend via `--provider ollama`
 
 ## Getting started
 
