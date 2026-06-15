@@ -18,10 +18,16 @@ import {
 } from '../lib/prompts.mjs'
 import { getCssAuditor } from '../lib/css-auditor.mjs'
 
-
 const require = createRequire(import.meta.url)
 const { version: VERSION } = require('../package.json')
-const SOURCE_EXTS = new Set(['.css', '.scss', '.sass', '.less', '.html', '.htm'])
+const SOURCE_EXTS = new Set([
+  '.css',
+  '.scss',
+  '.sass',
+  '.less',
+  '.html',
+  '.htm',
+])
 const DEFAULT_TOKENS_FILE = 'mint-ds.tokens.json'
 const CACHE_FILE = 'mint-ds.cache.json'
 const MAX_CSS_CHARS = 120_000
@@ -52,14 +58,25 @@ const styles = process.stdout.isTTY
       red: (s) => `\x1b[31m${s}\x1b[0m`,
     }
   : {
-      dim: (s) => s, bold: (s) => s, cyan: (s) => s, green: (s) => s, yellow: (s) => s, red: (s) => s,
+      dim: (s) => s,
+      bold: (s) => s,
+      cyan: (s) => s,
+      green: (s) => s,
+      yellow: (s) => s,
+      red: (s) => s,
     }
 
-function log(...args) { process.stderr.write(args.join(' ') + '\n') }
-function die(msg, code = 1) { log(styles.red('✗ ' + msg)); process.exit(code) }
+function log(...args) {
+  process.stderr.write(args.join(' ') + '\n')
+}
+function die(msg, code = 1) {
+  log(styles.red('✗ ' + msg))
+  process.exit(code)
+}
 
 function printHelp() {
-  process.stdout.write(`${styles.bold('mint-ds')} — CSS audit & design system generator (v${VERSION})
+  process.stdout
+    .write(`${styles.bold('mint-ds')} — CSS audit & design system generator (v${VERSION})
 
 ${styles.bold('USAGE')}
   npx mint-ds <command> [options]
@@ -130,11 +147,19 @@ async function* walk(dir) {
     throw err
   }
   for (const entry of entries) {
-    if (entry.name.startsWith('.') || entry.name === 'node_modules' || entry.name === 'dist') continue
+    if (
+      entry.name.startsWith('.') ||
+      entry.name === 'node_modules' ||
+      entry.name === 'dist'
+    )
+      continue
     const full = path.join(dir, entry.name)
     if (entry.isDirectory()) {
       yield* walk(full)
-    } else if (entry.isFile() && SOURCE_EXTS.has(path.extname(entry.name).toLowerCase())) {
+    } else if (
+      entry.isFile() &&
+      SOURCE_EXTS.has(path.extname(entry.name).toLowerCase())
+    ) {
       yield full
     }
   }
@@ -148,7 +173,9 @@ async function collectSources(target) {
   const files = []
   if (stat.isFile()) {
     if (!SOURCE_EXTS.has(path.extname(root).toLowerCase())) {
-      die(`Unsupported file type: ${target} (expected .css/.scss/.sass/.less/.html)`)
+      die(
+        `Unsupported file type: ${target} (expected .css/.scss/.sass/.less/.html)`
+      )
     }
     files.push(root)
   } else {
@@ -164,7 +191,11 @@ async function collectSources(target) {
     const body = await fs.readFile(file, 'utf8')
     const chunk = `/* === ${rel} === */\n${body}\n\n`
     if (combined.length + chunk.length > MAX_CSS_CHARS) {
-      log(styles.yellow(`! Reached ${MAX_CSS_CHARS} char budget — skipping remaining files (${files.length - files.indexOf(file)} left)`))
+      log(
+        styles.yellow(
+          `! Reached ${MAX_CSS_CHARS} char budget — skipping remaining files (${files.length - files.indexOf(file)} left)`
+        )
+      )
       break
     }
     combined += chunk
@@ -180,7 +211,9 @@ function defaultDecisions(audit) {
       value: c.representative,
       include: true,
     })),
-    fonts: (audit.fonts || []).filter((f) => !f.isSystemFont).map((f) => f.family),
+    fonts: (audit.fonts || [])
+      .filter((f) => !f.isSystemFont)
+      .map((f) => f.family),
     spacingScale: audit.spacing?.suggestedScale || {},
     lineHeights: audit.lineHeights?.suggestedScale || {},
   }
@@ -204,7 +237,11 @@ async function cmdAudit(argv) {
 
   log(styles.cyan('→') + ` Reading sources from ${styles.bold(target)}…`)
   const { files, css } = await collectSources(target)
-  log(styles.dim(`  ${files.length} file(s), ${(css.length / 1000).toFixed(1)}k chars`))
+  log(
+    styles.dim(
+      `  ${files.length} file(s), ${(css.length / 1000).toFixed(1)}k chars`
+    )
+  )
 
   const processedCss = preprocessCss(css)
   const cssHash = hashCss(processedCss)
@@ -213,9 +250,16 @@ async function cmdAudit(argv) {
     const cache = await readCache()
     if (cache[cssHash]) {
       const { tokens } = cache[cssHash]
-      await fs.writeFile(outFile, JSON.stringify(tokens, null, 2) + '\n', 'utf8')
+      await fs.writeFile(
+        outFile,
+        JSON.stringify(tokens, null, 2) + '\n',
+        'utf8'
+      )
       log(styles.dim(`  cache hit (${cssHash.slice(0, 8)}…)`))
-      log(styles.green('✓') + ` Tokens written to ${styles.bold(outFile)} (from cache)`)
+      log(
+        styles.green('✓') +
+          ` Tokens written to ${styles.bold(outFile)} (from cache)`
+      )
       log(styles.dim(`  next: npx mint-ds export --target tailwind`))
       return
     }
@@ -226,14 +270,20 @@ async function cmdAudit(argv) {
   const audit = await cssAuditor.audit(buildAuditPrompt(css))
 
   if (reportFile) {
-    await fs.writeFile(reportFile, JSON.stringify(audit, null, 2) + '\n', 'utf8')
+    await fs.writeFile(
+      reportFile,
+      JSON.stringify(audit, null, 2) + '\n',
+      'utf8'
+    )
     log(styles.dim(`  audit report → ${reportFile}`))
   }
 
   log(styles.cyan('→') + ' Processing results...')
   let tokens
   try {
-    tokens = await cssAuditor.parse(buildResolvePrompt(css, defaultDecisions(audit)))
+    tokens = await cssAuditor.parse(
+      buildResolvePrompt(css, defaultDecisions(audit))
+    )
   } catch {
     die('Error parsing response')
   }
@@ -248,9 +298,16 @@ async function cmdAudit(argv) {
 
   if (!quiet) {
     log('')
-    log(styles.bold(audit.brand || 'Audit') + styles.dim(`  ·  chaos ${chaosBadge(audit.chaosScore)}`))
+    log(
+      styles.bold(audit.brand || 'Audit') +
+        styles.dim(`  ·  chaos ${chaosBadge(audit.chaosScore)}`)
+    )
     if (audit.summary) log(styles.dim('  ' + audit.summary))
-    log(styles.dim(`  ${audit.colorClusters?.length ?? 0} clusters · ${audit.fonts?.length ?? 0} fonts · ${audit.spacing?.found?.length ?? 0} spacing values`))
+    log(
+      styles.dim(
+        `  ${audit.colorClusters?.length ?? 0} clusters · ${audit.fonts?.length ?? 0} fonts · ${audit.spacing?.found?.length ?? 0} spacing values`
+      )
+    )
     log('')
   }
   log(styles.green('✓') + ` Tokens written to ${styles.bold(outFile)}`)
@@ -270,7 +327,11 @@ async function cmdCache(argv) {
     } else {
       log(styles.bold(`${entries.length} cached audit(s):`))
       for (const hash of entries) {
-        log(styles.dim(`  ${hash.slice(0, 8)}…  saved ${cache[hash].savedAt ?? 'unknown'}`))
+        log(
+          styles.dim(
+            `  ${hash.slice(0, 8)}…  saved ${cache[hash].savedAt ?? 'unknown'}`
+          )
+        )
       }
     }
   }
@@ -279,17 +340,22 @@ async function cmdCache(argv) {
 async function cmdExport(argv) {
   const { flags } = parseFlags(argv)
   const targetInput = flags.target
-  if (!targetInput || targetInput === true) die('Usage: mint-ds export --target <name>  (e.g. tailwind, react, css)')
+  if (!targetInput || targetInput === true)
+    die('Usage: mint-ds export --target <name>  (e.g. tailwind, react, css)')
 
   const target = resolveTarget(String(targetInput))
   if (!target) {
-    die(`Unknown --target "${targetInput}". Try one of: ${ADVERTISED_TARGETS.join(', ')}`)
+    die(
+      `Unknown --target "${targetInput}". Try one of: ${ADVERTISED_TARGETS.join(', ')}`
+    )
   }
 
   const tokensPath = String(flags.tokens || DEFAULT_TOKENS_FILE)
   const tokensRaw = await fs.readFile(tokensPath, 'utf8').catch(() => null)
   if (tokensRaw === null) {
-    die(`Tokens file not found: ${tokensPath}\n  Run "mint-ds audit <dir>" first, or pass --tokens <file>.`)
+    die(
+      `Tokens file not found: ${tokensPath}\n  Run "mint-ds audit <dir>" first, or pass --tokens <file>.`
+    )
   }
 
   let tokens
@@ -309,11 +375,12 @@ async function cmdExport(argv) {
   }
 
   const meta = EXPORT_OUTPUT[target]
-  const outFile = flags.out
-    ? String(flags.out)
-    : `${meta.filename}.${meta.ext}`
+  const outFile = flags.out ? String(flags.out) : `${meta.filename}.${meta.ext}`
   await fs.writeFile(outFile, code + '\n', 'utf8')
-  log(styles.green('✓') + ` Wrote ${styles.bold(outFile)} (${(code.length / 1000).toFixed(1)}k chars)`)
+  log(
+    styles.green('✓') +
+      ` Wrote ${styles.bold(outFile)} (${(code.length / 1000).toFixed(1)}k chars)`
+  )
 }
 
 async function main() {
@@ -332,7 +399,10 @@ async function main() {
     if (cmd === 'audit') await cmdAudit(rest)
     else if (cmd === 'export') await cmdExport(rest)
     else if (cmd === 'cache') await cmdCache(rest)
-    else { printHelp(); die(`Unknown command: ${cmd}`) }
+    else {
+      printHelp()
+      die(`Unknown command: ${cmd}`)
+    }
   } catch (err) {
     die(err && err.message ? err.message : String(err))
   }

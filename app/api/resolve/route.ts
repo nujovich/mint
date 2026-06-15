@@ -4,10 +4,14 @@ import { buildResolvePrompt } from '@/lib/prompts.mjs'
 import { getCssAuditor } from '@/lib/css-auditor.mjs'
 
 export async function POST(req: NextRequest) {
-  const { css, decisions }: { css: string; decisions: UserDecisions } = await req.json()
+  const { css, decisions }: { css: string; decisions: UserDecisions } =
+    await req.json()
 
   if (!css || !decisions) {
-    return NextResponse.json({ error: 'CSS and decisions required' }, { status: 400 })
+    return NextResponse.json(
+      { error: 'CSS and decisions required' },
+      { status: 400 }
+    )
   }
 
   try {

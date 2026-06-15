@@ -62,14 +62,21 @@ const AUDIT: AuditReport = {
 const TOKENS: DSTokens = {
   brand: 'TestBrand',
   colors: [],
-  typography: { fontFamilies: {}, fontSizes: {}, fontWeights: {}, lineHeights: {} },
+  typography: {
+    fontFamilies: {},
+    fontSizes: {},
+    fontWeights: {},
+    lineHeights: {},
+  },
   spacing: {},
   borderRadius: {},
   shadows: {},
 }
 
 const DECISIONS: UserDecisions = {
-  colors: [{ clusterId: 'c1', name: 'primary', value: '#6366f1', include: true }],
+  colors: [
+    { clusterId: 'c1', name: 'primary', value: '#6366f1', include: true },
+  ],
   fonts: ['Inter'],
   spacingScale: { '1': '4px', '2': '8px' },
   lineHeights: {},
@@ -81,19 +88,27 @@ const CSS = 'body { color: #6366f1; font-size: 16px; }'
 
 describe('preprocessCss', () => {
   it('strips block comments', () => {
-    expect(preprocessCss('/* comment */ body { color: red; }')).toBe('body { color: red; }')
+    expect(preprocessCss('/* comment */ body { color: red; }')).toBe(
+      'body { color: red; }'
+    )
   })
 
   it('strips line comments', () => {
-    expect(preprocessCss('// comment\nbody { color: red; }')).toBe('body { color: red; }')
+    expect(preprocessCss('// comment\nbody { color: red; }')).toBe(
+      'body { color: red; }'
+    )
   })
 
   it('collapses multiple whitespace into a single space', () => {
-    expect(preprocessCss('body  {   color:   red;   }')).toBe('body { color: red; }')
+    expect(preprocessCss('body  {   color:   red;   }')).toBe(
+      'body { color: red; }'
+    )
   })
 
   it('trims leading and trailing whitespace', () => {
-    expect(preprocessCss('  body { color: red; }  ')).toBe('body { color: red; }')
+    expect(preprocessCss('  body { color: red; }  ')).toBe(
+      'body { color: red; }'
+    )
   })
 })
 

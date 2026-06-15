@@ -3,9 +3,9 @@ import type { DSTokens, ExportTarget } from '@/lib/types'
 import { buildExportPrompt } from '@/lib/prompts.mjs'
 import { getCssAuditor } from '@/lib/css-auditor.mjs'
 
-
 export async function POST(req: NextRequest) {
-  const { tokens, target }: { tokens: DSTokens; target: ExportTarget } = await req.json()
+  const { tokens, target }: { tokens: DSTokens; target: ExportTarget } =
+    await req.json()
 
   const prompt = buildExportPrompt(tokens, target)
   if (!prompt) {

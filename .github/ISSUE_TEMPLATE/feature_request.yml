@@ -1,7 +1,7 @@
 name: Feature request
 description: Propose a new export target, CLI flag, playground improvement, or other enhancement
-title: "[Feature]: "
-labels: ["enhancement", "needs-triage"]
+title: '[Feature]: '
+labels: ['enhancement', 'needs-triage']
 body:
   - type: markdown
     attributes:

@@ -19,10 +19,10 @@ Mint is a Next.js 15 app with three API routes and a single-page wizard UI.
 
 **The wizard has three steps:**
 
-| Step | Component | API call |
-|------|-----------|----------|
-| 1 — Input | `CssInput.tsx` | — |
-| 2 — Audit | `AuditView.tsx` | `POST /api/audit` |
+| Step       | Component                      | API call                                |
+| ---------- | ------------------------------ | --------------------------------------- |
+| 1 — Input  | `CssInput.tsx`                 | —                                       |
+| 2 — Audit  | `AuditView.tsx`                | `POST /api/audit`                       |
 | 3 — Tokens | `TokenPreview` + `ExportPanel` | `POST /api/resolve`, `POST /api/export` |
 
 **State machine lives in `app/page.tsx`** as a `WizardStep` union (`'input' | 'audit' | 'tokens'`). All API calls go through `handleAudit` and `handleResolve` there.
@@ -43,6 +43,7 @@ Mint is a Next.js 15 app with three API routes and a single-page wizard UI.
 ### Modifying Claude prompts
 
 All three prompts live in their respective route files:
+
 - `app/api/audit/route.ts` — CSS analysis prompt
 - `app/api/resolve/route.ts` — token generation prompt
 - `app/api/export/route.ts` — code generation prompt (one case per target)
@@ -57,7 +58,7 @@ Add CSS utility classes to the `Responsive layout utilities` section at the bott
 
 - **Language** — all user-facing strings must be English
 - **Types** — no `any`, no implicit `any`. Extend `lib/types.ts` for new shapes
-- **Comments** — only when the *why* is non-obvious. No docstrings, no task references
+- **Comments** — only when the _why_ is non-obvious. No docstrings, no task references
 - **Inline styles vs CSS** — use CSS classes for layout (grid, flex, padding breakpoints), inline styles for dynamic/token-driven values
 - **No new dependencies** without discussion — the current stack is intentionally minimal
 
@@ -95,16 +96,16 @@ All four commands run automatically in CI on every PR. The pre-commit hook runs 
 
 This project uses [Conventional Commits](https://www.conventionalcommits.org/) so the changelog and GitHub Releases can be generated automatically.
 
-| Prefix | When to use |
-|--------|-------------|
-| `feat:` | New user-facing feature |
-| `fix:` | Bug fix |
-| `perf:` | Performance improvement |
-| `refactor:` | Code change with no behavior change |
-| `docs:` | Documentation only |
-| `chore:` | Tooling, deps, config (hidden in changelog) |
-| `test:` | Tests only (hidden in changelog) |
-| `ci:` | CI/CD changes (hidden in changelog) |
+| Prefix      | When to use                                 |
+| ----------- | ------------------------------------------- |
+| `feat:`     | New user-facing feature                     |
+| `fix:`      | Bug fix                                     |
+| `perf:`     | Performance improvement                     |
+| `refactor:` | Code change with no behavior change         |
+| `docs:`     | Documentation only                          |
+| `chore:`    | Tooling, deps, config (hidden in changelog) |
+| `test:`     | Tests only (hidden in changelog)            |
+| `ci:`       | CI/CD changes (hidden in changelog)         |
 
 Breaking changes: add `!` after the prefix or a `BREAKING CHANGE:` footer, e.g. `feat!: redesign token schema`.
 
@@ -123,6 +124,7 @@ GITHUB_TOKEN=<your-token> npm run release
 ```
 
 `release-it` will:
+
 1. Bump the version in `package.json` (patch / minor / major — it asks)
 2. Append the new section to `CHANGELOG.md`
 3. Commit both files with `chore: release vX.Y.Z`

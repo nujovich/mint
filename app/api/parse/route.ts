@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCssAuditor } from '@/lib/css-auditor.mjs'
 
-
 export async function POST(req: NextRequest) {
   const { html } = await req.json()
 

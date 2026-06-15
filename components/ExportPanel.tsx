@@ -54,7 +54,12 @@ export default function ExportPanel({ tokens }: Props) {
     } catch (err) {
       setExports((prev) => ({
         ...prev,
-        [target]: { target, code: '', loading: false, error: (err as Error).message },
+        [target]: {
+          target,
+          code: '',
+          loading: false,
+          error: (err as Error).message,
+        },
       }))
     }
   }
@@ -74,7 +79,16 @@ export default function ExportPanel({ tokens }: Props) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
         {grouped.map(({ category, targets }) => (
           <div key={category}>
-            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', color: 'var(--text-faint)', textTransform: 'uppercase', marginBottom: 12 }}>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: '0.08em',
+                color: 'var(--text-faint)',
+                textTransform: 'uppercase',
+                marginBottom: 12,
+              }}
+            >
               {category}
             </div>
             <div className="mint-export-grid">
@@ -95,7 +109,11 @@ export default function ExportPanel({ tokens }: Props) {
                       padding: '12px 16px',
                       borderRadius: 10,
                       border: `1px solid ${isActive ? 'rgba(99,102,241,0.45)' : isDone ? 'rgba(74,222,128,0.25)' : 'var(--border)'}`,
-                      background: isActive ? 'rgba(99,102,241,0.09)' : isDone ? 'rgba(74,222,128,0.05)' : 'var(--surface)',
+                      background: isActive
+                        ? 'rgba(99,102,241,0.09)'
+                        : isDone
+                          ? 'rgba(74,222,128,0.05)'
+                          : 'var(--surface)',
                       color: 'var(--text)',
                       textAlign: 'left',
                       fontFamily: 'var(--font)',
@@ -104,43 +122,118 @@ export default function ExportPanel({ tokens }: Props) {
                     }}
                     onMouseEnter={(e) => {
                       if (!isActive) {
-                        (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-hover)'
-                        ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--surface-2)'
+                        ;(
+                          e.currentTarget as HTMLButtonElement
+                        ).style.borderColor = 'var(--border-hover)'
+                        ;(
+                          e.currentTarget as HTMLButtonElement
+                        ).style.background = 'var(--surface-2)'
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!isActive) {
-                        const border = isDone ? 'rgba(74,222,128,0.25)' : 'var(--border)'
-                        const bg = isDone ? 'rgba(74,222,128,0.05)' : 'var(--surface)'
-                        ;(e.currentTarget as HTMLButtonElement).style.borderColor = border
-                        ;(e.currentTarget as HTMLButtonElement).style.background = bg
+                        const border = isDone
+                          ? 'rgba(74,222,128,0.25)'
+                          : 'var(--border)'
+                        const bg = isDone
+                          ? 'rgba(74,222,128,0.05)'
+                          : 'var(--surface)'
+                        ;(
+                          e.currentTarget as HTMLButtonElement
+                        ).style.borderColor = border
+                        ;(
+                          e.currentTarget as HTMLButtonElement
+                        ).style.background = bg
                       }
                     }}
                   >
                     {/* Status dot */}
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: isDone ? '#4ade80' : isLoading ? '#fbbf24' : 'var(--text-faint)', transition: 'background 0.2s' }} />
+                    <div
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        flexShrink: 0,
+                        background: isDone
+                          ? '#4ade80'
+                          : isLoading
+                            ? '#fbbf24'
+                            : 'var(--text-faint)',
+                        transition: 'background 0.2s',
+                      }}
+                    />
 
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 2 }}>{cfg.label}</div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{cfg.description}</div>
+                      <div
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 500,
+                          marginBottom: 2,
+                        }}
+                      >
+                        {cfg.label}
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                        {cfg.description}
+                      </div>
                     </div>
 
                     {/* Ext badge */}
-                    <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 5, background: 'var(--surface-2)', color: 'var(--text-faint)', fontFamily: 'var(--mono)', flexShrink: 0, border: '1px solid var(--border)' }}>
+                    <span
+                      style={{
+                        fontSize: 10,
+                        padding: '2px 8px',
+                        borderRadius: 5,
+                        background: 'var(--surface-2)',
+                        color: 'var(--text-faint)',
+                        fontFamily: 'var(--mono)',
+                        flexShrink: 0,
+                        border: '1px solid var(--border)',
+                      }}
+                    >
                       .{cfg.ext}
                     </span>
 
                     {/* State icon */}
                     {isLoading ? (
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2" style={{ animation: 'spin 1s linear infinite', flexShrink: 0 }}>
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#fbbf24"
+                        strokeWidth="2"
+                        style={{
+                          animation: 'spin 1s linear infinite',
+                          flexShrink: 0,
+                        }}
+                      >
                         <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
                       </svg>
                     ) : isDone ? (
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={isActive ? 'rgba(99,102,241,0.8)' : '#4ade80'} strokeWidth="2" style={{ flexShrink: 0 }}>
-                        <path d={isActive ? 'M18 15l-6-6-6 6' : 'M6 9l6 6 6-6'} />
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke={isActive ? 'rgba(99,102,241,0.8)' : '#4ade80'}
+                        strokeWidth="2"
+                        style={{ flexShrink: 0 }}
+                      >
+                        <path
+                          d={isActive ? 'M18 15l-6-6-6 6' : 'M6 9l6 6 6-6'}
+                        />
                       </svg>
                     ) : (
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-faint)" strokeWidth="2" style={{ flexShrink: 0 }}>
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="var(--text-faint)"
+                        strokeWidth="2"
+                        style={{ flexShrink: 0 }}
+                      >
                         <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
                       </svg>
                     )}
@@ -150,11 +243,24 @@ export default function ExportPanel({ tokens }: Props) {
             </div>
 
             {/* Error inline */}
-            {activeExport?.error && activeTarget && EXPORT_TARGETS.find((t) => t.target === activeTarget)?.category === category && (
-              <div style={{ marginTop: 10, padding: '10px 14px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 12, color: '#f87171' }}>
-                {activeExport.error}
-              </div>
-            )}
+            {activeExport?.error &&
+              activeTarget &&
+              EXPORT_TARGETS.find((t) => t.target === activeTarget)
+                ?.category === category && (
+                <div
+                  style={{
+                    marginTop: 10,
+                    padding: '10px 14px',
+                    borderRadius: 8,
+                    background: 'rgba(239,68,68,0.08)',
+                    border: '1px solid rgba(239,68,68,0.2)',
+                    fontSize: 12,
+                    color: '#f87171',
+                  }}
+                >
+                  {activeExport.error}
+                </div>
+              )}
           </div>
         ))}
 

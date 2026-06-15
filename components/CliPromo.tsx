@@ -41,9 +41,26 @@ export default function CliPromo() {
         }}
       >
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '12px 16px',
+            borderBottom: '1px solid var(--border)',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-strong)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="var(--accent-strong)"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <polyline points="4 17 10 11 4 5" />
               <line x1="12" y1="19" x2="20" y2="19" />
             </svg>
@@ -52,17 +69,44 @@ export default function CliPromo() {
               · run Mint against a whole folder
             </span>
           </div>
-          <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-faint)' }}>
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 600,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: 'var(--text-faint)',
+            }}
+          >
             Node ≥ 20
           </span>
         </div>
 
         {/* Commands */}
-        <pre style={{ margin: 0, padding: '14px 18px', fontFamily: 'var(--mono)', fontSize: 12.5, lineHeight: 1.85, color: 'var(--text)', background: 'transparent', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+        <pre
+          style={{
+            margin: 0,
+            padding: '14px 18px',
+            fontFamily: 'var(--mono)',
+            fontSize: 12.5,
+            lineHeight: 1.85,
+            color: 'var(--text)',
+            background: 'transparent',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+          }}
+        >
           {COMMANDS.map((cmd, i) => (
             <div key={i} style={{ display: 'flex', gap: 10 }}>
-              <span style={{ color: 'var(--text-faint)', userSelect: 'none' }}>$</span>
-              <span><span style={{ color: 'var(--accent-strong)' }}>{cmd.split(' ')[0]}</span> {cmd.split(' ').slice(1).join(' ')}</span>
+              <span style={{ color: 'var(--text-faint)', userSelect: 'none' }}>
+                $
+              </span>
+              <span>
+                <span style={{ color: 'var(--accent-strong)' }}>
+                  {cmd.split(' ')[0]}
+                </span>{' '}
+                {cmd.split(' ').slice(1).join(' ')}
+              </span>
             </div>
           ))}
         </pre>
@@ -71,7 +115,15 @@ export default function CliPromo() {
         <AuthBlock />
 
         {/* Actions */}
-        <div style={{ display: 'flex', gap: 8, padding: '10px 12px', borderTop: '1px solid var(--border)', background: 'var(--surface)' }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: 8,
+            padding: '10px 12px',
+            borderTop: '1px solid var(--border)',
+            background: 'var(--surface)',
+          }}
+        >
           <button
             onClick={copy}
             style={{
@@ -92,14 +144,28 @@ export default function CliPromo() {
           >
             {copied ? (
               <>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
                   <path d="M20 6L9 17l-5-5" />
                 </svg>
                 Copied
               </>
             ) : (
               <>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <rect x="9" y="9" width="13" height="13" rx="2" />
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                 </svg>
@@ -132,7 +198,6 @@ export default function CliPromo() {
             </svg>
             View docs on GitHub
           </a>
-
         </div>
       </div>
     </section>
@@ -141,8 +206,8 @@ export default function CliPromo() {
 
 const AUTH_SHELLS: { label: string; prompt: string; cmd: string }[] = [
   { label: 'bash · zsh · WSL', prompt: '$', cmd: 'export API_KEY=sk-ant-...' },
-  { label: 'PowerShell',       prompt: '>', cmd: '$env:API_KEY = "sk-ant-..."' },
-  { label: 'Windows CMD',      prompt: '>', cmd: 'set API_KEY=sk-ant-...' },
+  { label: 'PowerShell', prompt: '>', cmd: '$env:API_KEY = "sk-ant-..."' },
+  { label: 'Windows CMD', prompt: '>', cmd: 'set API_KEY=sk-ant-...' },
 ]
 
 function AuthBlock() {
@@ -150,12 +215,45 @@ function AuthBlock() {
   const active = AUTH_SHELLS[shellIdx]
 
   return (
-    <div style={{ borderTop: '1px solid var(--border)', padding: '12px 16px 14px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
-        <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-faint)' }}>
+    <div
+      style={{
+        borderTop: '1px solid var(--border)',
+        padding: '12px 16px 14px',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 8,
+          marginBottom: 8,
+        }}
+      >
+        <span
+          style={{
+            fontSize: 10,
+            fontWeight: 600,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            color: 'var(--text-faint)',
+          }}
+        >
           Authentication
         </span>
-        <div role="tablist" aria-label="Shell" style={{ display: 'flex', gap: 2, background: 'var(--surface)', borderRadius: 7, padding: 2, border: '1px solid var(--border)' }}>
+        <div
+          role="tablist"
+          aria-label="Shell"
+          style={{
+            display: 'flex',
+            gap: 2,
+            background: 'var(--surface)',
+            borderRadius: 7,
+            padding: 2,
+            border: '1px solid var(--border)',
+          }}
+        >
           {AUTH_SHELLS.map((s, i) => (
             <button
               key={s.label}
@@ -180,16 +278,44 @@ function AuthBlock() {
         </div>
       </div>
 
-      <pre style={{ margin: 0, fontFamily: 'var(--mono)', fontSize: 12, lineHeight: 1.7, color: 'var(--text)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+      <pre
+        style={{
+          margin: 0,
+          fontFamily: 'var(--mono)',
+          fontSize: 12,
+          lineHeight: 1.7,
+          color: 'var(--text)',
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word',
+        }}
+      >
         <div style={{ display: 'flex', gap: 10 }}>
-          <span style={{ color: 'var(--text-faint)', userSelect: 'none' }}>{active.prompt}</span>
+          <span style={{ color: 'var(--text-faint)', userSelect: 'none' }}>
+            {active.prompt}
+          </span>
           <span>{active.cmd}</span>
         </div>
       </pre>
 
-      <p style={{ marginTop: 8, fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.55 }}>
+      <p
+        style={{
+          marginTop: 8,
+          fontSize: 11.5,
+          color: 'var(--text-muted)',
+          lineHeight: 1.55,
+        }}
+      >
         Or pass the key per-command with{' '}
-        <code style={{ fontFamily: 'var(--mono)', fontSize: 11, padding: '1px 5px', borderRadius: 4, background: 'var(--surface)', color: 'var(--accent-strong)' }}>
+        <code
+          style={{
+            fontFamily: 'var(--mono)',
+            fontSize: 11,
+            padding: '1px 5px',
+            borderRadius: 4,
+            background: 'var(--surface)',
+            color: 'var(--accent-strong)',
+          }}
+        >
           --api-key sk-ant-...
         </code>{' '}
         — handy for CI or one-off runs.
