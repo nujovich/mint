@@ -78,6 +78,14 @@ export interface LineHeightAudit {
   unitlessMix: boolean
 }
 
+export interface LayoutA11yIssue {
+  selector: string
+  property: string // 'order' or 'tabindex'
+  value: string
+  reason: string
+  severity: 'warning' // always warning for a11y impact
+}
+
 export interface AuditReport {
   brand: string
   chaosScore: number
@@ -86,6 +94,7 @@ export interface AuditReport {
   fonts: FontEntry[]
   spacing: SpacingAudit
   lineHeights: LineHeightAudit
+  layoutA11yIssues: LayoutA11yIssue[]
 }
 
 export interface ColorDecision {
