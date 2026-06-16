@@ -1,107 +1,132 @@
 {
-  "brand": "FRANKENSTEIN",
+  "brand": "frankenstein",
   "colors": [
     {
       "name": "primary",
       "value": "#1976d2",
       "scale": {
-        "50": "#c7d4ff",
-        "100": "#a8c3ff",
-        "200": "#80bfff",
-        "300": "#66acee",
-        "400": "#4ea9dd",
+        "50": "#e3f2fd",
+        "100": "#bbdefb",
+        "200": "#90caf9",
+        "300": "#64b5f6",
+        "400": "#42a5f5",
         "500": "#1976d2",
-        "600": "#1a6bdc",
-        "700": "#1558b3",
-        "800": "#114796",
-        "900": "#0c3e7a"
+        "600": "#1565c0",
+        "700": "#0d47a1",
+        "800": "#0a3884",
+        "900": "#072966"
       },
-      "description": "A deep, classic blue used for primary actions and emphasis."
+      "description": ""
     },
     {
       "name": "error",
       "value": "#e53935",
       "scale": {
-        "50": "#ffcdd2",
-        "100": "#ef9a9a",
-        "200": "#f48382",
-        "300": "#eb6d67",
-        "400": "#e0595c",
+        "50": "#ffebee",
+        "100": "#ffcdd2",
+        "200": "#ef9a9a",
+        "300": "#e57373",
+        "400": "#ef5350",
         "500": "#e53935",
-        "600": "#cf3c3a",
-        "700": "#c82b2b",
-        "800": "#ac2424",
-        "900": "#941f1f"
+        "600": "#d32f2f",
+        "700": "#c62828",
+        "800": "#b71c1c",
+        "900": "#8e1515"
       },
-      "description": "Used for alerts, validation errors, and critical failures."
+      "description": ""
     },
     {
       "name": "background",
       "value": "#f5f5f5",
       "scale": {
-        "50": "#fffbe9",
-        "100": "#fffae4",
-        "200": "#efeff4",
-        "300": "#ececec",
-        "400": "#e8e8e8",
+        "50": "#fefefe",
+        "100": "#fdfdfd",
+        "200": "#fbfbfb",
+        "300": "#f8f8f8",
+        "400": "#f6f6f6",
         "500": "#f5f5f5",
-        "600": "#eaeaea",
-        "700": "#dcdcdc",
-        "800": "#c2c2c2",
-        "900": "#b0b0b0"
+        "600": "#c4c4c4",
+        "700": "#939393",
+        "800": "#626262",
+        "900": "#313131"
       },
-      "description": "The default background color for the application surface."
+      "description": ""
     },
     {
       "name": "text",
       "value": "#212121",
       "scale": {
-        "50": "#f4f4f4",
-        "100": "#e6e6e6",
-        "200": "#bfbfbf",
-        "300": "#999999",
-        "400": "#777777",
+        "50": "#f5f5f5",
+        "100": "#e8e8e8",
+        "200": "#d1d1d1",
+        "300": "#b4b4b4",
+        "400": "#6a6a6a",
         "500": "#212121",
-        "600": "#1c1c1c",
-        "700": "#181818",
-        "800": "#141414",
-        "900": "#0d0d0d"
+        "600": "#1e1e1e",
+        "700": "#1a1a1a",
+        "800": "#171717",
+        "900": "#0f0f0f"
       },
-      "description": "The primary text color used for body copy and labels."
+      "description": ""
     },
     {
       "name": "border",
       "value": "#dddddd",
       "scale": {
-        "50": "#f9f9f9",
-        "100": "#e8e8e8",
-        "200": "#dcdcdc",
-        "300": "#c4c4c4",
-        "400": "#b0b0b0",
+        "50": "#fcfcfc",
+        "100": "#f9f9f9",
+        "200": "#f3f3f3",
+        "300": "#ededed",
+        "400": "#e5e5e5",
         "500": "#dddddd",
-        "600": "#cccccc",
-        "700": "#bbbbbb",
-        "800": "#aaaaaa",
-        "900": "#999999"
+        "600": "#b1b1b1",
+        "700": "#858585",
+        "800": "#595959",
+        "900": "#2c2c2c"
       },
-      "description": "A standard separator and divider color."
+      "description": ""
+    },
+    {
+      "name": "muted",
+      "value": "#666666",
+      "scale": {
+        "50": "#f2f2f2",
+        "100": "#e6e6e6",
+        "200": "#cccccc",
+        "300": "#b3b3b3",
+        "400": "#999999",
+        "500": "#666666",
+        "600": "#525252",
+        "700": "#3d3d3d",
+        "800": "#292929",
+        "900": "#141414"
+      },
+      "description": ""
+    },
+    {
+      "name": "surface",
+      "value": "#ffffff",
+      "scale": {
+        "50": "#ffffff",
+        "100": "#fefefe",
+        "200": "#fdfdfd",
+        "300": "#fcfcfc",
+        "400": "#fafafa",
+        "500": "#ffffff",
+        "600": "#cccccc",
+        "700": "#999999",
+        "800": "#666666",
+        "900": "#333333"
+      },
+      "description": ""
     }
   ],
   "typography": {
     "fontFamilies": {
-      "body": "'Arial', Helvetica, sans-serif",
-      "display": "'Arial', Helvetica, sans-serif",
-      "mono": null
+      "body": "Helvetica Neue"
     },
-    "fontSizes": {
-      "base": "1rem",
-      "xl": "1.25rem",
-      "2xl": "1.5rem",
-      "3xl": "1.875rem"
-    },
+    "fontSizes": {},
     "fontWeights": {
-      "normal": 400,
-      "medium": 500,
       "bold": 700,
       "extrabold": 800
     },
@@ -110,8 +135,6 @@
   "spacing": {
     "1": "4px",
     "2": "8px",
-    "3": "12px",
-    "5": "20px",
     "6": "24px"
   },
   "borderRadius": {
@@ -119,6 +142,6 @@
     "md": "8px"
   },
   "shadows": {
-    "md": "0 2px 4px rgba(0,0,0,0.1)"
+    "sm": "0 2px 4px rgba(0,0,0,0.1)"
   }
 }

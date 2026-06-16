@@ -294,23 +294,13 @@ npx mint-ds export --target tailwind --provider ollama
 
 ### Audit options
 
-<<<<<<< HEAD
-| Flag | Description |
-|------|-------------|
-| `--out <file>` | Tokens output path (default: `mint-ds.tokens.json`) |
-| `--report <file>` | Also write the raw `AuditReport` JSON for inspection |
-| `--provider <name>` | LLM backend: `anthropic` (default) or `ollama` |
-| `--quiet` | Skip the chaos summary printout |
-| `--no-cache` | Skip the cache lookup and overwrite any existing cache entry for this CSS |
-=======
-| Flag | Description |
-| ----------------- | ------------------------------------------------------------------------- |
-| `--out <file>` | Tokens output path (default: `mint-ds.tokens.json`) |
-| `--report <file>` | Also write the raw `AuditReport` JSON for inspection |
-| `--quiet` | Skip the chaos summary printout |
-| `--no-cache` | Skip the cache lookup and overwrite any existing cache entry for this CSS |
-
-> > > > > > > main
+| Flag                | Description                                                               |
+| ------------------- | ------------------------------------------------------------------------- |
+| `--out <file>`      | Tokens output path (default: `mint-ds.tokens.json`)                       |
+| `--report <file>`   | Also write the raw `AuditReport` JSON for inspection                      |
+| `--provider <name>` | LLM backend: `anthropic` (default) or `ollama`                            |
+| `--quiet`           | Skip the chaos summary printout                                           |
+| `--no-cache`        | Skip the cache lookup and overwrite any existing cache entry for this CSS |
 
 ### Cache
 
