@@ -10,6 +10,10 @@ export interface TypographyTokens {
   fontSizes: Record<string, string>
   fontWeights: Record<string, string | number>
   lineHeights: Record<string, string | number>
+  motion: {
+    durations: Record<string, string>
+    easings: Record<string, string>
+  }
 }
 
 export interface DSTokens {
@@ -78,6 +82,32 @@ export interface LineHeightAudit {
   unitlessMix: boolean
 }
 
+export interface MotionDurationSample {
+  value: string
+  normalizedMs: number
+  usageCount: number
+  contexts: string[]
+}
+
+export interface MotionEasingSample {
+  value: string
+  normalizedKeyword: string | null
+  usageCount: number
+  contexts: string[]
+}
+
+export interface MotionAudit {
+  durations: {
+    found: MotionDurationSample[]
+    suggestedScale: Record<string, string>
+  }
+  easings: {
+    found: MotionEasingSample[]
+    suggestedScale: Record<string, string>
+  }
+  duplicateDeclarations: number
+}
+
 export interface AuditReport {
   brand: string
   chaosScore: number
@@ -86,6 +116,7 @@ export interface AuditReport {
   fonts: FontEntry[]
   spacing: SpacingAudit
   lineHeights: LineHeightAudit
+  motion: MotionAudit
 }
 
 export interface ColorDecision {
@@ -100,6 +131,10 @@ export interface UserDecisions {
   fonts: string[]
   spacingScale: Record<string, string>
   lineHeights: Record<string, string | number>
+  motion: {
+    durations: Record<string, string>
+    easings: Record<string, string>
+  }
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
