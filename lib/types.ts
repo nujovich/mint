@@ -116,7 +116,7 @@ export interface AuditReport {
   fonts: FontEntry[]
   spacing: SpacingAudit
   lineHeights: LineHeightAudit
-  motion: MotionAudit
+  motion?: MotionAudit
 }
 
 export interface ColorDecision {
