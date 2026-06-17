@@ -86,6 +86,20 @@ export interface LayoutA11yIssue {
   severity: 'warning' // always warning for a11y impact
 }
 
+export interface ModernPracticeIssue {
+  selector: string
+  rule: string // 'grid-when-flexbox-wrap-would-work' | 'legacy-centering' | 'flex-min-width-zero-hack' | 'fragile-nested-selectors'
+  severity: 'suggestion'
+  reason: string
+}
+
+export interface AdoptionSuggestion {
+  selector: string
+  rule: string // 'use-css-layers' | 'use-container-queries'
+  severity: 'info'
+  reason: string
+}
+
 export interface AuditReport {
   brand: string
   chaosScore: number
@@ -95,6 +109,8 @@ export interface AuditReport {
   spacing: SpacingAudit
   lineHeights: LineHeightAudit
   layoutA11yIssues: LayoutA11yIssue[]
+  modernPracticeIssues: ModernPracticeIssue[]
+  adoptionSuggestions: AdoptionSuggestion[]
 }
 
 export interface ColorDecision {
