@@ -100,10 +100,10 @@ ${styles.bold('EXPORT OPTIONS')}
   --stdout                     Print to stdout instead of writing a file
 
 ${styles.bold('AUTH (any command)')}
-  --api-key <value>            Anthropic API key (overrides ANTHROPIC_API_KEY env var)
+  --api-key <value>            Anthropic API key (overrides API_KEY env var)
 
 ${styles.bold('ENVIRONMENT')}
-  ANTHROPIC_API_KEY            Required unless --api-key is passed.
+  API_KEY            Required unless --api-key is passed.
                                Get a key at https://console.anthropic.com
 
 ${styles.bold('EXAMPLES')}

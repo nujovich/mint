@@ -9,7 +9,7 @@ git clone https://github.com/your-org/mint.git
 cd mint
 npm install
 cp .env.local.example .env.local
-# Set ANTHROPIC_API_KEY in .env.local
+# Set API_KEY in .env.local
 npm run dev
 ```
 

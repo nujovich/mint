@@ -8,7 +8,7 @@ body:
       value: |
         Thanks for taking the time to file a bug! A few things up front:
         - **Search first** — there may already be an open issue for this.
-        - **Don't paste your `ANTHROPIC_API_KEY`** anywhere in this report. If you accidentally do, rotate it at [console.anthropic.com](https://console.anthropic.com).
+        - **Don't paste your `API_KEY`** anywhere in this report. If you accidentally do, rotate it at [console.anthropic.com](https://console.anthropic.com).
         - The more reproducible the report, the faster we can fix it. A minimal CSS snippet that triggers the bug is gold.
 
   - type: dropdown
@@ -95,7 +95,7 @@ body:
       options:
         - label: I'm running Node 20 or newer (CLI requirement).
           required: false
-        - label: I confirmed `ANTHROPIC_API_KEY` is set (or I'm passing `--api-key`) and the key is valid.
+        - label: I confirmed `API_KEY` is set (or I'm passing `--api-key`) and the key is valid.
           required: false
         - label: I searched existing issues and didn't find this bug already reported.
           required: true

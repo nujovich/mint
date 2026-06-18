@@ -205,21 +205,9 @@ export default function CliPromo() {
 }
 
 const AUTH_SHELLS: { label: string; prompt: string; cmd: string }[] = [
-  {
-    label: 'bash · zsh · WSL',
-    prompt: '$',
-    cmd: 'export ANTHROPIC_API_KEY=sk-ant-...',
-  },
-  {
-    label: 'PowerShell',
-    prompt: '>',
-    cmd: '$env:ANTHROPIC_API_KEY = "sk-ant-..."',
-  },
-  {
-    label: 'Windows CMD',
-    prompt: '>',
-    cmd: 'set ANTHROPIC_API_KEY=sk-ant-...',
-  },
+  { label: 'bash · zsh · WSL', prompt: '$', cmd: 'export API_KEY=sk-ant-...' },
+  { label: 'PowerShell', prompt: '>', cmd: '$env:API_KEY = "sk-ant-..."' },
+  { label: 'Windows CMD', prompt: '>', cmd: 'set API_KEY=sk-ant-...' },
 ]
 
 function AuthBlock() {

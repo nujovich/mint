@@ -5,4 +5,4 @@ contact_links:
     about: For "how do I…" questions, design discussions, or feedback that isn't a concrete bug or feature request, please open a Discussion instead.
   - name: Anthropic API key issues
     url: https://console.anthropic.com
-    about: If your `ANTHROPIC_API_KEY` is rejected or rate-limited, that's an Anthropic account issue, not a mint-ds bug. Manage your key at console.anthropic.com.
+    about: If your `API_KEY` is rejected or rate-limited, that's an Anthropic account issue, not a mint-ds bug. Manage your key at console.anthropic.com.

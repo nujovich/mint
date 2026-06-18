@@ -5,7 +5,7 @@ export async function POST(req: NextRequest) {
   const { html } = await req.json()
 
   if (!html || typeof html !== 'string') {
-    return NextResponse.json({ error: 'HTML requerido' }, { status: 400 })
+    return NextResponse.json({ error: 'HTML required' }, { status: 400 })
   }
 
   const prompt = `Analyze this design system HTML and extract all design tokens into a structured JSON object.

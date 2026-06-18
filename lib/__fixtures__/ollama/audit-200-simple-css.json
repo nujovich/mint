@@ -1,0 +1,27 @@
+{
+  "_meta": {
+    "recordedAt": "2026-06-12T11:44:54.212Z",
+    "scenario": "audit-200-simple-css",
+    "provider": "ollama"
+  },
+  "response": {
+    "status": 200,
+    "ok": true,
+    "body": {
+      "model": "gemma4",
+      "created_at": "2026-06-12T11:44:54.206278Z",
+      "message": {
+        "role": "assistant",
+        "content": "{\n  \"brand\": \"\",\n  \"chaosScore\": 5,\n  \"summary\": \"The codebase uses 1 near-duplicate text color and features 1 off-scale spacing value, suggesting minor inconsistencies in design tokens.\",\n  \"colorClusters\": [\n    {\n      \"id\": \"cluster-0\",\n      \"suggestedName\": \"error\",\n      \"representative\": \"#ff0000\",\n      \"samples\": [\n        {\n          \"hex\": \"#ff0000\",\n          \"usageCount\": 1,\n          \"contexts\": [\"body\"]\n        }\n      ]\n    }\n  ],\n  \"fonts\": [\n    {\n      \"family\": null,\n      \"usages\": [],\n      \"isSystemFont\": false\n    }\n  ],\n  \"spacing\": {\n    \"found\": [],\n    \"suggestedScale\": {},\n    \"nonScaleValues\": []\n  },\n  \"lineHeights\": {\n    \"found\": [],\n    \"suggestedScale\": {},\n    \"unitlessMix\": false\n  }\n}"
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 5244562625,
+      "load_duration": 240673000,
+      "prompt_eval_count": 1980,
+      "prompt_eval_duration": 33424999,
+      "eval_count": 243,
+      "eval_duration": 4964025000
+    }
+  }
+}

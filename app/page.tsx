@@ -1039,7 +1039,7 @@ function PreReleaseNotice() {
           <span style={{ color: 'var(--text-faint)' }}>$</span> git clone
           https://github.com/nujovich/mint.git &amp;&amp; cd mint{'\n'}
           <span style={{ color: 'var(--text-faint)' }}>$</span> export
-          ANTHROPIC_API_KEY=sk-ant-...{'\n'}
+          API_KEY=sk-ant-...{'\n'}
           <span style={{ color: 'var(--text-faint)' }}>$</span> node
           bin/mint-ds.mjs audit ./examples/frankenstein{'\n'}
           <span style={{ color: 'var(--text-faint)' }}>$</span> node
