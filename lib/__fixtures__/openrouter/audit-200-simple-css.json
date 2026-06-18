@@ -1,0 +1,64 @@
+{
+  "_meta": {
+    "recordedAt": "2026-06-12T17:02:57.986Z",
+    "scenario": "audit-200-simple-css"
+  },
+  "response": {
+    "status": 200,
+    "ok": true,
+    "body": {
+      "id": "gen-1781283767-L0Ek4DibIKteyh1FQvL9",
+      "object": "chat.completion",
+      "created": 1781283767,
+      "model": "deepseek/deepseek-v4-flash-20260423",
+      "provider": "AtlasCloud",
+      "system_fingerprint": null,
+      "service_tier": null,
+      "choices": [
+        {
+          "index": 0,
+          "logprobs": null,
+          "finish_reason": "stop",
+          "native_finish_reason": "stop",
+          "message": {
+            "role": "assistant",
+            "content": "{\n  \"brand\": \"\",\n  \"chaosScore\": 1,\n  \"summary\": \"Minimal CSS with only 1 color value and no spacing or typography tokens, indicating a very early stage with no design system in place.\",\n  \"colorClusters\": [\n    {\n      \"id\": \"cluster-0\",\n      \"suggestedName\": \"accent\",\n      \"representative\": \"#ff0000\",\n      \"samples\": [\n        {\n          \"hex\": \"#ff0000\",\n          \"usageCount\": 1,\n          \"contexts\": [\"body\"]\n        }\n      ]\n    }\n  ],\n  \"fonts\": [],\n  \"spacing\": {\n    \"found\": [],\n    \"suggestedScale\": {},\n    \"nonScaleValues\": []\n  },\n  \"lineHeights\": {\n    \"found\": [],\n    \"suggestedScale\": {},\n    \"unitlessMix\": false\n  }\n}",
+            "refusal": null,
+            "reasoning": "We need to analyze the provided CSS source and produce the JSON audit report.\n\nCSS source:\n```\nbody { color: #ff0000; font-size: 16px; }\n```\n\nStep 1: Colors\n- Only one color value: #ff0000 (red). Usage count 1. Contexts: \"body\" (but since it's a property value, context is the selector). \n- No near-duplicates, so one cluster.\n- Cluster id: cluster-0, representative: #ff0000, samples: one entry.\n- Suggested name: Since it's red and only used once, likely an accent or error? But we need to pick exactly one from the list. The most appropriate from the list could be \"error\" or \"accent\". Given no other context, I'll pick \"accent\" as it's a bright red.\n\nStep 2: Fonts\n- No font-family declarations. So fonts array should be empty? Actually we need to collect every distinct font-family value. None found, so empty array.\n\nStep 3: Spacing\n- Scan the properties listed: margin, padding, gap, top, right, bottom, left. In the given CSS, none of these appear. So found will be empty array.\n- suggestedScale: only include steps that match at least one found value. Since none, suggestedScale should be empty object.\n- nonScaleValues: empty array.\n\nStep 4: Line-height\n- No line-height property or font shorthand. So found empty array? But we need to normalize? No data, so found empty array.\n- suggestedScale: empty object.\n- unitlessMix: false (since no values)\n\nStep 5: Chaos Score\nStart at 1.\n- colorClusters.length > 8? No (1). No addition.\n- colorClusters.length > 5? No.\n- nonScaleValues.length > 10? No (0). \n- nonScaleValues.length > 5? No.\n- count of non-system fonts > 3? No fonts. So 0.\n- count of non-system fonts > 1? No.\n- lineHeights.unitlessMix is true? No.\nSo chaosScore = 1.\n\nStep 6: Summary\nOnly one color, no fonts, no spacing, no line-height. So quality issues? Possibly lack of design tokens, but not many issues. We can say something like \"Minimal CSS with only 1 color value and no spacing or typography tokens, indicating a very early stage with no design system in place.\"\n\nStep 7: Brand\nNo CSS comments, no HTML, no BEM, no variable namespaces, no @layer. So empty string.\n\nNow construct JSON according to example.\n\nNote: The example has lineHeights.found as an array of numbers. In our case, empty array.\n\nAlso, for fonts, if none, we should still include the key? The example includes \"fonts\" as array. We'll include empty array.\n\nLet's produce the JSON.",
+            "reasoning_details": [
+              {
+                "type": "reasoning.text",
+                "text": "We need to analyze the provided CSS source and produce the JSON audit report.\n\nCSS source:\n```\nbody { color: #ff0000; font-size: 16px; }\n```\n\nStep 1: Colors\n- Only one color value: #ff0000 (red). Usage count 1. Contexts: \"body\" (but since it's a property value, context is the selector). \n- No near-duplicates, so one cluster.\n- Cluster id: cluster-0, representative: #ff0000, samples: one entry.\n- Suggested name: Since it's red and only used once, likely an accent or error? But we need to pick exactly one from the list. The most appropriate from the list could be \"error\" or \"accent\". Given no other context, I'll pick \"accent\" as it's a bright red.\n\nStep 2: Fonts\n- No font-family declarations. So fonts array should be empty? Actually we need to collect every distinct font-family value. None found, so empty array.\n\nStep 3: Spacing\n- Scan the properties listed: margin, padding, gap, top, right, bottom, left. In the given CSS, none of these appear. So found will be empty array.\n- suggestedScale: only include steps that match at least one found value. Since none, suggestedScale should be empty object.\n- nonScaleValues: empty array.\n\nStep 4: Line-height\n- No line-height property or font shorthand. So found empty array? But we need to normalize? No data, so found empty array.\n- suggestedScale: empty object.\n- unitlessMix: false (since no values)\n\nStep 5: Chaos Score\nStart at 1.\n- colorClusters.length > 8? No (1). No addition.\n- colorClusters.length > 5? No.\n- nonScaleValues.length > 10? No (0). \n- nonScaleValues.length > 5? No.\n- count of non-system fonts > 3? No fonts. So 0.\n- count of non-system fonts > 1? No.\n- lineHeights.unitlessMix is true? No.\nSo chaosScore = 1.\n\nStep 6: Summary\nOnly one color, no fonts, no spacing, no line-height. So quality issues? Possibly lack of design tokens, but not many issues. We can say something like \"Minimal CSS with only 1 color value and no spacing or typography tokens, indicating a very early stage with no design system in place.\"\n\nStep 7: Brand\nNo CSS comments, no HTML, no BEM, no variable namespaces, no @layer. So empty string.\n\nNow construct JSON according to example.\n\nNote: The example has lineHeights.found as an array of numbers. In our case, empty array.\n\nAlso, for fonts, if none, we should still include the key? The example includes \"fonts\" as array. We'll include empty array.\n\nLet's produce the JSON.",
+                "format": "unknown",
+                "index": 0
+              }
+            ]
+          }
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 1856,
+        "completion_tokens": 819,
+        "total_tokens": 2675,
+        "cost": 0.00048916,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.00048916,
+          "upstream_inference_prompt_cost": 0.00025984,
+          "upstream_inference_completions_cost": 0.00022932
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 624,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    }
+  }
+}
