@@ -242,37 +242,48 @@ npx mint-ds export --target css          # → variables.css
 
 ### Authentication
 
-Every command needs an Anthropic API key. You have two options — pick whichever fits your workflow:
+Every command needs an API key for your LLM provider. You have two options — pick whichever fits your workflow:
 
 **Option 1 — pass it per-command with `--api-key`:**
 
 ```bash
-npx mint-ds audit ./src/styles --api-key sk-ant-...
+npx mint-ds audit ./src/styles --api-key sk-...
 ```
 
 Useful for one-off runs, CI jobs, or when you don't want the key persisted in your shell.
 
-**Option 2 — set the `API_KEY` env var.** Syntax depends on your shell:
+**Option 2 — set a provider-specific env var or the generic `API_KEY` fallback.**
 
-| Shell                               | Command                       |
-| ----------------------------------- | ----------------------------- |
-| bash / zsh / sh (macOS, Linux, WSL) | `export API_KEY=sk-ant-...`   |
-| fish                                | `set -gx API_KEY sk-ant-...`  |
-| PowerShell (Windows / pwsh)         | `$env:API_KEY = "sk-ant-..."` |
-| Windows CMD                         | `set API_KEY=sk-ant-...`      |
+Each LLM provider looks for its own env var first, then falls back to `API_KEY`:
+
+| Provider   | Specific env var     | Fallback  |
+| ---------- | -------------------- | --------- |
+| Anthropic  | `ANTHROPIC_API_KEY`  | `API_KEY` |
+| Ollama     | `OLLAMA_API_KEY`     | `API_KEY` |
+| OpenRouter | `OPENROUTER_API_KEY` | `API_KEY` |
+
+Set the var your shell uses:
+
+| Shell                               | Command                   |
+| ----------------------------------- | ------------------------- |
+| bash / zsh / sh (macOS, Linux, WSL) | `export API_KEY=sk-...`   |
+| fish                                | `set -gx API_KEY sk-...`  |
+| PowerShell (Windows / pwsh)         | `$env:API_KEY = "sk-..."` |
+| Windows CMD                         | `set API_KEY=sk-...`      |
 
 These commands set the key only for the current shell session. To persist it, add the line to your shell rc file (`~/.bashrc`, `~/.zshrc`, `~/.config/fish/config.fish`, your PowerShell `$PROFILE`, etc.) or use the system Environment Variables dialog on Windows.
 
-`--api-key` always wins over the env var when both are present. Get a key at [console.anthropic.com](https://console.anthropic.com).
+`--api-key` always wins over any env var when both are present.
 
 ### LLM provider
 
-Mint talks to an LLM for audit, resolve, and export. By default it uses Anthropic Claude; you can swap to a local backend with `--provider`.
+Mint talks to an LLM for audit, resolve, and export. By default it uses Anthropic Claude; you can swap backends with `--provider`.
 
-| Value                 | Description                                                                                              |
-| --------------------- | -------------------------------------------------------------------------------------------------------- |
-| `anthropic` (default) | Anthropic Claude API. Uses `API_KEY` / `--api-key`. Default model `claude-sonnet-4-20250514`.            |
-| `ollama`              | Local Ollama server. No API key required. Defaults to `http://localhost:11434/api/chat`, model `gemma4`. |
+| Value                 | Description                                                                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `anthropic` (default) | Anthropic Claude API. API key: `ANTHROPIC_API_KEY` or `API_KEY`. Default model `claude-sonnet-4-20250514`.                           |
+| `ollama`              | Local Ollama server. Optional API key: `OLLAMA_API_KEY` or `API_KEY`. Defaults to `http://localhost:11434/api/chat`, model `gemma4`. |
+| `openrouter`          | OpenRouter multi-model API. API key: `OPENROUTER_API_KEY` or `API_KEY`. Default model `deepseek/deepseek-v4-flash`.                  |
 
 ```bash
 # Run the audit against a local Ollama instance
@@ -280,6 +291,9 @@ npx mint-ds audit ./src/styles --provider ollama
 
 # Generate exports with a local LLM
 npx mint-ds export --target tailwind --provider ollama
+
+# Use OpenRouter with a different model
+npx mint-ds audit ./src/styles --provider openrouter --model openai/gpt-4o
 ```
 
 `--provider` works on both `audit` and `export`. Passing an unknown name exits with `Unsupported LLM provider: <name>`.
@@ -299,7 +313,7 @@ npx mint-ds export --target tailwind --provider ollama
 | ------------------- | ------------------------------------------------------------------------- |
 | `--out <file>`      | Tokens output path (default: `mint-ds.tokens.json`)                       |
 | `--report <file>`   | Also write the raw `AuditReport` JSON for inspection                      |
-| `--provider <name>` | LLM backend: `anthropic` (default) or `ollama`                            |
+| `--provider <name>` | LLM backend: `anthropic` (default), `ollama`, `openrouter`                |
 | `--quiet`           | Skip the chaos summary printout                                           |
 | `--no-cache`        | Skip the cache lookup and overwrite any existing cache entry for this CSS |
 
@@ -325,7 +339,7 @@ Add `mint-ds.cache.json` to `.gitignore` if you don't want to commit it.
 | `--target <name>`   | **Required.** Accepts: `tailwind`, `react`, `vue`, `svelte`, `astro`, `css`, `scss`, `ts`, `css-modules`, `styled`, `emotion` (full names like `tailwind-config`, `react-component` also work) |
 | `--tokens <file>`   | Tokens input path (default: `mint-ds.tokens.json`)                                                                                                                                             |
 | `--out <file>`      | Override the default output filename                                                                                                                                                           |
-| `--provider <name>` | LLM backend: `anthropic` (default) or `ollama`                                                                                                                                                 |
+| `--provider <name>` | LLM backend: `anthropic` (default), `ollama`, `openrouter`                                                                                                                                     |
 | `--stdout`          | Print to stdout instead of writing a file                                                                                                                                                      |
 
 ### Local development without publishing
@@ -334,7 +348,7 @@ The CLI runs straight from a clone:
 
 ```bash
 git clone https://github.com/nujovich/mint.git && cd mint
-export API_KEY=sk-ant-...
+export API_KEY=sk-...
 node bin/mint-ds.mjs audit ./examples/site
 node bin/mint-ds.mjs export --target tailwind
 # or use a local LLM via Ollama — no API key needed
@@ -355,14 +369,14 @@ node bin/mint-ds.mjs audit ./examples/site --provider ollama
 - [Next.js 15](https://nextjs.org/) — App Router, API routes
 - [React 18](https://react.dev/) — Client components
 - [TypeScript](https://www.typescriptlang.org/)
-- [Claude API](https://docs.anthropic.com/) — `claude-sonnet-4-20250514` for audit, resolve, and export generation by default; [Ollama](https://ollama.com/) is also supported as an alternative local backend via `--provider ollama`
+- [Claude API](https://docs.anthropic.com/) — `claude-sonnet-4-20250514` for audit, resolve, and export generation by default; [Ollama](https://ollama.com/) and [OpenRouter](https://openrouter.ai/) are also supported via `--provider`
 
 ## Getting started
 
 ### Prerequisites
 
 - Node.js 20+ (the CLI uses native `fetch` and recursive `fs.readdir`)
-- An [Anthropic API key](https://console.anthropic.com/)
+- An API key for your LLM provider ([Anthropic](https://console.anthropic.com/) / [OpenRouter](https://openrouter.ai/))
 
 ### Setup
 
@@ -371,7 +385,7 @@ git clone https://github.com/your-org/mint.git
 cd mint
 npm install
 cp .env.local.example .env.local
-# Add your key: API_KEY=sk-ant-...
+# Add your key: API_KEY=sk-...
 npm run dev
 ```
 
@@ -379,10 +393,13 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Environment variables
 
-| Variable            | Required | Description                                                                                        |
-| ------------------- | -------- | -------------------------------------------------------------------------------------------------- |
-| `API_KEY`           | No       | LLM provider API key                                                                               |
-| `ANTHROPIC_API_KEY` | Yes      | Anthropic API key — get one at [console.anthropic.com](https://console.anthropic.com) (Deprecated) |
+| Variable             | Required | Description                                                                                              |
+| -------------------- | -------- | -------------------------------------------------------------------------------------------------------- |
+| `API_KEY`            | No       | Universal fallback API key for all providers                                                             |
+| `ANTHROPIC_API_KEY`  | No       | Anthropic API key (takes precedence over `API_KEY`)                                                      |
+| `OPENROUTER_API_KEY` | No       | OpenRouter API key (takes precedence over `API_KEY`)                                                     |
+| `OLLAMA_API_KEY`     | No       | Ollama API key (takes precedence over `API_KEY`)                                                         |
+| `LLM_MODEL_NAME`     | No       | Default model for any provider (e.g. `claude-sonnet-4-20250514`, `gemma4`, `deepseek/deepseek-v4-flash`) |
 
 ## Project structure
 
