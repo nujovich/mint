@@ -216,6 +216,10 @@ function defaultDecisions(audit) {
       .map((f) => f.family),
     spacingScale: audit.spacing?.suggestedScale || {},
     lineHeights: audit.lineHeights?.suggestedScale || {},
+    motion: {
+      durations: audit.motion?.durations?.suggestedScale || {},
+      easings: audit.motion?.easings?.suggestedScale || {},
+    },
   }
 }
 
@@ -305,7 +309,7 @@ async function cmdAudit(argv) {
     if (audit.summary) log(styles.dim('  ' + audit.summary))
     log(
       styles.dim(
-        `  ${audit.colorClusters?.length ?? 0} clusters · ${audit.fonts?.length ?? 0} fonts · ${audit.spacing?.found?.length ?? 0} spacing values`
+        `  ${audit.colorClusters?.length ?? 0} clusters · ${audit.fonts?.length ?? 0} fonts · ${audit.spacing?.found?.length ?? 0} spacing values · ${audit.motion?.durations?.found?.length ?? 0} motion durations`
       )
     )
     log('')

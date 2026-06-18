@@ -57,6 +57,11 @@ const AUDIT: AuditReport = {
   fonts: [],
   spacing: { found: [], suggestedScale: {}, nonScaleValues: [] },
   lineHeights: { found: [], suggestedScale: {}, unitlessMix: false },
+  motion: {
+    durations: { found: [], suggestedScale: {} },
+    easings: { found: [], suggestedScale: {} },
+    duplicateDeclarations: 0,
+  },
 }
 
 const TOKENS: DSTokens = {
@@ -67,6 +72,7 @@ const TOKENS: DSTokens = {
     fontSizes: {},
     fontWeights: {},
     lineHeights: {},
+    motion: { durations: {}, easings: {} },
   },
   spacing: {},
   borderRadius: {},
@@ -80,6 +86,7 @@ const DECISIONS: UserDecisions = {
   fonts: ['Inter'],
   spacingScale: { '1': '4px', '2': '8px' },
   lineHeights: {},
+  motion: { durations: {}, easings: {} },
 }
 
 const CSS = 'body { color: #6366f1; font-size: 16px; }'

@@ -42,6 +42,8 @@ export default function AuditView({ audit, onResolve }: Props) {
 
   const spacingScale = audit.spacing.suggestedScale
   const lineHeights = audit.lineHeights?.suggestedScale ?? {}
+  const motionDurations = audit.motion?.durations?.suggestedScale ?? {}
+  const motionEasings = audit.motion?.easings?.suggestedScale ?? {}
 
   const chaosColor =
     audit.chaosScore <= 3
@@ -64,6 +66,10 @@ export default function AuditView({ audit, onResolve }: Props) {
       fonts: fontDecisions,
       spacingScale,
       lineHeights,
+      motion: {
+        durations: audit.motion?.durations?.suggestedScale ?? {},
+        easings: audit.motion?.easings?.suggestedScale ?? {},
+      },
     })
   }
 
@@ -562,6 +568,227 @@ export default function AuditView({ audit, onResolve }: Props) {
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Motion */}
+      <section>
+        <SectionLabel>
+          Motion — {audit.motion?.durations?.found?.length ?? 0}{' '}
+          {audit.motion?.durations?.found?.length === 1
+            ? 'duration'
+            : 'durations'}{' '}
+          · {audit.motion?.easings?.found?.length ?? 0}{' '}
+          {audit.motion?.easings?.found?.length === 1 ? 'easing' : 'easings'} ·{' '}
+          {audit.motion?.duplicateDeclarations ?? 0}{' '}
+          {audit.motion?.duplicateDeclarations === 1
+            ? 'duplicate'
+            : 'duplicates'}
+        </SectionLabel>
+
+        {audit.motion && audit.motion.duplicateDeclarations > 0 && (
+          <div
+            style={{
+              padding: '10px 14px',
+              borderRadius: 8,
+              background: 'rgba(251,191,36,0.06)',
+              border: '1px solid rgba(251,191,36,0.15)',
+              fontSize: 11,
+              color: 'var(--text-muted)',
+              lineHeight: 1.65,
+              marginBottom: 12,
+            }}
+          >
+            <strong style={{ color: 'var(--text)', fontWeight: 500 }}>
+              Duplicate motion declarations detected
+            </strong>{' '}
+            {audit.motion.duplicateDeclarations} duplicate{' '}
+            {audit.motion.duplicateDeclarations === 1
+              ? 'declaration was'
+              : 'declarations were'}{' '}
+            found across the codebase. Consolidating these into a shared token
+            scale keeps animations consistent and reduces maintenance.
+          </div>
+        )}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* Found durations */}
+          {audit.motion?.durations?.found &&
+            audit.motion.durations.found.length > 0 && (
+              <div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: 'var(--text-faint)',
+                    marginBottom: 8,
+                  }}
+                >
+                  Found durations
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                  {audit.motion.durations.found.map((d) => (
+                    <span
+                      key={d.value}
+                      style={{
+                        fontSize: 11,
+                        padding: '3px 9px',
+                        borderRadius: 6,
+                        fontFamily: 'var(--mono)',
+                        background: 'var(--surface)',
+                        border: '1px solid var(--border)',
+                        color: 'var(--text-muted)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
+                      }}
+                    >
+                      {d.value}
+                      <span style={{ opacity: 0.5, fontSize: 10 }}>
+                        {d.usageCount}×
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+          {/* Found easings */}
+          {audit.motion?.easings?.found &&
+            audit.motion.easings.found.length > 0 && (
+              <div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: 'var(--text-faint)',
+                    marginBottom: 8,
+                  }}
+                >
+                  Found easings
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                  {audit.motion.easings.found.map((e) => (
+                    <span
+                      key={e.value}
+                      style={{
+                        fontSize: 11,
+                        padding: '3px 9px',
+                        borderRadius: 6,
+                        fontFamily: 'var(--mono)',
+                        background: 'var(--surface)',
+                        border: '1px solid var(--border)',
+                        color: 'var(--text-muted)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
+                      }}
+                    >
+                      {e.value}
+                      <span style={{ opacity: 0.5, fontSize: 10 }}>
+                        {e.usageCount}×
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+          {/* Suggested duration scale */}
+          {Object.keys(motionDurations).length > 0 && (
+            <div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: 'var(--text-faint)',
+                  marginBottom: 8,
+                }}
+              >
+                Suggested duration scale
+              </div>
+              <div className="mint-scale-grid">
+                {Object.entries(motionDurations).map(([key, val]) => (
+                  <div
+                    key={key}
+                    style={{
+                      padding: '6px 10px',
+                      borderRadius: 7,
+                      background: 'var(--panel)',
+                      border: '1px solid var(--border)',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 10,
+                        color: 'var(--text-faint)',
+                        fontFamily: 'var(--mono)',
+                      }}
+                    >
+                      {key}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 500,
+                        fontFamily: 'var(--mono)',
+                        color: 'var(--text)',
+                      }}
+                    >
+                      {val}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Suggested easing scale */}
+          {Object.keys(motionEasings).length > 0 && (
+            <div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: 'var(--text-faint)',
+                  marginBottom: 8,
+                }}
+              >
+                Suggested easing scale
+              </div>
+              <div className="mint-scale-grid">
+                {Object.entries(motionEasings).map(([key, val]) => (
+                  <div
+                    key={key}
+                    style={{
+                      padding: '6px 10px',
+                      borderRadius: 7,
+                      background: 'var(--panel)',
+                      border: '1px solid var(--border)',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 10,
+                        color: 'var(--text-faint)',
+                        fontFamily: 'var(--mono)',
+                      }}
+                    >
+                      {key}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 500,
+                        fontFamily: 'var(--mono)',
+                        color: 'var(--text)',
+                      }}
+                    >
+                      {val}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
