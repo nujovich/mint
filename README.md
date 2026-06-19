@@ -242,7 +242,7 @@ npx mint-ds export --target css          # → variables.css
 
 ### Authentication
 
-Every command needs an Anthropic API key. You have two options — pick whichever fits your workflow:
+Every command needs an LLM provider API key. You have two options — pick whichever fits your workflow:
 
 **Option 1 — pass it per-command with `--api-key`:**
 
@@ -263,16 +263,22 @@ Useful for one-off runs, CI jobs, or when you don't want the key persisted in yo
 
 These commands set the key only for the current shell session. To persist it, add the line to your shell rc file (`~/.bashrc`, `~/.zshrc`, `~/.config/fish/config.fish`, your PowerShell `$PROFILE`, etc.) or use the system Environment Variables dialog on Windows.
 
-`--api-key` always wins over the env var when both are present. Get a key at [console.anthropic.com](https://console.anthropic.com).
+`--api-key` always wins over the env var when both are present.
+
+Where to get a key:
+
+- **Anthropic** — [console.anthropic.com](https://console.anthropic.com)
+- **OpenRouter** — [openrouter.ai/keys](https://openrouter.ai/keys)
 
 ### LLM provider
 
 Mint talks to an LLM for audit, resolve, and export. By default it uses Anthropic Claude; you can swap to a local backend with `--provider`.
 
-| Value                 | Description                                                                                              |
-| --------------------- | -------------------------------------------------------------------------------------------------------- |
-| `anthropic` (default) | Anthropic Claude API. Uses `API_KEY` / `--api-key`. Default model `claude-sonnet-4-20250514`.            |
-| `ollama`              | Local Ollama server. No API key required. Defaults to `http://localhost:11434/api/chat`, model `gemma4`. |
+| Value                 | Description                                                                                                                                         |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `anthropic` (default) | Anthropic Claude API. Uses `API_KEY` / `--api-key`. Default model `claude-sonnet-4-20250514`.                                                       |
+| `ollama`              | Local Ollama server. No API key required. Defaults to `http://localhost:11434/api/chat`, model `gemma4`.                                            |
+| `openrouter`          | OpenRouter API. Uses `API_KEY` / `--api-key`. Default model `deepseek/deepseek-v4-flash`, endpoint `https://openrouter.ai/api/v1/chat/completions`. |
 
 ```bash
 # Run the audit against a local Ollama instance
@@ -299,7 +305,7 @@ npx mint-ds export --target tailwind --provider ollama
 | ------------------- | ------------------------------------------------------------------------- |
 | `--out <file>`      | Tokens output path (default: `mint-ds.tokens.json`)                       |
 | `--report <file>`   | Also write the raw `AuditReport` JSON for inspection                      |
-| `--provider <name>` | LLM backend: `anthropic` (default) or `ollama`                            |
+| `--provider <name>` | LLM backend: `anthropic` (default), `ollama`, or `openrouter`             |
 | `--quiet`           | Skip the chaos summary printout                                           |
 | `--no-cache`        | Skip the cache lookup and overwrite any existing cache entry for this CSS |
 
@@ -325,7 +331,7 @@ Add `mint-ds.cache.json` to `.gitignore` if you don't want to commit it.
 | `--target <name>`   | **Required.** Accepts: `tailwind`, `react`, `vue`, `svelte`, `astro`, `css`, `scss`, `ts`, `css-modules`, `styled`, `emotion` (full names like `tailwind-config`, `react-component` also work) |
 | `--tokens <file>`   | Tokens input path (default: `mint-ds.tokens.json`)                                                                                                                                             |
 | `--out <file>`      | Override the default output filename                                                                                                                                                           |
-| `--provider <name>` | LLM backend: `anthropic` (default) or `ollama`                                                                                                                                                 |
+| `--provider <name>` | LLM backend: `anthropic` (default), `ollama`, or `openrouter`                                                                                                                                  |
 | `--stdout`          | Print to stdout instead of writing a file                                                                                                                                                      |
 
 ### Local development without publishing
@@ -355,14 +361,14 @@ node bin/mint-ds.mjs audit ./examples/site --provider ollama
 - [Next.js 15](https://nextjs.org/) — App Router, API routes
 - [React 18](https://react.dev/) — Client components
 - [TypeScript](https://www.typescriptlang.org/)
-- [Claude API](https://docs.anthropic.com/) — `claude-sonnet-4-20250514` for audit, resolve, and export generation by default; [Ollama](https://ollama.com/) is also supported as an alternative local backend via `--provider ollama`
+- [Claude API](https://docs.anthropic.com/) — `claude-sonnet-4-20250514` for audit, resolve, and export generation by default; [Ollama](https://ollama.com/) and [OpenRouter](https://openrouter.ai/) are also supported as alternatives via `--provider ollama` or `--provider openrouter`
 
 ## Getting started
 
 ### Prerequisites
 
 - Node.js 20+ (the CLI uses native `fetch` and recursive `fs.readdir`)
-- An [Anthropic API key](https://console.anthropic.com/)
+- An [Anthropic API key](https://console.anthropic.com/) or [OpenRouter API key](https://openrouter.ai/keys)
 
 ### Setup
 
@@ -379,10 +385,10 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Environment variables
 
-| Variable            | Required | Description                                                                                        |
-| ------------------- | -------- | -------------------------------------------------------------------------------------------------- |
-| `API_KEY`           | No       | LLM provider API key                                                                               |
-| `ANTHROPIC_API_KEY` | Yes      | Anthropic API key — get one at [console.anthropic.com](https://console.anthropic.com) (Deprecated) |
+| Variable            | Required | Description                                                         |
+| ------------------- | -------- | ------------------------------------------------------------------- |
+| `API_KEY`           | No       | LLM provider API key — works with Anthropic, OpenRouter, and others |
+| `ANTHROPIC_API_KEY` | Yes      | Anthropic API key (Deprecated — use `API_KEY` instead)              |
 
 ## Project structure
 
