@@ -17,6 +17,7 @@ import {
   resolveTarget,
 } from '../lib/prompts.mjs'
 import { getCssAuditor } from '../lib/css-auditor.mjs'
+import { lintCss } from '../lib/css-lint-rules.mjs'
 
 const require = createRequire(import.meta.url)
 const { version: VERSION } = require('../package.json')
@@ -85,6 +86,7 @@ ${styles.bold('COMMANDS')}
   audit <dir>                  Analyze CSS/SCSS files in <dir> and write ${DEFAULT_TOKENS_FILE}
   export --target <name>       Generate exports from ${DEFAULT_TOKENS_FILE}
   cache --clear                Delete the local ${CACHE_FILE}
+  lint <dir>                   Run static CSS lint rules on files in <dir>
 
 ${styles.bold('AUDIT OPTIONS')}
   --out <file>                 Tokens output path (default: ${DEFAULT_TOKENS_FILE})
@@ -119,6 +121,7 @@ ${styles.bold('EXAMPLES')}
   npx mint-ds export --target tailwind
   npx mint-ds export --target react --out ui/Components.tsx
   npx mint-ds export --target css --stdout > variables.css
+  npx mint-ds lint ./src/styles
 `)
 }
 
@@ -349,6 +352,42 @@ async function cmdCache(argv) {
   }
 }
 
+async function cmdLint(argv) {
+  const { rest } = parseFlags(argv)
+  const target = rest[0]
+  if (!target) die('Usage: mint-ds lint <directory>')
+
+  log(styles.cyan('→') + ` Linting sources from ${styles.bold(target)}…`)
+  const { files, css } = await collectSources(target)
+  log(
+    styles.dim(
+      `  ${files.length} file(s), ${(css.length / 1000).toFixed(1)}k chars`
+    )
+  )
+
+  const result = lintCss(css)
+  const { findings } = result
+
+  if (findings.length === 0) {
+    log(styles.green('✓') + ' No lint issues found.')
+    return
+  }
+
+  log('')
+  log(styles.bold(`Found ${findings.length} issue(s):`))
+  log('')
+
+  for (const finding of findings) {
+    const badge =
+      finding.severity === 'warning'
+        ? styles.yellow('WARN')
+        : styles.dim('INFO')
+    log(`  ${badge}  ${finding.selector}`)
+    log(styles.dim(`       ${finding.message}`))
+    log('')
+  }
+}
+
 async function cmdExport(argv) {
   const { flags } = parseFlags(argv)
   const targetInput = flags.target
@@ -411,6 +450,7 @@ async function main() {
     if (cmd === 'audit') await cmdAudit(rest)
     else if (cmd === 'export') await cmdExport(rest)
     else if (cmd === 'cache') await cmdCache(rest)
+    else if (cmd === 'lint') await cmdLint(rest)
     else {
       printHelp()
       die(`Unknown command: ${cmd}`)
