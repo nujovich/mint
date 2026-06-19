@@ -100,14 +100,22 @@ ${styles.bold('EXPORT OPTIONS')}
   --stdout                     Print to stdout instead of writing a file
 
 ${styles.bold('AUTH (any command)')}
-  --api-key <value>            Anthropic API key (overrides API_KEY env var)
+  --api-key <value>            LLM provider API key (overrides API_KEY env var)
+
+${styles.bold('PROVIDER')}
+  --provider <name>            LLM backend (default: anthropic)
+                                 anthropic  — Claude API (default)
+                                 ollama     — Local Ollama (no key required)
+                                 openrouter — OpenRouter API
 
 ${styles.bold('ENVIRONMENT')}
-  API_KEY            Required unless --api-key is passed.
-                               Get a key at https://console.anthropic.com
+  API_KEY            LLM provider API key (Anthropic, OpenRouter, etc.)
+                       Anthropic:  https://console.anthropic.com
+                       OpenRouter: https://openrouter.ai/keys
 
 ${styles.bold('EXAMPLES')}
   npx mint-ds audit ./src/styles
+  npx mint-ds audit ./src/styles --provider openrouter
   npx mint-ds export --target tailwind
   npx mint-ds export --target react --out ui/Components.tsx
   npx mint-ds export --target css --stdout > variables.css
