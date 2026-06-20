@@ -84,5 +84,8 @@
       "prettier --check"
     ],
     "*.{json,css,md}": "prettier --check"
+  },
+  "dependencies": {
+    "web-features": "^3.31.0"
   }
 }
