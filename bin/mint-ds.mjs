@@ -107,6 +107,7 @@ ${styles.bold('PROVIDER')}
                                  anthropic  — Claude API (default)
                                  ollama     — Local Ollama (no key required)
                                  openrouter — OpenRouter API
+  --model <name>               Model name (overrides LLM_MODEL_NAME env var)
 
 ${styles.bold('ENVIRONMENT')}
   API_KEY            LLM provider API key (Anthropic, OpenRouter, etc.)
