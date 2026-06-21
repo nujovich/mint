@@ -242,7 +242,7 @@ npx mint-ds export --target css          # → variables.css
 
 ### Authentication
 
-Every command needs an LLM provider API key. You have two options — pick whichever fits your workflow:
+Every command needs an LLM provider API key. You have three options — pick whichever fits your workflow:
 
 **Option 1 — pass it per-command with `--api-key`:**
 
@@ -252,7 +252,15 @@ npx mint-ds audit ./src/styles --api-key sk-ant-...
 
 Useful for one-off runs, CI jobs, or when you don't want the key persisted in your shell.
 
-**Option 2 — set the `API_KEY` env var.** Syntax depends on your shell:
+**Option 2 — set a per-provider env var** (recommended when you use multiple providers):
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+export OPENROUTER_API_KEY=sk-or-...
+export OLLAMA_API_KEY=sk-ollama-...    # optional — Ollama doesn't require a key
+```
+
+**Option 3 — set the generic `API_KEY` env var** (works with any provider):
 
 | Shell                               | Command                       |
 | ----------------------------------- | ----------------------------- |
@@ -263,7 +271,7 @@ Useful for one-off runs, CI jobs, or when you don't want the key persisted in yo
 
 These commands set the key only for the current shell session. To persist it, add the line to your shell rc file (`~/.bashrc`, `~/.zshrc`, `~/.config/fish/config.fish`, your PowerShell `$PROFILE`, etc.) or use the system Environment Variables dialog on Windows.
 
-`--api-key` always wins over the env var when both are present.
+`--api-key` always wins over env vars. Per-provider env vars (`ANTHROPIC_API_KEY`, etc.) win over the generic `API_KEY`.
 
 Where to get a key:
 
@@ -274,11 +282,13 @@ Where to get a key:
 
 Mint talks to an LLM for audit, resolve, and export. By default it uses Anthropic Claude; you can swap to a local backend with `--provider`.
 
-| Value                 | Description                                                                                                                                         |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `anthropic` (default) | Anthropic Claude API. Uses `API_KEY` / `--api-key`. Default model `claude-sonnet-4-20250514`.                                                       |
-| `ollama`              | Local Ollama server. No API key required. Defaults to `http://localhost:11434/api/chat`, model `gemma4`.                                            |
-| `openrouter`          | OpenRouter API. Uses `API_KEY` / `--api-key`. Default model `deepseek/deepseek-v4-flash`, endpoint `https://openrouter.ai/api/v1/chat/completions`. |
+| Value                 | Description                                                                                                           |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `anthropic` (default) | Anthropic Claude API. Default model `claude-sonnet-4-20250514`.                                                       |
+| `ollama`              | Local Ollama server. No API key required. Defaults to `http://localhost:11434/api/chat`, model `gemma4`.              |
+| `openrouter`          | OpenRouter API. Default model `deepseek/deepseek-v4-flash`, endpoint `https://openrouter.ai/api/v1/chat/completions`. |
+
+Override model or URL with `--model`/`--url` or the corresponding env vars. See [Environment variables](#environment-variables) for the full precedence chain.
 
 ```bash
 # Run the audit against a local Ollama instance
@@ -306,6 +316,9 @@ npx mint-ds export --target tailwind --provider ollama
 | `--out <file>`      | Tokens output path (default: `mint-ds.tokens.json`)                       |
 | `--report <file>`   | Also write the raw `AuditReport` JSON for inspection                      |
 | `--provider <name>` | LLM backend: `anthropic` (default), `ollama`, or `openrouter`             |
+| `--api-key <value>` | LLM provider API key (overrides all API key env vars)                     |
+| `--model <name>`    | Model name (overrides all model env vars)                                 |
+| `--url <url>`       | API endpoint URL (overrides all URL env vars)                             |
 | `--quiet`           | Skip the chaos summary printout                                           |
 | `--no-cache`        | Skip the cache lookup and overwrite any existing cache entry for this CSS |
 
@@ -332,6 +345,9 @@ Add `mint-ds.cache.json` to `.gitignore` if you don't want to commit it.
 | `--tokens <file>`   | Tokens input path (default: `mint-ds.tokens.json`)                                                                                                                                             |
 | `--out <file>`      | Override the default output filename                                                                                                                                                           |
 | `--provider <name>` | LLM backend: `anthropic` (default), `ollama`, or `openrouter`                                                                                                                                  |
+| `--api-key <value>` | LLM provider API key (overrides all API key env vars)                                                                                                                                          |
+| `--model <name>`    | Model name (overrides all model env vars)                                                                                                                                                      |
+| `--url <url>`       | API endpoint URL (overrides all URL env vars)                                                                                                                                                  |
 | `--stdout`          | Print to stdout instead of writing a file                                                                                                                                                      |
 
 ### Local development without publishing
@@ -385,10 +401,40 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Environment variables
 
-| Variable            | Required | Description                                                         |
-| ------------------- | -------- | ------------------------------------------------------------------- |
-| `API_KEY`           | No       | LLM provider API key — works with Anthropic, OpenRouter, and others |
-| `ANTHROPIC_API_KEY` | Yes      | Anthropic API key (Deprecated — use `API_KEY` instead)              |
+Mint resolves configuration through a precedence chain: **CLI flag > per-provider env var > generic env var > provider default**.
+
+### API keys
+
+| Variable             | Description                                   |
+| -------------------- | --------------------------------------------- |
+| `ANTHROPIC_API_KEY`  | Anthropic API key                             |
+| `OPENROUTER_API_KEY` | OpenRouter API key                            |
+| `OLLAMA_API_KEY`     | Ollama API key (optional — Ollama needs none) |
+| `API_KEY`            | Universal fallback for all providers          |
+
+Precedence: `--api-key` > `{PROVIDER}_API_KEY` > `API_KEY` > provider default (none for Anthropic/OpenRouter, undefined for Ollama).
+
+### Model name
+
+| Variable                | Description                          |
+| ----------------------- | ------------------------------------ |
+| `ANTHROPIC_MODEL_NAME`  | Model name for Anthropic             |
+| `OPENROUTER_MODEL_NAME` | Model name for OpenRouter            |
+| `OLLAMA_MODEL_NAME`     | Model name for Ollama                |
+| `LLM_MODEL_NAME`        | Universal fallback for all providers |
+
+Precedence: `--model` > `{PROVIDER}_MODEL_NAME` > `LLM_MODEL_NAME` > provider default.
+
+### API URL
+
+| Variable             | Description                          |
+| -------------------- | ------------------------------------ |
+| `ANTHROPIC_API_URL`  | API endpoint for Anthropic           |
+| `OPENROUTER_API_URL` | API endpoint for OpenRouter          |
+| `OLLAMA_API_URL`     | API endpoint for Ollama              |
+| `LLM_API_URL`        | Universal fallback for all providers |
+
+Precedence: `--url` > `{PROVIDER}_API_URL` > `LLM_API_URL` > provider default.
 
 ## Project structure
 
