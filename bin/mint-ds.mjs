@@ -108,6 +108,7 @@ ${styles.bold('PROVIDER')}
                                  ollama     — Local Ollama (no key required)
                                  openrouter — OpenRouter API
   --model <name>               Model name (overrides LLM_MODEL_NAME env var)
+  --url <url>                  API endpoint URL (overrides LLM_API_URL env var)
 
 ${styles.bold('ENVIRONMENT')}
   API_KEY            LLM provider API key (Anthropic, OpenRouter, etc.)
