@@ -107,11 +107,22 @@ ${styles.bold('PROVIDER')}
                                  anthropic  — Claude API (default)
                                  ollama     — Local Ollama (no key required)
                                  openrouter — OpenRouter API
+  --model <name>               Model name (overrides LLM_MODEL_NAME env var)
+  --url <url>                  API endpoint URL (overrides LLM_API_URL env var)
 
 ${styles.bold('ENVIRONMENT')}
-  API_KEY            LLM provider API key (Anthropic, OpenRouter, etc.)
+  API_KEY            LLM provider API key (universal fallback)
                        Anthropic:  https://console.anthropic.com
                        OpenRouter: https://openrouter.ai/keys
+  LLM_MODEL_NAME     Model name (universal fallback)
+  LLM_API_URL        API endpoint URL (universal fallback)
+
+  Per-provider overrides (take priority over the generic vars):
+    API key          ANTHROPIC_API_KEY, OPENROUTER_API_KEY, OLLAMA_API_KEY
+    Model            ANTHROPIC_MODEL_NAME, OPENROUTER_MODEL_NAME, OLLAMA_MODEL_NAME
+    URL              ANTHROPIC_API_URL, OPENROUTER_API_URL, OLLAMA_API_URL
+
+  Precedence: --flag > {PROVIDER}_ENV > generic env > provider default
 
 ${styles.bold('EXAMPLES')}
   npx mint-ds audit ./src/styles
