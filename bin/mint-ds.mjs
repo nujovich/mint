@@ -17,6 +17,7 @@ import {
   resolveTarget,
 } from '../lib/prompts.mjs'
 import { getCssAuditor } from '../lib/css-auditor.mjs'
+import { validateFile } from '../lib/dtcg-validator.mjs'
 
 const require = createRequire(import.meta.url)
 const { version: VERSION } = require('../package.json')
@@ -84,6 +85,7 @@ ${styles.bold('USAGE')}
 ${styles.bold('COMMANDS')}
   audit <dir>                  Analyze CSS/SCSS files in <dir> and write ${DEFAULT_TOKENS_FILE}
   export --target <name>       Generate exports from ${DEFAULT_TOKENS_FILE}
+  validate <file> [options]    Validate tokens.json against a spec (e.g. dtcg)
   cache --clear                Delete the local ${CACHE_FILE}
 
 ${styles.bold('AUDIT OPTIONS')}
@@ -98,6 +100,12 @@ ${styles.bold('EXPORT OPTIONS')}
   --tokens <file>              Tokens input path (default: ${DEFAULT_TOKENS_FILE})
   --out <file>                 Override the generated filename
   --stdout                     Print to stdout instead of writing a file
+
+${styles.bold('VALIDATE OPTIONS')}
+  --spec <name>                Spec to validate against (default: dtcg). Values: dtcg
+  --json                       Output results as JSON
+  --quiet                      Suppress non-error output
+  --no-semantic                Skip semantic checks (refs, cycles, naming, type mismatch)
 
 ${styles.bold('AUTH (any command)')}
   --api-key <value>            LLM provider API key (overrides API_KEY env var)
@@ -130,6 +138,8 @@ ${styles.bold('EXAMPLES')}
   npx mint-ds export --target tailwind
   npx mint-ds export --target react --out ui/Components.tsx
   npx mint-ds export --target css --stdout > variables.css
+  npx mint-ds validate tokens.json --spec dtcg
+  npx mint-ds validate tokens.json --spec dtcg --json
 `)
 }
 
@@ -406,6 +416,42 @@ async function cmdExport(argv) {
   )
 }
 
+async function cmdValidate(argv) {
+  const { flags, rest } = parseFlags(argv)
+  const file = rest[0]
+  if (!file)
+    die(
+      'Usage: mint-ds validate <tokens.json> [--spec dtcg] [--json] [--quiet]'
+    )
+
+  const spec = String(flags.spec || 'dtcg').toLowerCase()
+  if (spec !== 'dtcg') {
+    die(`Unknown spec "${spec}". Supported: dtcg`)
+  }
+
+  const asJson = Boolean(flags.json)
+  const quiet = Boolean(flags.quiet)
+
+  log(
+    styles.cyan('→') +
+      ` Validating ${styles.bold(file)} against ${styles.bold(spec.toUpperCase())} v1…`
+  )
+
+  const result = await validateFile(file, {
+    semantic: flags['no-semantic'] !== true,
+  })
+
+  if (asJson) {
+    process.stdout.write(JSON.stringify(result.toJSON(), null, 2) + '\n')
+  } else if (!quiet) {
+    const output = result.print(true, false)
+    log(output)
+  }
+
+  // Exit with appropriate code: 0 = ok, 1 = warnings, 2 = errors
+  process.exit(result.exitCode)
+}
+
 async function main() {
   const argv = process.argv.slice(2)
   if (argv.length === 0 || argv[0] === '-h' || argv[0] === '--help') {
@@ -421,6 +467,7 @@ async function main() {
   try {
     if (cmd === 'audit') await cmdAudit(rest)
     else if (cmd === 'export') await cmdExport(rest)
+    else if (cmd === 'validate') await cmdValidate(rest)
     else if (cmd === 'cache') await cmdCache(rest)
     else {
       printHelp()

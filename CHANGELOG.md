@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Features
+
+- `mint-ds validate` — DTCG v1 validation for `tokens.json`: structural checks plus
+  semantic checks (broken/circular references, naming consistency, reference type
+  mismatches), `--json` output, `--no-semantic` flag, and CI templates under `templates/dtcg/`.
+
 ## [0.1.0] - 2026-05-19
 
 ### Features
