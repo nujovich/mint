@@ -274,6 +274,21 @@ These commands set the key only for the current shell session. To persist it, ad
 | `mint-ds cache --clear`          | Delete the local `mint-ds.cache.json` cache file                                                                           |
 | `mint-ds --help`                 | Show full usage                                                                                                            |
 
+### Validate options
+
+| Flag            | Description                                                |
+| --------------- | ---------------------------------------------------------- |
+| `--spec <name>` | Spec to validate against (default: `dtcg`)                 |
+| `--json`        | Emit machine-readable JSON to stdout                       |
+| `--no-semantic` | Skip semantic checks (refs, cycles, naming, type mismatch) |
+
+`validate` runs two layers of checks:
+
+- **Structural** — every node must be a valid DTCG token (with `$value`) or a group; `$type` is required and validated against the value.
+- **Semantic** — broken references, circular references, naming-convention drift, and reference type mismatches.
+
+**Exit codes:** `0` valid · `1` warnings only · `2` errors. Structural violations and broken/circular references are errors (exit `2`); naming drift and type mismatches are warnings (exit `1`). Ready-made CI templates (GitHub Action + pre-commit hook) live in [`templates/dtcg/`](templates/dtcg/).
+
 ### Audit options
 
 | Flag              | Description                                                               |
