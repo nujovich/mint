@@ -1,0 +1,22 @@
+name: Validate design tokens (DTCG)
+
+on:
+  pull_request:
+    paths:
+      - '**/tokens.json'
+      - '**/*.tokens.json'
+      - 'mint-ds.tokens.json'
+  push:
+    branches: [main]
+
+jobs:
+  dtcg-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - name: Validate tokens against DTCG v1
+        run: npx mint-ds validate mint-ds.tokens.json --spec dtcg --json

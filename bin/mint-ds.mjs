@@ -105,6 +105,7 @@ ${styles.bold('VALIDATE OPTIONS')}
   --spec <name>                Spec to validate against (default: dtcg). Values: dtcg
   --json                       Output results as JSON
   --quiet                      Suppress non-error output
+  --no-semantic                Skip semantic checks (refs, cycles, naming, type mismatch)
 
 ${styles.bold('AUTH (any command)')}
   --api-key <value>            Anthropic API key (overrides ANTHROPIC_API_KEY env var)
@@ -413,7 +414,9 @@ async function cmdValidate(argv) {
       ` Validating ${styles.bold(file)} against ${styles.bold(spec.toUpperCase())} v1…`
   )
 
-  const result = await validateFile(file)
+  const result = await validateFile(file, {
+    semantic: flags['no-semantic'] !== true,
+  })
 
   if (asJson) {
     process.stdout.write(JSON.stringify(result.toJSON(), null, 2) + '\n')

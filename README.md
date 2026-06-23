@@ -270,6 +270,7 @@ These commands set the key only for the current shell session. To persist it, ad
 | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `mint-ds audit <dir>`            | Walk `<dir>` for `.css`, `.scss`, `.sass`, `.less`, `.html` files, audit them with Claude, and write `mint-ds.tokens.json` |
 | `mint-ds export --target <name>` | Read `mint-ds.tokens.json` and generate the chosen format                                                                  |
+| `mint-ds validate <file>`        | Validate `tokens.json` against DTCG v1 — structure, references, cycles, naming consistency                                 |
 | `mint-ds cache --clear`          | Delete the local `mint-ds.cache.json` cache file                                                                           |
 | `mint-ds --help`                 | Show full usage                                                                                                            |
 
