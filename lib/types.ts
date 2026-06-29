@@ -100,6 +100,13 @@ export interface AdoptionSuggestion {
   reason: string
 }
 
+export interface OverflowSafetyIssue {
+  selector: string
+  rule: string // 'flex-wrap-missing' | 'missing-overflow-wrap'
+  severity: 'warning' | 'suggestion'
+  reason: string
+}
+
 export interface AuditReport {
   brand: string
   chaosScore: number
@@ -111,6 +118,7 @@ export interface AuditReport {
   layoutA11yIssues: LayoutA11yIssue[]
   modernPracticeIssues: ModernPracticeIssue[]
   adoptionSuggestions: AdoptionSuggestion[]
+  overflowSafetyIssues: OverflowSafetyIssue[]
 }
 
 export interface ColorDecision {
