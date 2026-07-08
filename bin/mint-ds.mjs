@@ -20,7 +20,7 @@ import { getCssAuditor } from '../lib/css-auditor.mjs'
 import { validateFile } from '../lib/dtcg-validator.mjs'
 import { formatLintSummary } from '../lib/audit-summary.mjs'
 import { checkCompat } from '../lib/css-compat-data.mjs'
-import { lintCss } from '../lib/css-lint-rules.mjs'
+import { lintCss, lintGapDecorationAdoption } from '../lib/css-lint-rules.mjs'
 
 const require = createRequire(import.meta.url)
 const { version: VERSION } = require('../package.json')
@@ -463,20 +463,42 @@ async function cmdLint(argv) {
 
   if (findings.length === 0) {
     log(styles.green('✓') + ' No lint issues found.')
-    return
+  } else {
+    log('')
+    log(styles.bold(`Found ${findings.length} issue(s):`))
+    log('')
+
+    for (const finding of findings) {
+      const badge =
+        finding.severity === 'warning'
+          ? styles.yellow('WARN')
+          : styles.dim('INFO')
+      log(`  ${badge}  ${finding.selector}`)
+      log(styles.dim(`       ${finding.message}`))
+      log('')
+    }
   }
 
-  log('')
-  log(styles.bold(`Found ${findings.length} issue(s):`))
-  log('')
-
-  for (const finding of findings) {
-    const badge =
-      finding.severity === 'warning'
-        ? styles.yellow('WARN')
-        : styles.dim('INFO')
-    log(`  ${badge}  ${finding.selector}`)
-    log(styles.dim(`       ${finding.message}`))
+  // Modern CSS Opportunities: adoption report for gap decorations.
+  const { adoption } = lintGapDecorationAdoption(css, {
+    stylesheetCount: files.length,
+  })
+  if (adoption.hacksTotal > 0) {
+    log('')
+    log(styles.bold('Modern CSS Opportunities'))
+    log(
+      styles.dim(
+        `  ${adoption.stylesheetsWithHacks}/${adoption.stylesheetsScanned} stylesheet(s) use gap-decoration hacks`
+      )
+    )
+    log(
+      styles.dim(
+        `  ${adoption.hacksTotal} hack(s) could be replaced by native gap-rule-* (Chrome 149+, Firefox 132+)`
+      )
+    )
+    for (const [pattern, count] of Object.entries(adoption.byPattern)) {
+      log(styles.dim(`    - ${pattern}: ${count}`))
+    }
     log('')
   }
 }
