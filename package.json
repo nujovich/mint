@@ -86,6 +86,7 @@
     "*.{json,css,md}": "prettier --check"
   },
   "dependencies": {
-    "web-features": "^3.31.0"
+    "browserslist": "^4.28.5",
+    "web-features": "^3.32.0"
   }
 }
