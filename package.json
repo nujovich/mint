@@ -29,7 +29,6 @@
     "lib/prompts.mjs",
     "lib/css-utils.mjs",
     "lib/css-auditor.mjs",
-    "lib/css-lint-rules.mjs",
     "lib/config.mjs",
     "lib/llm_providers/**/*.mjs",
     "README.md"
