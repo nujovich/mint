@@ -30,6 +30,7 @@
     "lib/css-utils.mjs",
     "lib/css-auditor.mjs",
     "lib/config.mjs",
+    "lib/dtcg-validator.mjs",
     "lib/llm_providers/**/*.mjs",
     "README.md"
   ],
