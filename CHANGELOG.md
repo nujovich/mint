@@ -1,8 +1,10 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
 ## [0.2.1](https://github.com/nujovich/mint/compare/v0.2.0...v0.2.1) (2026-07-10)
 
-All notable changes to this project will be documented in this file.
+Maintenance release: release automation and CI publishing (OIDC + provenance). No user-facing changes.
 
 ## [0.2.0] - 2026-07-10
 
