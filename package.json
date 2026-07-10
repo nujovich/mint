@@ -55,8 +55,8 @@
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "vitest run",
     "prepare": "husky",
-    "release": "release-it",
-    "release:dry": "release-it --dry-run"
+    "release": "GITHUB_TOKEN=$(gh auth token) release-it",
+    "release:dry": "GITHUB_TOKEN=$(gh auth token) release-it --dry-run"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.0.1",
