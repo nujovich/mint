@@ -2,10 +2,18 @@
 
 import { useState } from 'react'
 import type { AuditReport, ColorDecision, UserDecisions } from '@/lib/types'
+import { collectLintGroups } from '@/lib/audit-summary.mjs'
 
 interface Props {
   audit: AuditReport
   onResolve: (decisions: UserDecisions) => void
+}
+
+interface LintIssue {
+  selector?: string
+  rule?: string
+  severity: string
+  reason: string
 }
 
 function nearestScaleValue(
@@ -44,6 +52,7 @@ export default function AuditView({ audit, onResolve }: Props) {
   const lineHeights = audit.lineHeights?.suggestedScale ?? {}
   const motionDurations = audit.motion?.durations?.suggestedScale ?? {}
   const motionEasings = audit.motion?.easings?.suggestedScale ?? {}
+  const lintGroups = collectLintGroups(audit)
 
   const chaosColor =
     audit.chaosScore <= 3
@@ -792,6 +801,87 @@ export default function AuditView({ audit, onResolve }: Props) {
         </div>
       </section>
 
+      {/* Layout linting */}
+      {lintGroups.length > 0 && (
+        <section>
+          <SectionLabel>
+            Layout linting —{' '}
+            {lintGroups.reduce((n, g) => n + g.issues.length, 0)} issue
+            {lintGroups.reduce((n, g) => n + g.issues.length, 0) === 1
+              ? ''
+              : 's'}
+          </SectionLabel>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {lintGroups.map((group) => (
+              <div key={group.key}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: 'var(--text-faint)',
+                    marginBottom: 8,
+                  }}
+                >
+                  {group.label} ({group.issues.length})
+                </div>
+                <div
+                  style={{ display: 'flex', flexDirection: 'column', gap: 6 }}
+                >
+                  {group.issues.map((issue: LintIssue, i: number) => (
+                    <div
+                      key={`${group.key}-${i}`}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'baseline',
+                        gap: 8,
+                        padding: '8px 12px',
+                        borderRadius: 8,
+                        background: 'var(--surface)',
+                        border: '1px solid var(--border)',
+                      }}
+                    >
+                      <span
+                        style={{
+                          flexShrink: 0,
+                          fontSize: 10,
+                          fontWeight: 600,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.04em',
+                          color: severityColor(issue.severity),
+                        }}
+                      >
+                        {issue.severity}
+                      </span>
+                      <div style={{ minWidth: 0 }}>
+                        <code
+                          style={{
+                            fontSize: 11,
+                            fontFamily: 'var(--mono)',
+                            color: 'var(--text)',
+                          }}
+                        >
+                          {issue.selector || issue.rule || '—'}
+                        </code>
+                        <div
+                          style={{
+                            fontSize: 11,
+                            color: 'var(--text-muted)',
+                            lineHeight: 1.55,
+                            marginTop: 2,
+                          }}
+                        >
+                          {issue.reason}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* CTA */}
       <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 8 }}>
         <button
@@ -827,6 +917,12 @@ export default function AuditView({ audit, onResolve }: Props) {
       </div>
     </div>
   )
+}
+
+function severityColor(severity: string): string {
+  if (severity === 'warning') return '#fbbf24'
+  if (severity === 'suggestion') return '#818cf8'
+  return 'var(--text-faint)'
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
