@@ -18,6 +18,7 @@ import {
 } from '../lib/prompts.mjs'
 import { getCssAuditor } from '../lib/css-auditor.mjs'
 import { validateFile } from '../lib/dtcg-validator.mjs'
+import { formatLintSummary } from '../lib/audit-summary.mjs'
 
 const require = createRequire(import.meta.url)
 const { version: VERSION } = require('../package.json')
@@ -341,6 +342,8 @@ async function cmdAudit(argv) {
         `  ${audit.colorClusters?.length ?? 0} clusters · ${audit.fonts?.length ?? 0} fonts · ${audit.spacing?.found?.length ?? 0} spacing values · ${audit.motion?.durations?.found?.length ?? 0} motion durations`
       )
     )
+    const lintSummary = formatLintSummary(audit)
+    if (lintSummary) log(styles.dim(`  ${lintSummary}`))
     log('')
   }
   log(styles.green('✓') + ` Tokens written to ${styles.bold(outFile)}`)
