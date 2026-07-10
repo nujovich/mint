@@ -27,8 +27,15 @@
   "files": [
     "bin",
     "lib/prompts.mjs",
+    "lib/css-utils.mjs",
+    "lib/css-auditor.mjs",
+    "lib/config.mjs",
+    "lib/llm_providers/**/*.mjs",
     "README.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=20"
   },
@@ -45,6 +52,7 @@
     "format:check": "prettier --check .",
     "format:write": "prettier --write .",
     "typecheck": "tsc --noEmit",
+    "prepublishOnly": "vitest run",
     "prepare": "husky",
     "release": "release-it",
     "release:dry": "release-it --dry-run"
