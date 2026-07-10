@@ -90,6 +90,7 @@ All four commands run automatically in CI on every PR. The pre-commit hook runs 
 
 - Use the PR template — fill out all sections
 - Keep PRs focused: one logical change per PR
+- **PR titles must be Conventional Commits.** PRs are squash-merged, so the PR title becomes the commit on `main` and the corresponding changelog entry — use `feat: …`, `fix: …`, etc. The `PR Title` CI check enforces this.
 - For anything that changes Claude prompts or the AuditReport/DSTokens shape, include a before/after example of the JSON output in the PR description
 
 ## Commit message convention
@@ -109,7 +110,7 @@ This project uses [Conventional Commits](https://www.conventionalcommits.org/) s
 
 Breaking changes: add `!` after the prefix or a `BREAKING CHANGE:` footer, e.g. `feat!: redesign token schema`.
 
-The `commit-msg` hook enforces this format automatically via commitlint.
+The `commit-msg` hook enforces this format automatically via commitlint. You never edit `CHANGELOG.md` by hand — it is generated from these commit messages at release time.
 
 ## Releasing a new version
 
@@ -130,3 +131,5 @@ GITHUB_TOKEN=<your-token> npm run release
 3. Commit both files with `chore: release vX.Y.Z`
 4. Create and push the git tag `vX.Y.Z`
 5. Publish a GitHub Release with the generated notes
+
+Pushing the `vX.Y.Z` tag triggers the `publish.yml` workflow, which publishes the package to npm with provenance via OIDC trusted publishing — there is no manual `npm publish` step.
