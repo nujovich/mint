@@ -108,6 +108,35 @@ export interface MotionAudit {
   duplicateDeclarations: number
 }
 
+export interface LayoutA11yIssue {
+  selector: string
+  property: string // 'order' or 'tabindex'
+  value: string
+  reason: string
+  severity: 'warning' // always warning for a11y impact
+}
+
+export interface ModernPracticeIssue {
+  selector: string
+  rule: string // 'grid-when-flexbox-wrap-would-work' | 'legacy-centering' | 'flex-min-width-zero-hack' | 'fragile-nested-selectors'
+  severity: 'suggestion'
+  reason: string
+}
+
+export interface AdoptionSuggestion {
+  selector: string
+  rule: string // 'use-css-layers' | 'use-container-queries'
+  severity: 'info'
+  reason: string
+}
+
+export interface OverflowSafetyIssue {
+  selector: string
+  rule: string // 'flex-wrap-missing' | 'missing-overflow-wrap'
+  severity: 'warning' | 'suggestion'
+  reason: string
+}
+
 export interface AuditReport {
   brand: string
   chaosScore: number
@@ -117,6 +146,10 @@ export interface AuditReport {
   spacing: SpacingAudit
   lineHeights: LineHeightAudit
   motion?: MotionAudit
+  layoutA11yIssues?: LayoutA11yIssue[]
+  modernPracticeIssues?: ModernPracticeIssue[]
+  adoptionSuggestions?: AdoptionSuggestion[]
+  overflowSafetyIssues?: OverflowSafetyIssue[]
 }
 
 export interface ColorDecision {

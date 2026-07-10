@@ -15,9 +15,28 @@ Both share the same prompts and Claude pipeline.
 CSS / SCSS / HTML  →  Claude Audit  →  Review & curate  →  Clean tokens  →  Export
 ```
 
-1. **Audit** — Claude analyzes your CSS, groups near-duplicate colors into clusters, detects fonts, flags spacing values that don't fit a 4px grid, and identifies duplicate transition/animation declarations.
+1. **Audit** — Claude analyzes your CSS, groups near-duplicate colors into clusters, detects fonts, flags spacing values that don't fit a 4px grid, identifies duplicate transition/animation declarations, and lints layout patterns for accessibility and modern-CSS pitfalls (see [CSS layout linting](#css-layout-linting)).
 2. **Curate** — Review each cluster. Pick the canonical color, rename tokens, include or exclude entries, and select which fonts to keep. (CLI applies sensible defaults: include every cluster, keep non-system fonts, use the suggested 4px scale.)
 3. **Export** — Generate production-ready output in any format.
+
+## CSS layout linting
+
+Beyond color, font, and spacing tokens, the audit also lints your CSS for layout accessibility issues and modern-CSS pitfalls. These findings are returned in the raw `AuditReport` (write it to disk with `--report`); the accessibility and overflow checks also feed the chaos score.
+
+| Category                   | Rule                                | Severity   | What it flags                                                                                                                   |
+| -------------------------- | ----------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **Layout accessibility**   | `order` breaks DOM order            | warning    | A grid/flex child reordered with `order` so the visual order no longer matches the DOM — breaks keyboard navigation and SR flow |
+|                            | reordering without tabindex         | warning    | An element visually reordered via `order` with no matching `tabindex` adjustment, so keyboard users navigate in DOM order       |
+| **Modern best practices**  | `grid-when-flexbox-wrap-would-work` | suggestion | Single-column grid that a `flex` + `flex-wrap` layout would handle more simply                                                  |
+|                            | `legacy-centering`                  | suggestion | `margin: 0 auto` + fixed width, or absolute-position + `transform` centering, where modern `flex`/`grid` centering is cleaner   |
+|                            | `flex-min-width-zero-hack`          | suggestion | `min-width: 0` on a flex item — the classic overflow workaround that often hides a layout misunderstanding                      |
+|                            | `fragile-nested-selectors`          | suggestion | Selectors coupled to a brittle DOM shape (deep `>` / `+` chains) that a small HTML refactor would break                         |
+| **Feature adoption**       | `use-css-layers`                    | info       | Large stylesheets (20+ rules) with no `@layer` organization                                                                     |
+|                            | `use-container-queries`             | info       | Component-scoped width `@media` queries that a `@container` query would express better                                          |
+| **Overflow & wrap safety** | `flex-wrap-missing`                 | warning    | Flex container without `flex-wrap` — items can't wrap and may overflow on narrow viewports                                      |
+|                            | `missing-overflow-wrap`             | suggestion | Sized grid/flex container (fixed width/height) with no `overflow` handling, so content can be clipped                           |
+
+The chaos score gains **+1** when there are 3 or more layout-accessibility issues and **+1** when there are 4 or more overflow-safety issues. Adoption suggestions are informational only and never affect the score.
 
 ## Example — Frankenstein
 
