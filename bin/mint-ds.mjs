@@ -19,6 +19,7 @@ import {
 import { getCssAuditor } from '../lib/css-auditor.mjs'
 import { validateFile } from '../lib/dtcg-validator.mjs'
 import { formatLintSummary } from '../lib/audit-summary.mjs'
+import { checkCompat } from '../lib/css-compat-data.mjs'
 
 const require = createRequire(import.meta.url)
 const { version: VERSION } = require('../package.json')
@@ -88,6 +89,7 @@ ${styles.bold('COMMANDS')}
   export --target <name>       Generate exports from ${DEFAULT_TOKENS_FILE}
   validate <file> [options]    Validate tokens.json against a spec (e.g. dtcg)
   cache --clear                Delete the local ${CACHE_FILE}
+  compat <dir>                 Scan CSS for Interop 2026 browser-compat issues (warnings + suggestions)
 
 ${styles.bold('AUDIT OPTIONS')}
   --out <file>                 Tokens output path (default: ${DEFAULT_TOKENS_FILE})
@@ -350,6 +352,73 @@ async function cmdAudit(argv) {
   log(styles.dim(`  next: npx mint-ds export --target tailwind`))
 }
 
+async function cmdCompat(argv) {
+  const { flags, rest } = parseFlags(argv)
+  const target = rest[0]
+  if (!target) die('Usage: mint-ds compat <directory>')
+
+  const quiet = Boolean(flags.quiet)
+  const projectDir = flags['project-dir']
+    ? String(flags['project-dir'])
+    : process.cwd()
+
+  log(
+    styles.cyan('→') +
+      ` Scanning ${styles.bold(target)} for Interop 2026 adoption issues…`
+  )
+  const { files, css } = await collectSources(target)
+  log(
+    styles.dim(
+      `  ${files.length} file(s), ${(css.length / 1000).toFixed(1)}k chars`
+    )
+  )
+
+  const { findings } = checkCompat(css, { projectDir })
+  if (findings.length === 0) {
+    log('')
+    log(
+      styles.green('✓') +
+        ' No browser-compat issues found (all used properties are Baseline or supported by the target browsers).'
+    )
+    return
+  }
+
+  // Sort: warnings (not-supported) first, then info (experimental).
+  const order = { warning: 0, info: 1 }
+  findings.sort((a, b) => (order[a.severity] ?? 9) - (order[b.severity] ?? 9))
+
+  let warnCount = 0
+  let infoCount = 0
+  for (const f of findings) {
+    const sevColor = f.severity === 'warning' ? styles.yellow : styles.cyan
+    const tag = f.severity === 'warning' ? 'WARNING' : 'INFO'
+    if (f.severity === 'warning') warnCount++
+    else infoCount++
+
+    log('')
+    log(sevColor('[' + tag + ']') + ' ' + styles.bold(f.property))
+    log('  ' + f.message)
+    if (f.feature) log(styles.dim('  feature: ' + f.feature))
+    if (typeof f.interop === 'number') {
+      log(styles.dim('  interop 2026: ' + f.interop + '%'))
+    }
+    log('  → ' + f.suggestion)
+  }
+
+  log('')
+  log(
+    styles.bold('Summary:') +
+      ` ${warnCount} warning(s), ${infoCount} info(s) across ${files.length} file(s).`
+  )
+  if (!quiet) {
+    log(
+      styles.dim(
+        '  Tip: add @supports fallbacks or a polyfill for unsupported features before shipping.'
+      )
+    )
+  }
+}
+
 async function cmdCache(argv) {
   const { flags } = parseFlags(argv)
   if (flags.clear) {
@@ -472,6 +541,7 @@ async function main() {
     else if (cmd === 'export') await cmdExport(rest)
     else if (cmd === 'validate') await cmdValidate(rest)
     else if (cmd === 'cache') await cmdCache(rest)
+    else if (cmd === 'compat') await cmdCompat(rest)
     else {
       printHelp()
       die(`Unknown command: ${cmd}`)
