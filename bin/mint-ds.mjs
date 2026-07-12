@@ -19,6 +19,7 @@ import {
 import { getCssAuditor } from '../lib/css-auditor.mjs'
 import { validateFile } from '../lib/dtcg-validator.mjs'
 import { diffFiles } from '../lib/token-diff.mjs'
+import { convertTokensToDTCG, serializeDTCG } from '../lib/dtcg-exporter.mjs'
 import { formatLintSummary } from '../lib/audit-summary.mjs'
 import { checkCompat } from '../lib/css-compat-data.mjs'
 import { lintCss, lintGapDecorationAdoption } from '../lib/css-lint-rules.mjs'
@@ -571,8 +572,17 @@ async function cmdExport(argv) {
   }
 
   log(styles.cyan('→') + ` Generating ${styles.bold(target)}…`)
-  const cssAuditor = getCssAuditor(flags)
-  const code = await cssAuditor.export(buildExportPrompt(tokens, target))
+
+  let code
+
+  if (target === 'dtcg') {
+    // Deterministic conversion — no LLM
+    const dtcg = convertTokensToDTCG(tokens)
+    code = serializeDTCG(dtcg)
+  } else {
+    const cssAuditor = getCssAuditor(flags)
+    code = await cssAuditor.export(buildExportPrompt(tokens, target))
+  }
 
   if (flags.stdout) {
     process.stdout.write(code + '\n')
