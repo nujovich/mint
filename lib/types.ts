@@ -30,6 +30,7 @@ export type ExportTarget =
   | 'scss-variables'
   | 'js-tokens'
   | 'tailwind-config'
+  | 'unocss-config'
   | 'styled-components'
   | 'emotion'
   | 'css-modules'
@@ -229,6 +230,14 @@ export const EXPORT_TARGETS: ExportConfig[] = [
     ext: 'js',
     category: 'Frameworks CSS',
     description: 'theme.extend with colors, fonts, and more',
+  },
+  {
+    target: 'unocss-config',
+    label: 'UnoCSS Config',
+    filename: 'uno.config',
+    ext: 'ts',
+    category: 'Frameworks CSS',
+    description: 'defineConfig theme with colors, fonts, presets',
   },
   {
     target: 'styled-components',
