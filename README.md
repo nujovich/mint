@@ -325,6 +325,7 @@ npx mint-ds export --target tailwind --provider ollama
 | `mint-ds export --target <name>` | Read `mint-ds.tokens.json` and generate the chosen format                                                                  |
 | `mint-ds validate <file>`        | Validate `tokens.json` against DTCG v1 — structure, references, cycles, naming consistency                                 |
 | `mint-ds cache --clear`          | Delete the local `mint-ds.cache.json` cache file                                                                           |
+| `mint-ds compat <dir>`           | Flag CSS properties below Baseline / Interop 2026 for your browserslist target, with fallback suggestions (no LLM)         |
 | `mint-ds --help`                 | Show full usage                                                                                                            |
 
 ### Validate options
@@ -341,6 +342,30 @@ npx mint-ds export --target tailwind --provider ollama
 - **Semantic** — broken references, circular references, naming-convention drift, and reference type mismatches.
 
 **Exit codes:** `0` valid · `1` warnings only · `2` errors. Structural violations and broken/circular references are errors (exit `2`); naming drift and type mismatches are warnings (exit `1`). Ready-made CI templates (GitHub Action + pre-commit hook) live in [`templates/dtcg/`](templates/dtcg/).
+
+### Compat
+
+`mint-ds compat <dir>` scans every CSS/SCSS/HTML file in `<dir>` for properties that aren't safe to adopt yet against your project's [browserslist](https://github.com/browserslist/browserslist) target, and prints concrete fallbacks. Compatibility data comes from the [`web-features`](https://github.com/web-platform-dx/web-features) package (Baseline + Interop 2026) — no API key or LLM call required.
+
+```bash
+# Scan a styles directory against the browserslist target of the current project
+npx mint-ds compat ./src/styles
+
+# Resolve the browserslist target from a different project root
+npx mint-ds compat ./src/styles --project-dir ./packages/app
+```
+
+It reports two kinds of finding:
+
+- **`WARNING` — not supported.** A below-Baseline property that one or more of your resolved target browsers still lack. The message lists the unsupported browsers (e.g. `safari 26.3`, `chrome 118`) so you know where a fallback is needed.
+- **`INFO` — experimental.** A property below the Interop 2026 threshold (90% interop). Shipping-but-not-yet-Baseline-high features (e.g. `backdrop-filter`, `view-transition-name`) surface here with their interop percentage.
+
+Every finding carries the `web-features` feature name and a concrete `@supports`/polyfill next step, closed by a per-run summary. When every used property is Baseline or supported by the target, it prints a single ✓. The browserslist target is resolved in priority order: a `browserslist` key in `package.json` (flat array or `{ production, development }` env block), then a `.browserslistrc` / `browserslist` file, then the browserslist default.
+
+| Flag                  | Description                                                                 |
+| --------------------- | --------------------------------------------------------------------------- |
+| `--project-dir <dir>` | Project root to resolve the browserslist target from (default: current dir) |
+| `--quiet`             | Skip the closing fallback tip                                               |
 
 ### Audit options
 
