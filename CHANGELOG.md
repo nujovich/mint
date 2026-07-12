@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Features
+
+- `mint-ds lint <dir>` — new static CSS lint command (no LLM). Ships gap-decoration rules that flag hand-rolled ways of drawing lines between grid/flex tracks (borders on children, `::before`/`::after` pseudo-elements, or backgrounds alongside `gap`) and suggest the native `gap-rule-color` / `gap-rule-style` / `gap-rule-width` properties, closed by a "Modern CSS Opportunities" adoption report.
+
 ## [0.2.1](https://github.com/nujovich/mint/compare/v0.2.0...v0.2.1) (2026-07-10)
 
 Maintenance release: release automation and CI publishing (OIDC + provenance). No user-facing changes.

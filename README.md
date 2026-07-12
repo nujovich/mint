@@ -326,6 +326,7 @@ npx mint-ds export --target tailwind --provider ollama
 | `mint-ds validate <file>`        | Validate `tokens.json` against DTCG v1 — structure, references, cycles, naming consistency                                 |
 | `mint-ds cache --clear`          | Delete the local `mint-ds.cache.json` cache file                                                                           |
 | `mint-ds compat <dir>`           | Flag CSS properties below Baseline / Interop 2026 for your browserslist target, with fallback suggestions (no LLM)         |
+| `mint-ds lint <dir>`             | Run static CSS lint rules (gap-decoration hacks) plus a modern-CSS adoption report — no LLM                                |
 | `mint-ds --help`                 | Show full usage                                                                                                            |
 
 ### Validate options
@@ -366,6 +367,18 @@ Every finding carries the `web-features` feature name and a concrete `@supports`
 | --------------------- | --------------------------------------------------------------------------- |
 | `--project-dir <dir>` | Project root to resolve the browserslist target from (default: current dir) |
 | `--quiet`             | Skip the closing fallback tip                                               |
+
+### Lint
+
+`mint-ds lint <dir>` runs Mint's static CSS lint rules over every CSS/SCSS/HTML file in `<dir>` — deterministic pattern checks that complement the LLM audit, with no API key or LLM call required.
+
+Today it ships the **gap-decoration** rules. They flag hand-rolled ways of drawing lines between grid/flex tracks — borders on direct children, `::before`/`::after` pseudo-elements, or backgrounds used alongside `gap` — and point you at the native `gap-rule-color` / `gap-rule-style` / `gap-rule-width` properties (Chrome 149+, Firefox 132+).
+
+```bash
+npx mint-ds lint ./src/styles
+```
+
+Each finding prints with a severity badge (`WARN` / `INFO`), the selector, and a migration hint. A closing **Modern CSS Opportunities** report summarizes how many stylesheets use gap-decoration hacks and how many could move to the native properties, broken down by pattern.
 
 ### Audit options
 

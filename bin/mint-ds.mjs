@@ -20,6 +20,7 @@ import { getCssAuditor } from '../lib/css-auditor.mjs'
 import { validateFile } from '../lib/dtcg-validator.mjs'
 import { formatLintSummary } from '../lib/audit-summary.mjs'
 import { checkCompat } from '../lib/css-compat-data.mjs'
+import { lintCss, lintGapDecorationAdoption } from '../lib/css-lint-rules.mjs'
 
 const require = createRequire(import.meta.url)
 const { version: VERSION } = require('../package.json')
@@ -90,6 +91,7 @@ ${styles.bold('COMMANDS')}
   validate <file> [options]    Validate tokens.json against a spec (e.g. dtcg)
   cache --clear                Delete the local ${CACHE_FILE}
   compat <dir>                 Scan CSS for Interop 2026 browser-compat issues (warnings + suggestions)
+  lint <dir>                   Run static CSS lint rules on files in <dir>
 
 ${styles.bold('AUDIT OPTIONS')}
   --out <file>                 Tokens output path (default: ${DEFAULT_TOKENS_FILE})
@@ -143,6 +145,7 @@ ${styles.bold('EXAMPLES')}
   npx mint-ds export --target css --stdout > variables.css
   npx mint-ds validate tokens.json --spec dtcg
   npx mint-ds validate tokens.json --spec dtcg --json
+  npx mint-ds lint ./src/styles
 `)
 }
 
@@ -442,6 +445,64 @@ async function cmdCache(argv) {
   }
 }
 
+async function cmdLint(argv) {
+  const { rest } = parseFlags(argv)
+  const target = rest[0]
+  if (!target) die('Usage: mint-ds lint <directory>')
+
+  log(styles.cyan('→') + ` Linting sources from ${styles.bold(target)}…`)
+  const { files, css } = await collectSources(target)
+  log(
+    styles.dim(
+      `  ${files.length} file(s), ${(css.length / 1000).toFixed(1)}k chars`
+    )
+  )
+
+  const result = lintCss(css)
+  const { findings } = result
+
+  if (findings.length === 0) {
+    log(styles.green('✓') + ' No lint issues found.')
+  } else {
+    log('')
+    log(styles.bold(`Found ${findings.length} issue(s):`))
+    log('')
+
+    for (const finding of findings) {
+      const badge =
+        finding.severity === 'warning'
+          ? styles.yellow('WARN')
+          : styles.dim('INFO')
+      log(`  ${badge}  ${finding.selector}`)
+      log(styles.dim(`       ${finding.message}`))
+      log('')
+    }
+  }
+
+  // Modern CSS Opportunities: adoption report for gap decorations.
+  const { adoption } = lintGapDecorationAdoption(css, {
+    stylesheetCount: files.length,
+  })
+  if (adoption.hacksTotal > 0) {
+    log('')
+    log(styles.bold('Modern CSS Opportunities'))
+    log(
+      styles.dim(
+        `  ${adoption.stylesheetsWithHacks}/${adoption.stylesheetsScanned} stylesheet(s) use gap-decoration hacks`
+      )
+    )
+    log(
+      styles.dim(
+        `  ${adoption.hacksTotal} hack(s) could be replaced by native gap-rule-* (Chrome 149+, Firefox 132+)`
+      )
+    )
+    for (const [pattern, count] of Object.entries(adoption.byPattern)) {
+      log(styles.dim(`    - ${pattern}: ${count}`))
+    }
+    log('')
+  }
+}
+
 async function cmdExport(argv) {
   const { flags } = parseFlags(argv)
   const targetInput = flags.target
@@ -542,6 +603,7 @@ async function main() {
     else if (cmd === 'validate') await cmdValidate(rest)
     else if (cmd === 'cache') await cmdCache(rest)
     else if (cmd === 'compat') await cmdCompat(rest)
+    else if (cmd === 'lint') await cmdLint(rest)
     else {
       printHelp()
       die(`Unknown command: ${cmd}`)
