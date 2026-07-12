@@ -41,6 +41,7 @@ export type ExportTarget =
   | 'angular-legacy-component'
   | 'solidjs-component'
   | 'qwik-component'
+  | 'vanilla-extract'
 
 export interface ExportConfig {
   target: ExportTarget
@@ -252,6 +253,14 @@ export const EXPORT_TARGETS: ExportConfig[] = [
     ext: 'module.css',
     category: 'Frameworks CSS',
     description: '@value declarations + utility classes',
+  },
+  {
+    target: 'vanilla-extract',
+    label: 'Vanilla Extract',
+    filename: 'theme.css',
+    ext: 'ts',
+    category: 'Frameworks CSS',
+    description: 'Typed theme contract + light/dark (.css.ts)',
   },
   {
     target: 'react-component',
