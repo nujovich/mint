@@ -39,6 +39,8 @@ export type ExportTarget =
   | 'astro-component'
   | 'angular-component'
   | 'angular-legacy-component'
+  | 'solidjs-component'
+  | 'qwik-component'
 
 export interface ExportConfig {
   target: ExportTarget
@@ -298,5 +300,21 @@ export const EXPORT_TARGETS: ExportConfig[] = [
     ext: 'ts',
     category: 'Components',
     description: 'Classic @NgModule with @Input/@Output decorators',
+  },
+  {
+    target: 'solidjs-component',
+    label: 'SolidJS',
+    filename: 'components',
+    ext: 'tsx',
+    category: 'Components',
+    description: 'Fine-grained reactive components with createSignal',
+  },
+  {
+    target: 'qwik-component',
+    label: 'Qwik',
+    filename: 'components',
+    ext: 'tsx',
+    category: 'Components',
+    description: 'Resumable component$ with typed props and Slot',
   },
 ]

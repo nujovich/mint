@@ -410,16 +410,16 @@ Add `mint-ds.cache.json` to `.gitignore` if you don't want to commit it.
 
 ### Export options
 
-| Flag                | Description                                                                                                                                                                                    |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--target <name>`   | **Required.** Accepts: `tailwind`, `react`, `vue`, `svelte`, `astro`, `css`, `scss`, `ts`, `css-modules`, `styled`, `emotion` (full names like `tailwind-config`, `react-component` also work) |
-| `--tokens <file>`   | Tokens input path (default: `mint-ds.tokens.json`)                                                                                                                                             |
-| `--out <file>`      | Override the default output filename                                                                                                                                                           |
-| `--provider <name>` | LLM backend: `anthropic` (default), `ollama`, or `openrouter`                                                                                                                                  |
-| `--api-key <value>` | LLM provider API key (overrides all API key env vars)                                                                                                                                          |
-| `--model <name>`    | Model name (overrides all model env vars)                                                                                                                                                      |
-| `--url <url>`       | API endpoint URL (overrides all URL env vars)                                                                                                                                                  |
-| `--stdout`          | Print to stdout instead of writing a file                                                                                                                                                      |
+| Flag                | Description                                                                                                                                                                                                                                    |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--target <name>`   | **Required.** Accepts: `tailwind`, `react`, `vue`, `svelte`, `astro`, `css`, `scss`, `ts`, `css-modules`, `styled`, `emotion`, `angular`, `angular-legacy`, `solidjs`, `qwik` (full names like `tailwind-config`, `react-component` also work) |
+| `--tokens <file>`   | Tokens input path (default: `mint-ds.tokens.json`)                                                                                                                                                                                             |
+| `--out <file>`      | Override the default output filename                                                                                                                                                                                                           |
+| `--provider <name>` | LLM backend: `anthropic` (default), `ollama`, or `openrouter`                                                                                                                                                                                  |
+| `--api-key <value>` | LLM provider API key (overrides all API key env vars)                                                                                                                                                                                          |
+| `--model <name>`    | Model name (overrides all model env vars)                                                                                                                                                                                                      |
+| `--url <url>`       | API endpoint URL (overrides all URL env vars)                                                                                                                                                                                                  |
+| `--stdout`          | Print to stdout instead of writing a file                                                                                                                                                                                                      |
 
 ### Local development without publishing
 
@@ -437,11 +437,11 @@ node bin/mint-ds.mjs audit ./examples/site --provider ollama
 
 ## Export formats
 
-| Category   | Formats                                                        |
-| ---------- | -------------------------------------------------------------- |
-| Tokens     | CSS Custom Properties, SCSS Variables, JS/TS Object            |
-| Frameworks | Tailwind Config, Styled Components, Emotion Theme, CSS Modules |
-| Components | React + TypeScript, Vue 3 SFC, Svelte, Astro                   |
+| Category   | Formats                                                                                |
+| ---------- | -------------------------------------------------------------------------------------- |
+| Tokens     | CSS Custom Properties, SCSS Variables, JS/TS Object                                    |
+| Frameworks | Tailwind Config, Styled Components, Emotion Theme, CSS Modules                         |
+| Components | React + TypeScript, Vue 3 SFC, Svelte, Astro, Angular, Angular (Legacy), SolidJS, Qwik |
 
 ## Stack
 
