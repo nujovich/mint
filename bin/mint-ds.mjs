@@ -18,6 +18,7 @@ import {
 } from '../lib/prompts.mjs'
 import { getCssAuditor } from '../lib/css-auditor.mjs'
 import { validateFile } from '../lib/dtcg-validator.mjs'
+import { diffFiles } from '../lib/token-diff.mjs'
 import { formatLintSummary } from '../lib/audit-summary.mjs'
 import { checkCompat } from '../lib/css-compat-data.mjs'
 import { lintCss, lintGapDecorationAdoption } from '../lib/css-lint-rules.mjs'
@@ -89,6 +90,7 @@ ${styles.bold('COMMANDS')}
   audit <dir>                  Analyze CSS/SCSS files in <dir> and write ${DEFAULT_TOKENS_FILE}
   export --target <name>       Generate exports from ${DEFAULT_TOKENS_FILE}
   validate <file> [options]    Validate tokens.json against a spec (e.g. dtcg)
+  diff <old> <new>             Show changes between two token files
   cache --clear                Delete the local ${CACHE_FILE}
   compat <dir>                 Scan CSS for Interop 2026 browser-compat issues (warnings + suggestions)
   lint <dir>                   Run static CSS lint rules on files in <dir>
@@ -111,6 +113,10 @@ ${styles.bold('VALIDATE OPTIONS')}
   --json                       Output results as JSON
   --quiet                      Suppress non-error output
   --no-semantic                Skip semantic checks (refs, cycles, naming, type mismatch)
+
+${styles.bold('DIFF OPTIONS')}
+  --json                       Output the diff as JSON (for CI / PR bots)
+                                 Exits non-zero on breaking changes (removed / value-changed)
 
 ${styles.bold('AUTH (any command)')}
   --api-key <value>            LLM provider API key (overrides API_KEY env var)
@@ -145,6 +151,7 @@ ${styles.bold('EXAMPLES')}
   npx mint-ds export --target css --stdout > variables.css
   npx mint-ds validate tokens.json --spec dtcg
   npx mint-ds validate tokens.json --spec dtcg --json
+  npx mint-ds diff old.tokens.json mint-ds.tokens.json
   npx mint-ds lint ./src/styles
 `)
 }
@@ -585,6 +592,38 @@ async function cmdValidate(argv) {
   process.exit(result.exitCode)
 }
 
+async function cmdDiff(argv) {
+  const { flags, rest } = parseFlags(argv)
+  const oldPath = rest[0]
+  const newPath = rest[1]
+  if (!oldPath || !newPath) {
+    die('Usage: mint-ds diff <old.tokens.json> <new.tokens.json> [--json]')
+  }
+
+  const asJson = Boolean(flags.json)
+
+  let diff
+  try {
+    diff = await diffFiles(oldPath, newPath)
+  } catch (err) {
+    die(err && err.message ? err.message : String(err))
+  }
+
+  if (asJson) {
+    process.stdout.write(JSON.stringify(diff.toJSON(), null, 2) + '\n')
+  } else {
+    log(
+      styles.cyan('→') +
+        ` Diffing ${styles.bold(oldPath)} → ${styles.bold(newPath)}…`
+    )
+    log('')
+    log(diff.print())
+  }
+
+  // Exit non-zero when breaking changes (removed / value-changed) are present.
+  process.exit(diff.exitCode)
+}
+
 async function main() {
   const argv = process.argv.slice(2)
   if (argv.length === 0 || argv[0] === '-h' || argv[0] === '--help') {
@@ -601,6 +640,7 @@ async function main() {
     if (cmd === 'audit') await cmdAudit(rest)
     else if (cmd === 'export') await cmdExport(rest)
     else if (cmd === 'validate') await cmdValidate(rest)
+    else if (cmd === 'diff') await cmdDiff(rest)
     else if (cmd === 'cache') await cmdCache(rest)
     else if (cmd === 'compat') await cmdCompat(rest)
     else if (cmd === 'lint') await cmdLint(rest)

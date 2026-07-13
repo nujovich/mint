@@ -34,6 +34,7 @@
     "lib/audit-summary.mjs",
     "lib/css-compat-data.mjs",
     "lib/css-lint-rules.mjs",
+    "lib/token-diff.mjs",
     "lib/llm_providers/**/*.mjs",
     "README.md"
   ],
