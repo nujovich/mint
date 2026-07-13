@@ -324,6 +324,7 @@ npx mint-ds export --target tailwind --provider ollama
 | `mint-ds audit <dir>`            | Walk `<dir>` for `.css`, `.scss`, `.sass`, `.less`, `.html` files, audit them with Claude, and write `mint-ds.tokens.json` |
 | `mint-ds export --target <name>` | Read `mint-ds.tokens.json` and generate the chosen format                                                                  |
 | `mint-ds validate <file>`        | Validate `tokens.json` against DTCG v1 — structure, references, cycles, naming consistency                                 |
+| `mint-ds diff <old> <new>`       | Show what changed between two token files — added, removed, renamed, value-changed, scale-changed (no LLM)                 |
 | `mint-ds cache --clear`          | Delete the local `mint-ds.cache.json` cache file                                                                           |
 | `mint-ds compat <dir>`           | Flag CSS properties below Baseline / Interop 2026 for your browserslist target, with fallback suggestions (no LLM)         |
 | `mint-ds lint <dir>`             | Run static CSS lint rules (gap-decoration hacks) plus a modern-CSS adoption report — no LLM                                |
@@ -343,6 +344,47 @@ npx mint-ds export --target tailwind --provider ollama
 - **Semantic** — broken references, circular references, naming-convention drift, and reference type mismatches.
 
 **Exit codes:** `0` valid · `1` warnings only · `2` errors. Structural violations and broken/circular references are errors (exit `2`); naming drift and type mismatches are warnings (exit `1`). Ready-made CI templates (GitHub Action + pre-commit hook) live in [`templates/dtcg/`](templates/dtcg/).
+
+### Diff
+
+`mint-ds diff <old.tokens.json> <new.tokens.json>` compares two token files and reports what changed — semantically, not line-by-line. Every re-`audit` produces a fresh `mint-ds.tokens.json`; `diff` tells a PR reviewer whether a color shifted, a token was renamed, or a scale stop moved. No API key or LLM call required.
+
+Changes are grouped by category (`colors`, `spacing`, `fontFamilies`, …) and classified:
+
+| Symbol | Change        | Meaning                                             |
+| ------ | ------------- | --------------------------------------------------- |
+| `+`    | added         | Present in the new file only                        |
+| `–`    | removed       | Present in the old file only                        |
+| `↻`    | renamed       | Same value under a different name (heuristic)       |
+| `~`    | value changed | Same name, different value                          |
+| `~`    | scale changed | A color scale stop was added, removed, or re-valued |
+
+```bash
+# Human-readable report
+npx mint-ds diff old.tokens.json mint-ds.tokens.json
+
+# Machine-readable output for CI / PR bots
+npx mint-ds diff old.tokens.json mint-ds.tokens.json --json
+```
+
+Example output:
+
+```
+colors
+  + accent (#f59e0b)
+  ~ primary.500: #1976d2 → #1f77d8
+  – legacy-blue (was #1a73e8)
+spacing
+  ↻ renamed "4" → "5" (value 20px)
+
+Summary: 3 change(s) — 1 added, 1 removed, 1 renamed — breaking
+```
+
+| Flag     | Description                          |
+| -------- | ------------------------------------ |
+| `--json` | Emit machine-readable JSON to stdout |
+
+**Exit codes:** `0` no breaking changes · `1` breaking changes. Removed, value-changed, and scale-changed tokens are **breaking** (they alter what downstream exports emit); additions and renames preserve existing values and are non-breaking. Gate CI on the exit code to block breaking token changes from merging unnoticed.
 
 ### Compat
 
