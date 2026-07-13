@@ -163,6 +163,8 @@ describe('dtcgToTokenOps — shadow', () => {
 
     const ops = dtcgToTokenOps(dtcg)
 
+    // Penpot's TokenShadowValueString: every field is a string, offsets/blur/spread
+    // are plain pixel numbers, plus an `inset` flag (DTCG drop shadows -> "false").
     expect(ops).toEqual([
       {
         name: 'shadow',
@@ -172,11 +174,12 @@ describe('dtcgToTokenOps — shadow', () => {
             type: 'shadow',
             value: [
               {
-                offsetX: '0px',
-                offsetY: '2px',
-                blur: '4px',
-                spread: '0px',
                 color: '#0000001a',
+                inset: 'false',
+                offsetX: '0',
+                offsetY: '2',
+                blur: '4',
+                spread: '0',
               },
             ],
           },

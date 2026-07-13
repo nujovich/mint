@@ -21,10 +21,25 @@ penpot.ui.onMessage((message) => {
   const sets = Array.isArray(message.sets) ? message.sets : []
   const summary = { sets: 0, tokens: 0, skipped: 0, errors: [] }
 
+  // The design tokens Plugins API lives on the local library's token catalog
+  // and only exists in recent Penpot builds (@penpot/plugin-types >= 1.5.0).
+  const catalog =
+    penpot.library && penpot.library.local && penpot.library.local.tokens
+  if (!catalog || typeof catalog.addSet !== 'function') {
+    summary.errors.push(
+      'This Penpot version does not expose the design tokens Plugins API ' +
+        '(penpot.library.local.tokens). It requires a build shipping ' +
+        '@penpot/plugin-types 1.5.0+ (currently the beta/next channel).'
+    )
+    penpot.ui.sendMessage({ type: 'result', summary })
+    return
+  }
+
   for (const set of sets) {
     let tokenSet
     try {
-      tokenSet = penpot.tokens.createSet(set.name)
+      // Sets are inactive by default; activate so the tokens affect the file.
+      tokenSet = catalog.addSet({ name: set.name, active: true })
       summary.sets += 1
     } catch (error) {
       summary.errors.push(`set "${set.name}": ${errorMessage(error)}`)
@@ -38,9 +53,9 @@ penpot.ui.onMessage((message) => {
         continue
       }
       try {
-        tokenSet.createToken({
-          name: token.name,
+        tokenSet.addToken({
           type: token.type,
+          name: token.name,
           value: token.value,
         })
         summary.tokens += 1

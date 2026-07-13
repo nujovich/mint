@@ -9,15 +9,22 @@ the [Design Tokens Plugins API](https://doc.plugins.penpot.app/) (Penpot 2.14+).
 > is a convenience for a one-click, in-file import driven by the Plugins API; the manual path works
 > just as well and needs no plugin.
 
+## Requirements
+
+The design tokens Plugins API (`penpot.library.local.tokens`) is **recent** — it ships with
+`@penpot/plugin-types` **1.5.0+** (currently the `next`/beta channel; Penpot 2.14+ builds). On an
+older Penpot the API is absent and the plugin reports a clear error instead of failing silently.
+Confirm your instance exposes it before relying on this plugin.
+
 ## Architecture
 
 Two layers, deliberately separated so the logic is testable without a running Penpot:
 
-| File                                                     | Runs in                       | Responsibility                                                                                                                |
-| -------------------------------------------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| [`src/dtcg-to-token-ops.mjs`](src/dtcg-to-token-ops.mjs) | plugin iframe (plain browser) | **Pure core.** Transforms a DTCG object into normalized `{ set, token }` operations. No Penpot dependency; fully unit-tested. |
-| [`index.html`](index.html)                               | plugin iframe                 | UI. Reads the DTCG file, calls the core, posts the operations to the sandbox.                                                 |
-| [`plugin.js`](plugin.js)                                 | Penpot sandbox                | Thin glue. Receives operations and calls `penpot.tokens.createSet(…)` / `set.createToken(…)`. Holds no transformation logic.  |
+| File                                                     | Runs in                       | Responsibility                                                                                                                            |
+| -------------------------------------------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| [`src/dtcg-to-token-ops.mjs`](src/dtcg-to-token-ops.mjs) | plugin iframe (plain browser) | **Pure core.** Transforms a DTCG object into normalized `{ set, token }` operations. No Penpot dependency; fully unit-tested.             |
+| [`index.html`](index.html)                               | plugin iframe                 | UI. Reads the DTCG file, calls the core, posts the operations to the sandbox.                                                             |
+| [`plugin.js`](plugin.js)                                 | Penpot sandbox                | Thin glue. Receives operations and calls `penpot.library.local.tokens.addSet(…)` / `tokenSet.addToken(…)`. Holds no transformation logic. |
 
 ## Token mapping
 
@@ -29,7 +36,7 @@ import behaviour), flattening nested groups into dotted token names (`primary.50
 | `color` (`$type: color`)                         | `color`            | hex string, e.g. `#1976d2`                      |
 | `spacing` (`$type: dimension`)                   | `spacing`          | `"<n><unit>"`, e.g. `4px`                       |
 | `border-radius` (`$type: dimension`)             | `borderRadius`     | `"<n><unit>"`                                   |
-| `shadow` (`$type: shadow`)                       | `shadow`           | array of shadow layers (dimensions stringified) |
+| `shadow` (`$type: shadow`)                       | `shadow`           | `TokenShadowValueString[]` (all fields strings) |
 | `typography → font-family` (`$type: fontFamily`) | `fontFamilies`     | string                                          |
 | `typography → font-weight` (`$type: fontWeight`) | `fontWeights`      | string, e.g. `"700"`                            |
 
@@ -38,11 +45,11 @@ glue (reported in the result summary, not silently dropped).
 
 ### Value-format caveats
 
-The exact value serialization Penpot's Plugins API expects for **dimension** and **shadow** tokens
-is not covered by the published type docs. The shapes above are DTCG-faithful and were confirmed
-against the transformation contract in tests, but the **shadow** value shape in particular must be
-verified against a real Penpot file — treat it as best-effort until confirmed. `color`,
-`fontFamilies` and `fontWeights` are straightforward strings.
+Penpot's `addToken` takes the **string** form of every value (numeric types included — `"16"` or
+`"16px"`), except `shadow`, whose value is an array of `TokenShadowValueString` objects. The core
+follows that contract, but the exact pixel formatting for dimension/shadow fields is still
+best-effort until confirmed against a real Penpot file. `color`, `fontFamilies` and `fontWeights`
+are straightforward strings.
 
 ## Install & use
 
@@ -54,8 +61,9 @@ npx serve penpot-plugin        # or any static file server
 
 Then, in a Penpot file:
 
-1. Open the Plugin Manager with **Ctrl + Alt + P**.
-2. Paste the manifest URL (e.g. `http://localhost:3000/manifest.json`) and install.
+1. Inside an open file, open the Plugin Manager — **Ctrl + Alt + P**, or main menu → **Plugins** →
+   **Plugin manager** (the shortcut only works in the design workspace, not the dashboard).
+2. Paste the manifest URL (e.g. `http://localhost:4400/manifest.json`) and install.
 3. Run **Mint · DTCG token import**.
 4. Paste your `mint-ds.tokens.dtcg.json` (or use **load a file…**) and click **Create tokens**.
 
