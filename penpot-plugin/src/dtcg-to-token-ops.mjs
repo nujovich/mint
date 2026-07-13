@@ -30,11 +30,11 @@ function isLeaf(node) {
 }
 
 // Convert a DTCG `$value` into the Penpot token value. Penpot's `addToken`
-// always takes the *string* form of a value (numeric types included), except
-// `shadow`, whose value is an array of TokenShadowValueString objects.
+// takes the *string* form of a value (numeric types included), except `shadow`,
+// which takes a single TokenShadowValueString object.
 //
-// NOTE: exact value serialization for dimension/shadow tokens must still be
-// confirmed against a real Penpot file. See penpot-plugin/README.md.
+// NOTE: exact value serialization for dimension/shadow tokens is confirmed
+// against a real Penpot file. See penpot-plugin/README.md.
 function toPenpotValue(value, type) {
   if (type === 'shadow') return toShadowValue(value)
 
@@ -53,11 +53,13 @@ function toPenpotValue(value, type) {
   return value
 }
 
-// DTCG shadow `$value` (array of layers) -> Penpot TokenShadowValueString[].
-// Every field is a string; offsets/blur/spread are plain pixel numbers.
+// DTCG shadow `$value` -> Penpot TokenShadowValueString. `addToken` takes a
+// SINGLE shadow object (not an array), so a single-layer shadow (Mint's output)
+// maps to one object. Every field is a string; offsets/blur/spread are plain
+// pixel numbers. Multi-layer shadows fall back to an array (best-effort — the
+// published input type only covers one layer).
 function toShadowValue(value) {
-  const layers = Array.isArray(value) ? value : [value]
-  return layers.map((layer) => ({
+  const layers = (Array.isArray(value) ? value : [value]).map((layer) => ({
     color: String(layer.color),
     inset: String(layer.inset ?? layer.type === 'innerShadow'),
     offsetX: pxNumber(layer.offsetX),
@@ -65,6 +67,7 @@ function toShadowValue(value) {
     blur: pxNumber(layer.blur),
     spread: pxNumber(layer.spread),
   }))
+  return layers.length === 1 ? layers[0] : layers
 }
 
 // A DTCG dimension (or bare number) -> its plain pixel number as a string.

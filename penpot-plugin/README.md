@@ -31,14 +31,14 @@ Two layers, deliberately separated so the logic is testable without a running Pe
 The importer creates **one token set per top-level DTCG group** (matching Penpot's single-file
 import behaviour), flattening nested groups into dotted token names (`primary.500`).
 
-| DTCG source                                      | Penpot `TokenType` | Value                                           |
-| ------------------------------------------------ | ------------------ | ----------------------------------------------- |
-| `color` (`$type: color`)                         | `color`            | hex string, e.g. `#1976d2`                      |
-| `spacing` (`$type: dimension`)                   | `spacing`          | `"<n><unit>"`, e.g. `4px`                       |
-| `border-radius` (`$type: dimension`)             | `borderRadius`     | `"<n><unit>"`                                   |
-| `shadow` (`$type: shadow`)                       | `shadow`           | `TokenShadowValueString[]` (all fields strings) |
-| `typography → font-family` (`$type: fontFamily`) | `fontFamilies`     | string                                          |
-| `typography → font-weight` (`$type: fontWeight`) | `fontWeights`      | string, e.g. `"700"`                            |
+| DTCG source                                      | Penpot `TokenType` | Value                                            |
+| ------------------------------------------------ | ------------------ | ------------------------------------------------ |
+| `color` (`$type: color`)                         | `color`            | hex string, e.g. `#1976d2`                       |
+| `spacing` (`$type: dimension`)                   | `spacing`          | `"<n><unit>"`, e.g. `4px`                        |
+| `border-radius` (`$type: dimension`)             | `borderRadius`     | `"<n><unit>"`                                    |
+| `shadow` (`$type: shadow`)                       | `shadow`           | single `TokenShadowValueString` (fields strings) |
+| `typography → font-family` (`$type: fontFamily`) | `fontFamilies`     | string                                           |
+| `typography → font-weight` (`$type: fontWeight`) | `fontWeights`      | string, e.g. `"700"`                             |
 
 DTCG types with no Penpot equivalent are marked `type: null` by the core and **skipped** by the
 glue (reported in the result summary, not silently dropped).
@@ -46,10 +46,10 @@ glue (reported in the result summary, not silently dropped).
 ### Value-format caveats
 
 Penpot's `addToken` takes the **string** form of every value (numeric types included — `"16"` or
-`"16px"`), except `shadow`, whose value is an array of `TokenShadowValueString` objects. The core
-follows that contract, but the exact pixel formatting for dimension/shadow fields is still
-best-effort until confirmed against a real Penpot file. `color`, `fontFamilies` and `fontWeights`
-are straightforward strings.
+`"16px"`), except `shadow`, whose value is a single `TokenShadowValueString` object (all fields
+strings; offsets/blur/spread are plain pixel numbers). Passing an array of shadow layers is a type
+mismatch that Penpot silently ignores (the token is created with default values), so single-layer
+shadows map to one object. `color`, `fontFamilies` and `fontWeights` are straightforward strings.
 
 ## Install & use
 
