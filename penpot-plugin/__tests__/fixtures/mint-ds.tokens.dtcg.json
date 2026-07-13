@@ -1,0 +1,48 @@
+{
+  "color": {
+    "$type": "color",
+    "primary": {
+      "50": { "$value": "#e3f2fd" },
+      "500": { "$value": "#1976d2" },
+      "900": { "$value": "#08357d" }
+    },
+    "surface": {
+      "500": { "$value": "#ffffff" }
+    }
+  },
+  "spacing": {
+    "$type": "dimension",
+    "1": { "$value": { "value": 4, "unit": "px" } },
+    "2": { "$value": { "value": 8, "unit": "px" } }
+  },
+  "border-radius": {
+    "$type": "dimension",
+    "sm": { "$value": { "value": 4, "unit": "px" } },
+    "md": { "$value": { "value": 8, "unit": "px" } }
+  },
+  "shadow": {
+    "$type": "shadow",
+    "sm": {
+      "$value": [
+        {
+          "offsetX": { "value": 0, "unit": "px" },
+          "offsetY": { "value": 2, "unit": "px" },
+          "blur": { "value": 4, "unit": "px" },
+          "spread": { "value": 0, "unit": "px" },
+          "color": "#0000001a"
+        }
+      ]
+    }
+  },
+  "typography": {
+    "font-family": {
+      "$type": "fontFamily",
+      "body": { "$value": "Helvetica Neue" }
+    },
+    "font-weight": {
+      "$type": "fontWeight",
+      "bold": { "$value": 700 },
+      "extrabold": { "$value": 800 }
+    }
+  }
+}

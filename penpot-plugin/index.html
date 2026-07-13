@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mint · DTCG token import</title>
+    <style>
+      :root {
+        --bg: #ffffff;
+        --fg: #1a1a1a;
+        --muted: #6c6c6c;
+        --border: #dddddd;
+        --field-bg: #f7f7f7;
+        --accent: #1976d2;
+        --accent-fg: #ffffff;
+        --ok: #2e7d32;
+        --err: #c62828;
+      }
+      :root[data-theme='dark'] {
+        --bg: #18181a;
+        --fg: #f2f2f2;
+        --muted: #a0a0a0;
+        --border: #3a3a3d;
+        --field-bg: #232326;
+        --accent: #64b5f6;
+        --accent-fg: #0a3f8f;
+        --ok: #81c784;
+        --err: #ef9a9a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 16px;
+        font: 13px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+      }
+      h1 {
+        font-size: 15px;
+        margin: 0 0 4px;
+      }
+      p.hint {
+        margin: 0 0 12px;
+        color: var(--muted);
+      }
+      textarea {
+        width: 100%;
+        height: 220px;
+        resize: vertical;
+        padding: 10px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--field-bg);
+        color: var(--fg);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin: 10px 0;
+      }
+      button {
+        padding: 8px 14px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--accent);
+        color: var(--accent-fg);
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      label.file {
+        color: var(--accent);
+        cursor: pointer;
+        text-decoration: underline;
+      }
+      label.file input {
+        display: none;
+      }
+      #status {
+        margin-top: 12px;
+        white-space: pre-wrap;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+      }
+      #status.ok {
+        color: var(--ok);
+      }
+      #status.err {
+        color: var(--err);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Import DTCG tokens</h1>
+    <p class="hint">
+      Paste a W3C DTCG tokens file (e.g. Mint's <code>mint-ds.tokens.dtcg.json</code>) and create
+      the matching token sets in this Penpot file.
+    </p>
+
+    <textarea id="input" placeholder='{ "color": { "$type": "color", … } }' spellcheck="false"></textarea>
+
+    <div class="row">
+      <button id="create" type="button">Create tokens</button>
+      <label class="file">
+        load a file…
+        <input id="file" type="file" accept=".json,application/json" />
+      </label>
+    </div>
+
+    <div id="status"></div>
+
+    <script type="module">
+      import { dtcgToTokenOps } from './src/dtcg-to-token-ops.mjs'
+
+      const $ = (id) => document.getElementById(id)
+      const input = $('input')
+      const status = $('status')
+      const createBtn = $('create')
+
+      // Penpot passes the current theme as a `?theme=` query param and via messages.
+      const params = new URLSearchParams(window.location.search)
+      applyTheme(params.get('theme'))
+
+      function applyTheme(theme) {
+        if (theme === 'light' || theme === 'dark') {
+          document.documentElement.setAttribute('data-theme', theme)
+        }
+      }
+
+      function setStatus(text, kind) {
+        status.textContent = text
+        status.className = kind || ''
+      }
+
+      $('file').addEventListener('change', async (event) => {
+        const file = event.target.files && event.target.files[0]
+        if (!file) return
+        input.value = await file.text()
+        setStatus('')
+      })
+
+      createBtn.addEventListener('click', () => {
+        let dtcg
+        try {
+          dtcg = JSON.parse(input.value)
+        } catch (error) {
+          setStatus(`Invalid JSON: ${error.message}`, 'err')
+          return
+        }
+        if (!dtcg || typeof dtcg !== 'object' || Array.isArray(dtcg)) {
+          setStatus('Expected a DTCG tokens object at the top level.', 'err')
+          return
+        }
+
+        let sets
+        try {
+          sets = dtcgToTokenOps(dtcg)
+        } catch (error) {
+          setStatus(`Could not read tokens: ${error.message}`, 'err')
+          return
+        }
+
+        const total = sets.reduce((n, s) => n + s.tokens.length, 0)
+        if (total === 0) {
+          setStatus('No tokens found in that file.', 'err')
+          return
+        }
+
+        createBtn.disabled = true
+        setStatus(`Creating ${total} token(s) across ${sets.length} set(s)…`)
+        parent.postMessage({ type: 'create-tokens', sets }, '*')
+      })
+
+      window.addEventListener('message', (event) => {
+        const message = event.data
+        if (!message) return
+
+        if (typeof message === 'string') {
+          applyTheme(message)
+          return
+        }
+        if (message.type === 'themechange') {
+          applyTheme(message.theme)
+          return
+        }
+        if (message.type === 'result') {
+          createBtn.disabled = false
+          const { summary } = message
+          const lines = [
+            `Done — created ${summary.tokens} token(s) in ${summary.sets} set(s).`,
+          ]
+          if (summary.skipped) lines.push(`Skipped ${summary.skipped} unsupported token(s).`)
+          if (summary.errors.length) {
+            lines.push('', `Errors (${summary.errors.length}):`, ...summary.errors)
+          }
+          setStatus(lines.join('\n'), summary.errors.length ? 'err' : 'ok')
+        }
+      })
+    </script>
+  </body>
+</html>

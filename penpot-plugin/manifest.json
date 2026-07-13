@@ -1,0 +1,8 @@
+{
+  "name": "Mint · DTCG token import",
+  "description": "Import W3C DTCG design tokens (e.g. Mint's `--target dtcg` export) into a Penpot file as token sets.",
+  "version": 2,
+  "code": "plugin.js",
+  "icon": "icon.png",
+  "permissions": ["library:read", "library:write"]
+}
