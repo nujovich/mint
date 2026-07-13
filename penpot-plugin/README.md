@@ -53,10 +53,13 @@ are straightforward strings.
 
 ## Install & use
 
-The plugin is static files — serve the `penpot-plugin/` directory over HTTP:
+The plugin is static files — serve the `penpot-plugin/` directory over HTTP. A
+zero-dependency dev server is bundled (sets the JS MIME type ES modules need and
+permissive CORS):
 
 ```bash
-npx serve penpot-plugin        # or any static file server
+node penpot-plugin/serve-plugin.mjs   # http://localhost:4400/manifest.json
+# or: npx serve penpot-plugin
 ```
 
 Then, in a Penpot file:
@@ -66,6 +69,8 @@ Then, in a Penpot file:
 2. Paste the manifest URL (e.g. `http://localhost:4400/manifest.json`) and install.
 3. Run **Mint · DTCG token import**.
 4. Paste your `mint-ds.tokens.dtcg.json` (or use **load a file…**) and click **Create tokens**.
+   A bundled [`example.tokens.dtcg.json`](example.tokens.dtcg.json) (Mint's Frankenstein sample,
+   81 tokens / 5 sets) is included to try it end-to-end.
 
 The result summary reports how many sets and tokens were created, how many were skipped
 (unsupported types), and any per-token errors.
