@@ -28,4 +28,6 @@ jobs:
 
       - run: npm run test:coverage
 
+      - run: npm run check:pack
+
       - run: npm run build
