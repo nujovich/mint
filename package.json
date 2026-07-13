@@ -56,7 +56,8 @@
     "format:check": "prettier --check .",
     "format:write": "prettier --write .",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "vitest run",
+    "check:pack": "node scripts/check-pack.mjs",
+    "prepublishOnly": "vitest run && npm run check:pack",
     "prepare": "husky",
     "release": "GITHUB_TOKEN=$(gh auth token) release-it",
     "release:dry": "GITHUB_TOKEN=$(gh auth token) release-it --dry-run"
