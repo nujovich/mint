@@ -484,16 +484,16 @@ Add `mint-ds.cache.json` to `.gitignore` if you don't want to commit it.
 
 ### Export options
 
-| Flag                | Description                                                                                                                                                                                                                                                                 |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--target <name>`   | **Required.** Accepts: `tailwind`, `unocss`, `react`, `vue`, `svelte`, `astro`, `css`, `scss`, `ts`, `css-modules`, `styled`, `emotion`, `vanilla-extract`, `angular`, `angular-legacy`, `solidjs`, `qwik` (full names like `tailwind-config`, `react-component` also work) |
-| `--tokens <file>`   | Tokens input path (default: `mint-ds.tokens.json`)                                                                                                                                                                                                                          |
-| `--out <file>`      | Override the default output filename                                                                                                                                                                                                                                        |
-| `--provider <name>` | LLM backend: `anthropic` (default), `ollama`, or `openrouter`                                                                                                                                                                                                               |
-| `--api-key <value>` | LLM provider API key (overrides all API key env vars)                                                                                                                                                                                                                       |
-| `--model <name>`    | Model name (overrides all model env vars)                                                                                                                                                                                                                                   |
-| `--url <url>`       | API endpoint URL (overrides all URL env vars)                                                                                                                                                                                                                               |
-| `--stdout`          | Print to stdout instead of writing a file                                                                                                                                                                                                                                   |
+| Flag                | Description                                                                                                                                                                                                                                                                         |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--target <name>`   | **Required.** Accepts: `tailwind`, `unocss`, `react`, `vue`, `svelte`, `astro`, `css`, `scss`, `ts`, `css-modules`, `styled`, `emotion`, `vanilla-extract`, `angular`, `angular-legacy`, `solidjs`, `qwik`, `dtcg` (full names like `tailwind-config`, `react-component` also work) |
+| `--tokens <file>`   | Tokens input path (default: `mint-ds.tokens.json`)                                                                                                                                                                                                                                  |
+| `--out <file>`      | Override the default output filename                                                                                                                                                                                                                                                |
+| `--provider <name>` | LLM backend: `anthropic` (default), `ollama`, or `openrouter`                                                                                                                                                                                                                       |
+| `--api-key <value>` | LLM provider API key (overrides all API key env vars)                                                                                                                                                                                                                               |
+| `--model <name>`    | Model name (overrides all model env vars)                                                                                                                                                                                                                                           |
+| `--url <url>`       | API endpoint URL (overrides all URL env vars)                                                                                                                                                                                                                                       |
+| `--stdout`          | Print to stdout instead of writing a file                                                                                                                                                                                                                                           |
 
 ### Local development without publishing
 
@@ -516,6 +516,57 @@ node bin/mint-ds.mjs audit ./examples/site --provider ollama
 | Tokens     | CSS Custom Properties, SCSS Variables, JS/TS Object                                    |
 | Frameworks | Tailwind Config, Styled Components, Emotion Theme, CSS Modules, Vanilla Extract        |
 | Components | React + TypeScript, Vue 3 SFC, Svelte, Astro, Angular, Angular (Legacy), SolidJS, Qwik |
+| Interop    | DTCG (Design Tokens Format Module v1) — for Penpot & Tokens Studio                     |
+
+## Penpot & DTCG interop
+
+The `dtcg` target is a deterministic converter — it transforms `mint-ds.tokens.json`
+into a [W3C DTCG Format Module v1](https://www.designtokens.org/TR/2025.10/format/)
+file without calling an LLM, so the output is byte-stable and safe to run in CI.
+
+```bash
+# Emit DTCG JSON next to your tokens (writes mint-ds.tokens.dtcg.json)
+npx mint-ds export --target dtcg --tokens mint-ds.tokens.json
+
+# ...or print it to stdout
+npx mint-ds export --target dtcg --stdout
+```
+
+The converter maps every category: colors (as `$type: color`), spacing and
+border-radius (`dimension`), box-shadows (DTCG shadow arrays) and typography
+(font-family / font-weight groups). A worked example lives at
+[`examples/frankenstein/mint-ds.tokens.dtcg.json`](examples/frankenstein/mint-ds.tokens.dtcg.json).
+Gate the output in CI with `mint-ds validate <file> --spec dtcg` — ready-made
+templates live in [`templates/dtcg/`](templates/dtcg/).
+
+### Import into Penpot
+
+Penpot's design tokens adhere to the W3C DTCG format, so the file imports natively:
+
+1. Open the **Tokens** tab in the left panel of your Penpot file.
+2. Click **Tools** at the bottom of the panel, then choose **Import**.
+3. Select the exported `mint-ds.tokens.dtcg.json`.
+
+Penpot reads the first-level keys of a single JSON file as **set names**, so Mint's
+output lands as five token sets — `color`, `spacing`, `border-radius`, `shadow`
+and `typography`. (Prefer a different set layout? Import a `.zip` with one JSON
+file per folder instead.)
+
+> Note: Penpot's token _export_ currently emits Tokens Studio format rather than
+> DTCG, but DTCG _import_ — the direction Mint feeds — is fully supported.
+
+### Import into Tokens Studio for Figma
+
+The [Tokens Studio](https://tokens.studio/) Figma plugin reads the same file:
+
+1. In the plugin, open **Settings** and set the token format to **W3C DTCG** (the
+   plugin converts between DTCG and its legacy format on demand).
+2. Switch the token view to the **JSON** editor and paste the contents of
+   `mint-ds.tokens.dtcg.json`, or point a remote (GitHub / GitLab) storage
+   provider at the committed file.
+
+Because DTCG is a shared spec, the same file is also consumable by Style Dictionary
+and any other DTCG-aware tool — zero vendor-specific code.
 
 ## Stack
 
