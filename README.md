@@ -248,6 +248,9 @@ The committed artifacts ([`mint-ds.tokens.json`](examples/frankenstein/mint-ds.t
 ## CLI
 
 ```bash
+# Optional: scaffold a mint.config.mjs with project defaults
+npx mint-ds init
+
 # Analyze every CSS/SCSS/HTML file in a directory and write mint-ds.tokens.json
 npx mint-ds audit ./src/styles
 
@@ -321,6 +324,7 @@ npx mint-ds export --target tailwind --provider ollama
 
 | Command                          | Description                                                                                                                |
 | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `mint-ds init`                   | Scaffold a `mint.config.mjs` with project defaults (`--force` to overwrite an existing config)                             |
 | `mint-ds audit <dir>`            | Walk `<dir>` for `.css`, `.scss`, `.sass`, `.less`, `.html` files, audit them with Claude, and write `mint-ds.tokens.json` |
 | `mint-ds export --target <name>` | Read `mint-ds.tokens.json` and generate the chosen format                                                                  |
 | `mint-ds validate <file>`        | Validate `tokens.json` against DTCG v1 — structure, references, cycles, naming consistency                                 |
@@ -329,6 +333,34 @@ npx mint-ds export --target tailwind --provider ollama
 | `mint-ds compat <dir>`           | Flag CSS properties below Baseline / Interop 2026 for your browserslist target, with fallback suggestions (no LLM)         |
 | `mint-ds lint <dir>`             | Run static CSS lint rules (gap-decoration hacks) plus a modern-CSS adoption report — no LLM                                |
 | `mint-ds --help`                 | Show full usage                                                                                                            |
+
+### Configuration
+
+Repeating the same flags on every `audit` / `export` gets old. Run `mint-ds init` to scaffold a `mint.config.mjs` in the current directory:
+
+```js
+/** @type {import('mint-ds').MintConfig} */
+export default {
+  // Directory the audit walks by default
+  source: './src/styles',
+  // Default tokens file
+  tokens: 'mint-ds.tokens.json',
+  // Default export target
+  target: 'tailwind',
+  // Where exports are written
+  outDir: './design-system',
+  // Glob patterns excluded from the audit walk
+  ignore: ['**/node_modules/**', '**/dist/**'],
+}
+```
+
+With that file present, `mint-ds audit` (no directory) walks `source`, and `mint-ds export` (no `--target`) emits `tailwind` into `outDir`. **CLI flags always win over config**, which in turn wins over the built-in defaults:
+
+```
+CLI flag  >  mint.config.mjs  >  built-in default
+```
+
+The file is generated as `.mjs` so it loads regardless of whether your project is ESM or CommonJS; existing `mint.config.js` / `mint.config.cjs` are also picked up if you prefer to write your own. `init` refuses to clobber an existing config unless you pass `--force`. Every field is optional.
 
 ### Validate options
 

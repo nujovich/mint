@@ -53,6 +53,24 @@ export interface ExportConfig {
   description: string
 }
 
+/**
+ * Project configuration read from `mint.config.{mjs,js,cjs}`. Every field is
+ * optional; CLI flags always take precedence over these values, which in turn
+ * take precedence over the built-in defaults. Scaffold one with `mint-ds init`.
+ */
+export interface MintConfig {
+  /** Directory the audit walks when no `<dir>` argument is given. */
+  source?: string
+  /** Tokens file path — the audit output and the export input default. */
+  tokens?: string
+  /** Default export target (a CLI alias such as `tailwind`, or a full name). */
+  target?: string
+  /** Directory exports are written to when `--out` is not passed. */
+  outDir?: string
+  /** Glob patterns excluded from the audit walk (e.g. `dist/**`). */
+  ignore?: string[]
+}
+
 // ─── CSS Audit Wizard ─────────────────────────────────────────────────────────
 
 export interface ColorSample {

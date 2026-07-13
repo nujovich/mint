@@ -22,6 +22,14 @@ import { diffFiles } from '../lib/token-diff.mjs'
 import { formatLintSummary } from '../lib/audit-summary.mjs'
 import { checkCompat } from '../lib/css-compat-data.mjs'
 import { lintCss, lintGapDecorationAdoption } from '../lib/css-lint-rules.mjs'
+import {
+  DEFAULT_TOKENS_FILE,
+  loadConfig,
+  scaffoldConfig,
+  matchesIgnore,
+  resolveAuditOptions,
+  resolveExportOptions,
+} from '../lib/mint-config.mjs'
 
 const require = createRequire(import.meta.url)
 const { version: VERSION } = require('../package.json')
@@ -33,7 +41,6 @@ const SOURCE_EXTS = new Set([
   '.html',
   '.htm',
 ])
-const DEFAULT_TOKENS_FILE = 'mint-ds.tokens.json'
 const CACHE_FILE = 'mint-ds.cache.json'
 const MAX_CSS_CHARS = 120_000
 
@@ -87,6 +94,7 @@ ${styles.bold('USAGE')}
   npx mint-ds <command> [options]
 
 ${styles.bold('COMMANDS')}
+  init                         Scaffold a mint.config.mjs with project defaults
   audit <dir>                  Analyze CSS/SCSS files in <dir> and write ${DEFAULT_TOKENS_FILE}
   export --target <name>       Generate exports from ${DEFAULT_TOKENS_FILE}
   validate <file> [options]    Validate tokens.json against a spec (e.g. dtcg)
@@ -94,6 +102,9 @@ ${styles.bold('COMMANDS')}
   cache --clear                Delete the local ${CACHE_FILE}
   compat <dir>                 Scan CSS for Interop 2026 browser-compat issues (warnings + suggestions)
   lint <dir>                   Run static CSS lint rules on files in <dir>
+
+${styles.bold('INIT OPTIONS')}
+  --force                      Overwrite an existing mint.config.{mjs,js,cjs}
 
 ${styles.bold('AUDIT OPTIONS')}
   --out <file>                 Tokens output path (default: ${DEFAULT_TOKENS_FILE})
@@ -144,6 +155,7 @@ ${styles.bold('ENVIRONMENT')}
   Precedence: --flag > {PROVIDER}_ENV > generic env > provider default
 
 ${styles.bold('EXAMPLES')}
+  npx mint-ds init
   npx mint-ds audit ./src/styles
   npx mint-ds audit ./src/styles --provider openrouter
   npx mint-ds export --target tailwind
@@ -177,7 +189,7 @@ function parseFlags(argv) {
   return { flags, rest }
 }
 
-async function* walk(dir) {
+async function* walk(dir, root, ignore = []) {
   let entries
   try {
     entries = await fs.readdir(dir, { withFileTypes: true })
@@ -196,8 +208,9 @@ async function* walk(dir) {
     )
       continue
     const full = path.join(dir, entry.name)
+    if (matchesIgnore(path.relative(root, full), ignore)) continue
     if (entry.isDirectory()) {
-      yield* walk(full)
+      yield* walk(full, root, ignore)
     } else if (
       entry.isFile() &&
       SOURCE_EXTS.has(path.extname(entry.name).toLowerCase())
@@ -207,7 +220,7 @@ async function* walk(dir) {
   }
 }
 
-async function collectSources(target) {
+async function collectSources(target, ignore = []) {
   const root = path.resolve(target)
   const stat = await fs.stat(root).catch(() => null)
   if (!stat) die(`Path not found: ${target}`)
@@ -221,7 +234,7 @@ async function collectSources(target) {
     }
     files.push(root)
   } else {
-    for await (const file of walk(root)) files.push(file)
+    for await (const file of walk(root, root, ignore)) files.push(file)
   }
 
   if (files.length === 0) die(`No CSS/SCSS/HTML files found in ${target}`)
@@ -273,16 +286,24 @@ function chaosBadge(score) {
 
 async function cmdAudit(argv) {
   const { flags, rest } = parseFlags(argv)
-  const target = rest[0]
+  const { config } = await loadConfig(process.cwd())
+  const {
+    dir: target,
+    outFile,
+    ignore,
+  } = resolveAuditOptions({
+    flags,
+    rest,
+    config,
+  })
   if (!target) die('Usage: mint-ds audit <directory>')
 
-  const outFile = String(flags.out || DEFAULT_TOKENS_FILE)
   const reportFile = flags.report ? String(flags.report) : null
   const quiet = Boolean(flags.quiet)
   const noCache = Boolean(flags['no-cache'])
 
   log(styles.cyan('→') + ` Reading sources from ${styles.bold(target)}…`)
-  const { files, css } = await collectSources(target)
+  const { files, css } = await collectSources(target, ignore)
   log(
     styles.dim(
       `  ${files.length} file(s), ${(css.length / 1000).toFixed(1)}k chars`
@@ -429,6 +450,17 @@ async function cmdCompat(argv) {
   }
 }
 
+async function cmdInit(argv) {
+  const { flags } = parseFlags(argv)
+  const { path: written } = await scaffoldConfig({
+    cwd: process.cwd(),
+    force: Boolean(flags.force),
+  })
+  const rel = path.relative(process.cwd(), written) || written
+  log(styles.green('✓') + ` Created ${styles.bold(rel)}`)
+  log(styles.dim('  next: npx mint-ds audit ./src/styles'))
+}
+
 async function cmdCache(argv) {
   const { flags } = parseFlags(argv)
   if (flags.clear) {
@@ -512,7 +544,8 @@ async function cmdLint(argv) {
 
 async function cmdExport(argv) {
   const { flags } = parseFlags(argv)
-  const targetInput = flags.target
+  const { config } = await loadConfig(process.cwd())
+  const { targetInput, tokensPath } = resolveExportOptions({ flags, config })
   if (!targetInput || targetInput === true)
     die('Usage: mint-ds export --target <name>  (e.g. tailwind, react, css)')
 
@@ -523,7 +556,6 @@ async function cmdExport(argv) {
     )
   }
 
-  const tokensPath = String(flags.tokens || DEFAULT_TOKENS_FILE)
   const tokensRaw = await fs.readFile(tokensPath, 'utf8').catch(() => null)
   if (tokensRaw === null) {
     die(
@@ -548,11 +580,13 @@ async function cmdExport(argv) {
   }
 
   const meta = EXPORT_OUTPUT[target]
-  const outFile = flags.out ? String(flags.out) : `${meta.filename}.${meta.ext}`
-  await fs.writeFile(outFile, code + '\n', 'utf8')
+  const defaultFilename = `${meta.filename}.${meta.ext}`
+  const { outPath } = resolveExportOptions({ flags, config, defaultFilename })
+  await fs.mkdir(path.dirname(outPath), { recursive: true })
+  await fs.writeFile(outPath, code + '\n', 'utf8')
   log(
     styles.green('✓') +
-      ` Wrote ${styles.bold(outFile)} (${(code.length / 1000).toFixed(1)}k chars)`
+      ` Wrote ${styles.bold(outPath)} (${(code.length / 1000).toFixed(1)}k chars)`
   )
 }
 
@@ -637,7 +671,8 @@ async function main() {
 
   const [cmd, ...rest] = argv
   try {
-    if (cmd === 'audit') await cmdAudit(rest)
+    if (cmd === 'init') await cmdInit(rest)
+    else if (cmd === 'audit') await cmdAudit(rest)
     else if (cmd === 'export') await cmdExport(rest)
     else if (cmd === 'validate') await cmdValidate(rest)
     else if (cmd === 'diff') await cmdDiff(rest)
