@@ -33,7 +33,12 @@
       body {
         margin: 0;
         padding: 16px;
-        font: 13px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font:
+          13px/1.5 -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
         background: var(--bg);
         color: var(--fg);
       }
@@ -101,11 +106,16 @@
   <body>
     <h1>Import DTCG tokens</h1>
     <p class="hint">
-      Paste a W3C DTCG tokens file (e.g. Mint's <code>mint-ds.tokens.dtcg.json</code>) and create
-      the matching token sets in this Penpot file.
+      Paste a W3C DTCG tokens file (e.g. Mint's
+      <code>mint-ds.tokens.dtcg.json</code>) and create the matching token sets
+      in this Penpot file.
     </p>
 
-    <textarea id="input" placeholder='{ "color": { "$type": "color", … } }' spellcheck="false"></textarea>
+    <textarea
+      id="input"
+      placeholder='{ "color": { "$type": "color", … } }'
+      spellcheck="false"
+    ></textarea>
 
     <div class="row">
       <button id="create" type="button">Create tokens</button>
@@ -197,9 +207,14 @@
           const lines = [
             `Done — imported ${summary.tokens} token(s) in ${summary.sets} set(s).`,
           ]
-          if (summary.skipped) lines.push(`Skipped ${summary.skipped} unsupported token(s).`)
+          if (summary.skipped)
+            lines.push(`Skipped ${summary.skipped} unsupported token(s).`)
           if (summary.errors.length) {
-            lines.push('', `Errors (${summary.errors.length}):`, ...summary.errors)
+            lines.push(
+              '',
+              `Errors (${summary.errors.length}):`,
+              ...summary.errors
+            )
           }
           setStatus(lines.join('\n'), summary.errors.length ? 'err' : 'ok')
         }

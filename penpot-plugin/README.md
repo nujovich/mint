@@ -55,6 +55,16 @@ shadows map to one object. `color`, `fontFamilies` and `fontWeights` are straigh
 
 ## Install & use
 
+**Hosted build:** on every merge to `main` the plugin is published to GitHub Pages by
+[`deploy-penpot-plugin.yml`](../.github/workflows/deploy-penpot-plugin.yml). Install it in Penpot
+directly from the manifest URL:
+
+```
+https://nujovich.github.io/mint/manifest.json
+```
+
+To run it locally instead (development, or before it is published):
+
 The plugin ships as static files — serve the `penpot-plugin/` directory over HTTP. A
 zero-dependency dev server is bundled (sets the JS MIME type ES modules need and
 permissive CORS). It regenerates `plugin.js` from its sources on startup:

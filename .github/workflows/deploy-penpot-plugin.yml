@@ -1,0 +1,49 @@
+name: Deploy Penpot plugin
+
+# Publishes the penpot-plugin/ directory to GitHub Pages so the plugin is
+# installable in Penpot at https://<owner>.github.io/<repo>/manifest.json.
+# Runs on merge to main whenever the plugin changes (and can be run manually).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'penpot-plugin/**'
+      - '.github/workflows/deploy-penpot-plugin.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent Pages deployment; never cancel a run mid-publish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      # build-plugin.mjs is zero-dependency, so no `npm ci` is needed here.
+      - name: Build single-file plugin.js
+        run: node penpot-plugin/build-plugin.mjs
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: penpot-plugin
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
