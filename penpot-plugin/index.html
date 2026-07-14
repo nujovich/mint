@@ -195,7 +195,7 @@
           createBtn.disabled = false
           const { summary } = message
           const lines = [
-            `Done — created ${summary.tokens} token(s) in ${summary.sets} set(s).`,
+            `Done — imported ${summary.tokens} token(s) in ${summary.sets} set(s).`,
           ]
           if (summary.skipped) lines.push(`Skipped ${summary.skipped} unsupported token(s).`)
           if (summary.errors.length) {

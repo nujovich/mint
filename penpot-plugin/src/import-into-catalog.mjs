@@ -1,8 +1,3 @@
-/* eslint-disable */
-// GENERATED FILE — DO NOT EDIT.
-// Built from src/import-into-catalog.mjs + src/plugin.glue.mjs by build-plugin.mjs (npm run build:plugin).
-// Penpot evaluates this as a plain script, so it must stay free of import/export.
-
 /**
  * import-into-catalog — idempotent writer for the Mint Penpot plugin.
  *
@@ -20,7 +15,7 @@
  * @param {Array<{ name: string, tokens: Array<{ name: string, type: string|null, value: * }> }>} sets
  * @returns {{ sets: number, tokens: number, skipped: number, errors: string[] }}
  */
-function importSets(catalog, sets) {
+export function importSets(catalog, sets) {
   const summary = { sets: 0, tokens: 0, skipped: 0, errors: [] }
 
   for (const set of sets) {
@@ -92,54 +87,3 @@ function writeToken(tokenSet, { type, name, value }) {
 function errorMessage(error) {
   return (error && error.message) || String(error)
 }
-
-/* global penpot */
-/**
- * Mint · DTCG token import — Penpot plugin glue (SOURCE).
- *
- * Runs inside Penpot's plugin sandbox, which evaluates the plugin `code` file
- * as a plain script (no ES module `import` allowed). So this source is bundled
- * with its dependencies into the single-file `plugin.js` by `build-plugin.mjs`
- * (`npm run build:plugin`) — EDIT THIS FILE, not the generated `plugin.js`.
- *
- * It holds no transformation logic: the UI (index.html) computes the normalized
- * token operations with the pure `dtcgToTokenOps` core and posts them here; this
- * file drives the Penpot Plugins API via the pure, unit-tested `importSets`.
- *
- * Token API reference: https://doc.plugins.penpot.app/
- */
-
-penpot.ui.open('Mint · DTCG token import', 'index.html', {
-  width: 460,
-  height: 560,
-})
-
-penpot.ui.onMessage((message) => {
-  if (!message || message.type !== 'create-tokens') return
-
-  const sets = Array.isArray(message.sets) ? message.sets : []
-
-  // The design tokens Plugins API lives on the local library's token catalog
-  // and only exists in recent Penpot builds (@penpot/plugin-types >= 1.5.0).
-  const catalog =
-    penpot.library && penpot.library.local && penpot.library.local.tokens
-  if (!catalog || typeof catalog.addSet !== 'function') {
-    penpot.ui.sendMessage({
-      type: 'result',
-      summary: {
-        sets: 0,
-        tokens: 0,
-        skipped: 0,
-        errors: [
-          'This Penpot version does not expose the design tokens Plugins API ' +
-            '(penpot.library.local.tokens). It requires a build shipping ' +
-            '@penpot/plugin-types 1.5.0+ (currently the beta/next channel).',
-        ],
-      },
-    })
-    return
-  }
-
-  const summary = importSets(catalog, sets)
-  penpot.ui.sendMessage({ type: 'result', summary })
-})

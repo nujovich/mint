@@ -8,13 +8,21 @@
 // Local dev helper — not loaded by the plugin itself.
 
 import { createServer } from 'node:http'
-import { readFile } from 'node:fs/promises'
+import { readFile, writeFile } from 'node:fs/promises'
 import { extname, join, normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { buildPlugin } from './build-plugin.mjs'
 
 // Serve this plugin directory (the folder this script lives in).
 const ROOT = fileURLToPath(new URL('.', import.meta.url))
 const PORT = Number(process.env.PORT) || 4400
+
+// Rebuild the single-file plugin.js from its sources before serving, so local
+// edits to src/*.mjs are always reflected without a separate build step.
+await writeFile(
+  fileURLToPath(new URL('plugin.js', import.meta.url)),
+  buildPlugin()
+)
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',

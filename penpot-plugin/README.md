@@ -20,11 +20,13 @@ Confirm your instance exposes it before relying on this plugin.
 
 Two layers, deliberately separated so the logic is testable without a running Penpot:
 
-| File                                                     | Runs in                       | Responsibility                                                                                                                            |
-| -------------------------------------------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| [`src/dtcg-to-token-ops.mjs`](src/dtcg-to-token-ops.mjs) | plugin iframe (plain browser) | **Pure core.** Transforms a DTCG object into normalized `{ set, token }` operations. No Penpot dependency; fully unit-tested.             |
-| [`index.html`](index.html)                               | plugin iframe                 | UI. Reads the DTCG file, calls the core, posts the operations to the sandbox.                                                             |
-| [`plugin.js`](plugin.js)                                 | Penpot sandbox                | Thin glue. Receives operations and calls `penpot.library.local.tokens.addSet(…)` / `tokenSet.addToken(…)`. Holds no transformation logic. |
+| File                                                         | Runs in                       | Responsibility                                                                                                                                                        |
+| ------------------------------------------------------------ | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`src/dtcg-to-token-ops.mjs`](src/dtcg-to-token-ops.mjs)     | plugin iframe (plain browser) | **Pure core.** Transforms a DTCG object into normalized `{ set, token }` operations. No Penpot dependency; fully unit-tested.                                         |
+| [`src/import-into-catalog.mjs`](src/import-into-catalog.mjs) | Penpot sandbox (bundled)      | **Idempotent writer.** Drives `penpot.library.local.tokens`, reusing existing sets and overwriting existing tokens (sync). Catalog injected → unit-tested via a fake. |
+| [`src/plugin.glue.mjs`](src/plugin.glue.mjs)                 | Penpot sandbox (bundled)      | Sandbox bootstrap **source**. Opens the UI, receives operations, calls `importSets`. Holds no transformation logic.                                                   |
+| [`index.html`](index.html)                                   | plugin iframe                 | UI. Reads the DTCG file, calls the core, posts the operations to the sandbox.                                                                                         |
+| [`plugin.js`](plugin.js)                                     | Penpot sandbox                | **Generated** single-file bundle of `import-into-catalog.mjs` + `plugin.glue.mjs` (`npm run build:plugin`). Penpot evals it as a plain script — do not edit by hand.  |
 
 ## Token mapping
 
@@ -53,14 +55,19 @@ shadows map to one object. `color`, `fontFamilies` and `fontWeights` are straigh
 
 ## Install & use
 
-The plugin is static files — serve the `penpot-plugin/` directory over HTTP. A
+The plugin ships as static files — serve the `penpot-plugin/` directory over HTTP. A
 zero-dependency dev server is bundled (sets the JS MIME type ES modules need and
-permissive CORS):
+permissive CORS). It regenerates `plugin.js` from its sources on startup:
 
 ```bash
-node penpot-plugin/serve-plugin.mjs   # http://localhost:4400/manifest.json
-# or: npx serve penpot-plugin
+npm run serve:plugin                  # http://localhost:4400/manifest.json (rebuilds plugin.js first)
+# or, without the dev server:
+npm run build:plugin && npx serve penpot-plugin
 ```
+
+`plugin.js` is a generated bundle. After editing `src/import-into-catalog.mjs` or
+`src/plugin.glue.mjs`, run `npm run build:plugin` (the dev server and the
+`build-plugin` test both guard against a stale checkout).
 
 Then, in a Penpot file:
 
@@ -79,8 +86,10 @@ The result summary reports how many sets and tokens were created, how many were 
 
 ## Permissions
 
-`library:read`, `library:write` — the plugin only creates token sets and tokens in the open file.
-Token creation is **additive**; it does not delete or overwrite existing tokens.
+`library:read`, `library:write` — the plugin only creates or updates token sets and tokens in the
+open file. Re-import is **idempotent with sync semantics**: existing sets are reused (not
+duplicated) and existing tokens are **overwritten** with the incoming DTCG value. It never removes
+tokens that are absent from the imported file, and touches nothing outside the token catalog.
 
 ## Tests
 
