@@ -50,6 +50,8 @@
     "build": "next build",
     "start": "next start",
     "mint-ds": "node bin/mint-ds.mjs",
+    "build:plugin": "node penpot-plugin/build-plugin.mjs",
+    "serve:plugin": "node penpot-plugin/serve-plugin.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
