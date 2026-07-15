@@ -31,6 +31,7 @@
     "lib/css-auditor.mjs",
     "lib/config.mjs",
     "lib/dtcg-validator.mjs",
+    "lib/dtcg-exporter.mjs",
     "lib/audit-summary.mjs",
     "lib/css-compat-data.mjs",
     "lib/css-lint-rules.mjs",
