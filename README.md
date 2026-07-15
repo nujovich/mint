@@ -322,17 +322,18 @@ npx mint-ds export --target tailwind --provider ollama
 
 ### All commands
 
-| Command                          | Description                                                                                                                |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `mint-ds init`                   | Scaffold a `mint.config.mjs` with project defaults (`--force` to overwrite an existing config)                             |
-| `mint-ds audit <dir>`            | Walk `<dir>` for `.css`, `.scss`, `.sass`, `.less`, `.html` files, audit them with Claude, and write `mint-ds.tokens.json` |
-| `mint-ds export --target <name>` | Read `mint-ds.tokens.json` and generate the chosen format                                                                  |
-| `mint-ds validate <file>`        | Validate `tokens.json` against DTCG v1 — structure, references, cycles, naming consistency                                 |
-| `mint-ds diff <old> <new>`       | Show what changed between two token files — added, removed, renamed, value-changed, scale-changed (no LLM)                 |
-| `mint-ds cache --clear`          | Delete the local `mint-ds.cache.json` cache file                                                                           |
-| `mint-ds compat <dir>`           | Flag CSS properties below Baseline / Interop 2026 for your browserslist target, with fallback suggestions (no LLM)         |
-| `mint-ds lint <dir>`             | Run static CSS lint rules (gap-decoration hacks) plus a modern-CSS adoption report — no LLM                                |
-| `mint-ds --help`                 | Show full usage                                                                                                            |
+| Command                          | Description                                                                                                                 |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `mint-ds init`                   | Scaffold a `mint.config.mjs` with project defaults (`--force` to overwrite an existing config)                              |
+| `mint-ds audit <dir>`            | Walk `<dir>` for `.css`, `.scss`, `.sass`, `.less`, `.html` files, audit them with Claude, and write `mint-ds.tokens.json`  |
+| `mint-ds export --target <name>` | Read `mint-ds.tokens.json` and generate the chosen format                                                                   |
+| `mint-ds validate <file>`        | Validate `tokens.json` against DTCG v1 — structure, references, cycles, naming consistency                                  |
+| `mint-ds diff <old> <new>`       | Show what changed between two token files — added, removed, renamed, value-changed, scale-changed (no LLM)                  |
+| `mint-ds cache --clear`          | Delete the local `mint-ds.cache.json` cache file                                                                            |
+| `mint-ds compat <dir>`           | Flag CSS properties below Baseline / Interop 2026 for your browserslist target, with fallback suggestions (no LLM)          |
+| `mint-ds lint <dir>`             | Run static CSS lint rules (gap-decoration hacks) plus a modern-CSS adoption report — no LLM                                 |
+| `mint-ds score <dir>`            | Compute a 0–100 CSS health score with a per-metric breakdown, benchmarked against Project Wallace 2026 percentiles (no LLM) |
+| `mint-ds --help`                 | Show full usage                                                                                                             |
 
 ### Configuration
 
@@ -453,6 +454,69 @@ npx mint-ds lint ./src/styles
 ```
 
 Each finding prints with a severity badge (`WARN` / `INFO`), the selector, and a migration hint. A closing **Modern CSS Opportunities** report summarizes how many stylesheets use gap-decoration hacks and how many could move to the native properties, broken down by pattern.
+
+### Score
+
+`mint-ds score <dir>` computes a single **0–100 CSS health score** for every CSS/SCSS file in `<dir>` (a single file also works), with a per-metric breakdown benchmarked against [Project Wallace](https://www.projectwallace.com/)'s 2026 analysis of >100k production stylesheets. No API key or LLM call required — the score is a deterministic, pure computation.
+
+It measures five complexity metrics:
+
+| Metric                    | What it captures                                                          |
+| ------------------------- | ------------------------------------------------------------------------- |
+| **Selectors per rule**    | Compound selectors per rule (over-qualification)                          |
+| **Declarations per rule** | Rule bloat / god-rules                                                    |
+| **`!important` ratio**    | Share of declarations forcing specificity                                 |
+| **Average specificity**   | ID/pseudo over-nesting                                                    |
+| **`@layer` adoption**     | Share of CSS organized in cascade layers (inverted — higher is healthier) |
+
+Each metric is mapped to a per-metric health in `[0,1]` against a `good`/`bad` reference point, then combined into the composite score using per-metric **weights** (both summing to their own normalized total):
+
+| Metric                | Weight | `good` | `bad` |
+| --------------------- | ------ | ------ | ----- |
+| `importantRatio`      | 0.25   | 0%     | 10%   |
+| `selectorsPerRule`    | 0.20   | 2      | 8     |
+| `declarationsPerRule` | 0.20   | 4      | 12    |
+| `avgSpecificity`      | 0.20   | 30     | 200   |
+| `layerAdoption`       | 0.15   | 50%    | 0%    |
+
+Weights and thresholds derive from Project Wallace's corpus — the metrics that most strongly correlate with unmaintainable CSS carry the most weight. Programmatic callers can override any subset via `computeWeightedScore(metrics, weights, thresholds)` in `lib/css-health-score.mjs`; unknown keys and non-positive weights are dropped and the composite re-normalizes, so a partial override stays well-scaled.
+
+**Severity thresholds.** Each metric's _health percentile_ (share of real-world sites at least as healthy) is bucketed into `ok` / `warning` / `error`. Defaults come from the Wallace verdict bands and are overridable per run:
+
+| Threshold                  | Default | Meaning                                                |
+| -------------------------- | ------- | ------------------------------------------------------ |
+| `--thresholds-error <n>`   | 25      | Percentile at or below which a metric is an **error**  |
+| `--thresholds-warning <n>` | 50      | Percentile at or below which a metric is a **warning** |
+
+The command exits `0` (ok), `1` (at least one warning), or `2` (at least one error) so it can gate CI. `--json` emits the full structured report (`score`, per-metric `metrics`, `status`, `exitCode`, and the Wallace `benchmark`) to stdout.
+
+```bash
+npx mint-ds score ./src/styles
+npx mint-ds score ./src/styles --json
+# Stricter gate: any metric worse than the 40th percentile fails the build
+npx mint-ds score ./src/styles --thresholds-error 40 --thresholds-warning 60
+```
+
+Scoring the demo stylesheet shows the shape of the report — the Frankenstein CSS is deliberately messy, so it fails on `!important` abuse and zero cascade-layer adoption:
+
+```
+$ npx mint-ds score examples/frankenstein/styles.css
+
+CSS Health Score: 60/100
+
+Per-metric breakdown:
+  Selectors per rule: 1.05     —  health 78.12/100 (better, ok)
+  Declarations per rule: 1.42  —  health 85.8/100 (better, ok)
+  !important ratio: 30.6%      —  health 0/100 (worse, error)
+  Average specificity: 7.84    —  health 83.67/100 (better, ok)
+  @layer adoption: 0.0%        —  health 0/100 (worse, error)
+
+Overall health percentile 49.52/100 — less healthy than the median production stylesheet (Project Wallace 2026, >100k sites).
+
+Status: ERROR — 2 metric(s) below the error threshold.
+```
+
+The full `--json` report for this file is committed as [`examples/frankenstein/styles.health.json`](examples/frankenstein/styles.health.json) so you can see the exact structured shape.
 
 ### Audit options
 
