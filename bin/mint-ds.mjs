@@ -31,6 +31,12 @@ import {
   resolveAuditOptions,
   resolveExportOptions,
 } from '../lib/mint-config.mjs'
+import {
+  computeMetrics,
+  buildHealthReport,
+  renderHealthReport,
+  DEFAULT_SEVERITY_THRESHOLDS,
+} from '../lib/css-health-score.mjs'
 
 const require = createRequire(import.meta.url)
 const { version: VERSION } = require('../package.json')
@@ -103,6 +109,10 @@ ${styles.bold('COMMANDS')}
   cache --clear                Delete the local ${CACHE_FILE}
   compat <dir>                 Scan CSS for Interop 2026 browser-compat issues (warnings + suggestions)
   lint <dir>                   Run static CSS lint rules on files in <dir>
+  score <dir>                  Compute the CSS health score and per-metric breakdown
+  score <dir> --json           Emit the structured report (status, exitCode) as JSON
+  score <dir> --thresholds-warning <n>   Percentile below which a metric is a warning (0-100)
+  score <dir> --thresholds-error <n>     Percentile below which a metric is an error (0-100)
 
 ${styles.bold('INIT OPTIONS')}
   --force                      Overwrite an existing mint.config.{mjs,js,cjs}
@@ -166,6 +176,8 @@ ${styles.bold('EXAMPLES')}
   npx mint-ds validate tokens.json --spec dtcg --json
   npx mint-ds diff old.tokens.json mint-ds.tokens.json
   npx mint-ds lint ./src/styles
+  npx mint-ds score ./src/styles
+  npx mint-ds score ./src/styles --json
 `)
 }
 
@@ -668,6 +680,52 @@ async function cmdDiff(argv) {
   process.exit(diff.exitCode)
 }
 
+async function cmdScore(argv) {
+  const { flags, rest } = parseFlags(argv)
+  const target = rest[0]
+  if (!target) die('Usage: mint-ds score <directory-or-file>')
+
+  // Optional severity-threshold overrides (Milestone 5). Both flags accept a
+  // 0-100 percentile; only the provided one(s) override the defaults.
+  const thresholds = { ...DEFAULT_SEVERITY_THRESHOLDS }
+  if (flags['thresholds-error'] != null) {
+    const v = Number(flags['thresholds-error'])
+    if (Number.isNaN(v)) die('--thresholds-error must be a number (0-100)')
+    thresholds.error = v
+  }
+  if (flags['thresholds-warning'] != null) {
+    const v = Number(flags['thresholds-warning'])
+    if (Number.isNaN(v)) die('--thresholds-warning must be a number (0-100)')
+    thresholds.warning = v
+  }
+  if (thresholds.error > thresholds.warning) {
+    die('--thresholds-error must be <= --thresholds-warning')
+  }
+
+  log(styles.cyan('→') + ` Reading sources from ${styles.bold(target)}…`)
+  const { files, css } = await collectSources(target)
+  log(
+    styles.dim(
+      `  ${files.length} file(s), ${(css.length / 1000).toFixed(1)}k chars`
+    )
+  )
+
+  const metrics = computeMetrics(css)
+
+  if (flags.json) {
+    const report = buildHealthReport(metrics, thresholds)
+    process.stdout.write(JSON.stringify(report, null, 2) + '\n')
+    if (report.exitCode) process.exit(report.exitCode)
+    return
+  }
+
+  log('')
+  log(renderHealthReport(metrics, thresholds))
+  // Surface the computed status as a CLI exit code: 0 ok, 1 warning, 2 error.
+  const report = buildHealthReport(metrics, thresholds)
+  if (report.exitCode) process.exit(report.exitCode)
+}
+
 async function main() {
   const argv = process.argv.slice(2)
   if (argv.length === 0 || argv[0] === '-h' || argv[0] === '--help') {
@@ -689,6 +747,7 @@ async function main() {
     else if (cmd === 'cache') await cmdCache(rest)
     else if (cmd === 'compat') await cmdCompat(rest)
     else if (cmd === 'lint') await cmdLint(rest)
+    else if (cmd === 'score') await cmdScore(rest)
     else {
       printHelp()
       die(`Unknown command: ${cmd}`)

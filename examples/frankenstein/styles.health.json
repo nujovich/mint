@@ -1,0 +1,80 @@
+{
+  "score": 60,
+  "metrics": [
+    {
+      "key": "selectorsPerRule",
+      "label": "Selectors per rule",
+      "value": "1.05",
+      "healthPercentile": 78.12,
+      "verdict": "better",
+      "severity": "ok"
+    },
+    {
+      "key": "declarationsPerRule",
+      "label": "Declarations per rule",
+      "value": "1.42",
+      "healthPercentile": 85.8,
+      "verdict": "better",
+      "severity": "ok"
+    },
+    {
+      "key": "importantRatio",
+      "label": "!important ratio",
+      "value": "30.6%",
+      "healthPercentile": 0,
+      "verdict": "worse",
+      "severity": "error"
+    },
+    {
+      "key": "avgSpecificity",
+      "label": "Average specificity",
+      "value": "7.84",
+      "healthPercentile": 83.67,
+      "verdict": "better",
+      "severity": "ok"
+    },
+    {
+      "key": "layerAdoption",
+      "label": "@layer adoption",
+      "value": "0.0%",
+      "healthPercentile": 0,
+      "verdict": "worse",
+      "severity": "error"
+    }
+  ],
+  "status": "error",
+  "exitCode": 2,
+  "errors": 2,
+  "warnings": 0,
+  "benchmark": {
+    "metrics": {
+      "selectorsPerRule": {
+        "value": 1.05,
+        "healthPercentile": 78.12,
+        "verdict": "better"
+      },
+      "declarationsPerRule": {
+        "value": 1.42,
+        "healthPercentile": 85.8,
+        "verdict": "better"
+      },
+      "importantRatio": {
+        "value": 0.3063,
+        "healthPercentile": 0,
+        "verdict": "worse"
+      },
+      "avgSpecificity": {
+        "value": 7.84,
+        "healthPercentile": 83.67,
+        "verdict": "better"
+      },
+      "layerAdoption": {
+        "value": 0,
+        "healthPercentile": 0,
+        "verdict": "worse"
+      }
+    },
+    "overallPercentile": 49.52,
+    "summary": "Overall health percentile 49.52/100 — less healthy than the median production stylesheet (Project Wallace 2026, >100k sites)."
+  }
+}
