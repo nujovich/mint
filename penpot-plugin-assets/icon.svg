@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#41E3B0"/>
+      <stop offset="1" stop-color="#11A074"/>
+    </linearGradient>
+    <filter id="chip" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#064A36" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <rect x="0" y="0" width="400" height="400" rx="92" fill="url(#bg)"/>
+
+  <g filter="url(#chip)">
+    <!-- token set row 1 -->
+    <circle cx="122" cy="150" r="17" fill="#1976D2"/>
+    <rect x="150" y="138" width="150" height="24" rx="12" fill="#FFFFFF"/>
+
+    <!-- token set row 2 -->
+    <circle cx="122" cy="200" r="17" fill="#E53935"/>
+    <rect x="150" y="188" width="118" height="24" rx="12" fill="#FFFFFF"/>
+
+    <!-- token set row 3 -->
+    <circle cx="122" cy="250" r="17" fill="#F5A623"/>
+    <rect x="150" y="238" width="134" height="24" rx="12" fill="#FFFFFF"/>
+  </g>
+</svg>
