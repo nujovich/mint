@@ -23,6 +23,7 @@ import { convertTokensToDTCG, serializeDTCG } from '../lib/dtcg-exporter.mjs'
 import { formatLintSummary } from '../lib/audit-summary.mjs'
 import { checkCompat } from '../lib/css-compat-data.mjs'
 import { lintCss, lintGapDecorationAdoption } from '../lib/css-lint-rules.mjs'
+import { applyWsl2DnsWorkaround } from '../lib/net-utils.mjs'
 import {
   DEFAULT_TOKENS_FILE,
   loadConfig,
@@ -669,6 +670,8 @@ async function cmdDiff(argv) {
 }
 
 async function main() {
+  // Mitigate WSL2 IPv6 fetch hangs to remote LLM APIs (issue #19).
+  applyWsl2DnsWorkaround()
   const argv = process.argv.slice(2)
   if (argv.length === 0 || argv[0] === '-h' || argv[0] === '--help') {
     printHelp()

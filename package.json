@@ -37,6 +37,7 @@
     "lib/css-lint-rules.mjs",
     "lib/token-diff.mjs",
     "lib/mint-config.mjs",
+    "lib/net-utils.mjs",
     "lib/llm_providers/**/*.mjs",
     "README.md"
   ],
