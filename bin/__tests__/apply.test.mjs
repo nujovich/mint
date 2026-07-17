@@ -115,4 +115,13 @@ describe('mint-ds apply', () => {
       '.a { color: var(--color-primary); }'
     )
   })
+
+  it('refuses to write a file outside the git repo without --force', async () => {
+    const dir = await writeRepo({ 'a.css': '.a { color: #1976d2; }' })
+    const outside = path.join(TMP, 'outside.css')
+    await fs.writeFile(outside, '.x { color: #1976d2; }', 'utf8')
+    const res = runCli(['apply', outside], dir)
+    expect(res.code).not.toBe(0)
+    expect(await fs.readFile(outside, 'utf8')).toBe('.x { color: #1976d2; }') // untouched
+  })
 })

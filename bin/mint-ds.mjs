@@ -834,16 +834,23 @@ async function cmdApply(argv) {
 
   if (!force) {
     const rel = results.map((r) => path.relative(process.cwd(), r.abs))
-    const { isRepo, dirty } = getDirtyFiles(rel, process.cwd())
-    if (!isRepo) {
+    let status
+    try {
+      status = getDirtyFiles(rel, process.cwd())
+    } catch (err) {
+      die(
+        `Could not verify git status (${String(err.message).split('\n')[0]}); commit your changes or pass --force.`
+      )
+    }
+    if (!status.isRepo) {
       die(
         'Not a git repository — cannot verify a clean tree. Re-run with --force to proceed.'
       )
     }
-    if (dirty.length > 0) {
+    if (status.dirty.length > 0) {
       die(
-        `${dirty.length} file(s) have uncommitted changes; commit them or pass --force:\n  ` +
-          dirty.join('\n  ')
+        `${status.dirty.length} file(s) have uncommitted changes; commit them or pass --force:\n  ` +
+          status.dirty.join('\n  ')
       )
     }
   }
