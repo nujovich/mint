@@ -3,7 +3,8 @@
 //   node render.mjs <htmlPath> <outPath> [width]
 //
 // Rendering is done by a headless browser so the mint-branded HTML (exact
-// brand tokens + accurate technical text) is reproduced pixel-perfect. The
+// brand tokens + accurate technical text) renders faithfully. Fonts load from
+// Google Fonts over the network; offline runs fall back to system fonts. The
 // `launch` parameter is injectable so unit tests run without a real browser.
 
 import { readFileSync, writeFileSync } from 'node:fs'
@@ -27,7 +28,7 @@ export async function renderHtmlToPng({
   try {
     const page = await browser.newPage()
     // Height is a seed; fullPage screenshot captures the real content height.
-    page.setViewportSize({ width, height: 100 })
+    await page.setViewportSize({ width, height: 100 })
     const html = readFileSync(htmlPath, 'utf8')
     await page.setContent(html, { waitUntil: 'networkidle' })
     const buffer = await page.screenshot({ fullPage: true, type: 'png' })
@@ -46,6 +47,11 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     process.exit(1)
   }
   const width = widthArg ? Number(widthArg) : 1200
+  if (Number.isNaN(width) || width <= 0) {
+    console.error('Usage: node render.mjs <htmlPath> <outPath> [width]')
+    console.error(`Invalid width: ${widthArg}`)
+    process.exit(1)
+  }
   renderHtmlToPng({ htmlPath, outPath, width })
     .then((p) => console.log(`Wrote ${p}`))
     .catch((err) => {

@@ -77,4 +77,30 @@ describe('renderHtmlToPng', () => {
 
     expect(calls.viewport.width).toBe(1200)
   })
+
+  it('closes the browser even when screenshot fails', async () => {
+    const htmlPath = join(dir, 'in.html')
+    const outPath = join(dir, 'out.png')
+    writeFileSync(htmlPath, '<html></html>')
+    let closed = false
+    const browser = {
+      async newPage() {
+        return {
+          setViewportSize() {},
+          async setContent() {},
+          async screenshot() {
+            throw new Error('boom')
+          },
+        }
+      },
+      async close() {
+        closed = true
+      },
+    }
+
+    await expect(
+      renderHtmlToPng({ htmlPath, outPath, launch: async () => browser })
+    ).rejects.toThrow('boom')
+    expect(closed).toBe(true)
+  })
 })
