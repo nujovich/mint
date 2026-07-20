@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Fragment+Mono&display=swap');
+
+      :root {
+        --bg: #1c2030;
+        --panel: #272c40;
+        --surface: #333852;
+        --surface-2: #424866;
+        --border: rgba(255, 255, 255, 0.16);
+        --text: #f5f6fc;
+        --text-muted: #c8cce0;
+        --text-faint: #a0a5c0;
+        --accent: #818cf8;
+        --accent-strong: #a5b0ff;
+        --font: 'Outfit', system-ui, sans-serif;
+        --mono: 'Fragment Mono', ui-monospace, monospace;
+        --radius: 10px;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        width: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font);
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap {
+        padding: 56px 64px;
+      }
+      header.hero {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 24px;
+      }
+      .wordmark {
+        font-size: 40px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+      .wordmark .dot {
+        color: var(--accent);
+      }
+      .version {
+        font-family: var(--mono);
+        font-size: 26px;
+        color: var(--accent-strong);
+      }
+      .date {
+        font-size: 15px;
+        color: var(--text-faint);
+        margin-top: 4px;
+        text-align: right;
+      }
+      .tagline {
+        font-size: 22px;
+        font-weight: 300;
+        color: var(--text-muted);
+        margin: 28px 0 8px;
+        line-height: 1.4;
+      }
+      .body {
+        margin: 32px 0;
+      }
+      /* Preset: bento */
+      .bento {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 22px 24px;
+      }
+      .card.wide {
+        grid-column: 1 / -1;
+      }
+      .card h3 {
+        font-size: 15px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--accent);
+        margin-bottom: 14px;
+      }
+      .card ul {
+        list-style: none;
+      }
+      .card li {
+        font-size: 17px;
+        color: var(--text);
+        padding: 6px 0 6px 20px;
+        position: relative;
+        line-height: 1.45;
+      }
+      .card li::before {
+        content: '›';
+        position: absolute;
+        left: 0;
+        color: var(--accent-strong);
+      }
+      .card li code {
+        font-family: var(--mono);
+        font-size: 15px;
+        background: var(--surface);
+        padding: 1px 6px;
+        border-radius: 5px;
+        color: var(--accent-strong);
+      }
+      /* Preset: linear */
+      .linear {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .linear .step {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+      }
+      .linear .num {
+        font-family: var(--mono);
+        color: var(--accent);
+        font-size: 20px;
+        min-width: 32px;
+      }
+      /* Preset: dashboard */
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+      .tile {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 24px;
+        text-align: center;
+      }
+      .tile .n {
+        font-family: var(--mono);
+        font-size: 44px;
+        color: var(--accent-strong);
+      }
+      .tile .l {
+        font-size: 14px;
+        color: var(--text-faint);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      footer.meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid var(--border);
+        padding-top: 22px;
+        font-size: 15px;
+        color: var(--text-faint);
+      }
+      footer.meta .stats {
+        font-family: var(--mono);
+        color: var(--text-muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="hero">
+        <div class="wordmark">mint<span class="dot">.</span></div>
+        <div>
+          <div class="version">{{version}}</div>
+          <div class="date">{{date}}</div>
+        </div>
+      </header>
+      <p class="tagline">{{tagline}}</p>
+      <div class="body">{{body}}</div>
+      <footer class="meta">
+        <span>github.com/nujovich/mint</span>
+        <span class="stats">{{stats}}</span>
+      </footer>
+    </div>
+  </body>
+</html>
