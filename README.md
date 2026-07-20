@@ -12,12 +12,13 @@ Both share the same prompts and Claude pipeline.
 ## How it works
 
 ```
-CSS / SCSS / HTML  →  Claude Audit  →  Review & curate  →  Clean tokens  →  Export
+CSS / SCSS / HTML  →  Claude Audit  →  Review & curate  →  Clean tokens  →  Export  →  Apply
 ```
 
 1. **Audit** — Claude analyzes your CSS, groups near-duplicate colors into clusters, detects fonts, flags spacing values that don't fit a 4px grid, identifies duplicate transition/animation declarations, and lints layout patterns for accessibility and modern-CSS pitfalls (see [CSS layout linting](#css-layout-linting)).
 2. **Curate** — Review each cluster. Pick the canonical color, rename tokens, include or exclude entries, and select which fonts to keep. (CLI applies sensible defaults: include every cluster, keep non-system fonts, use the suggested 4px scale.)
 3. **Export** — Generate production-ready output in any format.
+4. **Apply** — Rewrite your source CSS in place so raw values reference the generated tokens (`#1976d2` → `var(--color-primary)`). Deterministic, no LLM — adoption becomes a reviewable git diff. See [`mint-ds apply`](#applying-tokens-to-source-css).
 
 ## CSS layout linting
 
@@ -258,7 +259,49 @@ npx mint-ds audit ./src/styles
 npx mint-ds export --target tailwind     # → tailwind.config.js
 npx mint-ds export --target react        # → components.tsx
 npx mint-ds export --target css          # → variables.css
+
+# Rewrite your source CSS to reference the generated tokens
+npx mint-ds apply ./src/styles --dry-run # preview the diff
+npx mint-ds apply ./src/styles           # write the changes in place
 ```
+
+### Applying tokens to source CSS
+
+`mint-ds apply` closes the loop: it rewrites raw values in your source CSS/SCSS to reference the tokens you generated, so adopting a design system is a reviewable migration commit instead of manual find-and-replace.
+
+```bash
+npx mint-ds apply <path> [options]
+```
+
+It works from the tokens file alone — **deterministic, no LLM call**. Every color/spacing/font-family literal is normalized and matched against the tokens:
+
+```css
+/* before */ /* after */
+color: #1976d2;
+color: var(--color-primary);
+border-color: #1565c0;
+border-color: var(--color-primary-600);
+background: rgb(25 118 210);
+background: var(--color-primary);
+padding: 8px;
+padding: var(--spacing-2);
+font-family: Inter, sans-serif;
+font-family: var(--font-body);
+```
+
+Different textual forms of the same color (`#1976D2`, `#1976d2`, `rgb(...)`) all match. It only touches the value side of declarations — comments, `url(...)`, and existing `var(...)` are left alone, and re-running is a no-op.
+
+| Flag              | Description                                                                                                                                                                           |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--tokens <file>` | Tokens file to read (default `mint-ds.tokens.json`, or your `mint.config` value).                                                                                                     |
+| `--dry-run`       | Print the substitutions without writing any file.                                                                                                                                     |
+| `--fuzzy`         | Also snap near-duplicate colors and off-scale spacing to the closest token, leaving a `/* was 13px */` note. Off by default, so a plain run only makes exact, lossless substitutions. |
+| `--force`         | Skip the git-clean safety check (see below).                                                                                                                                          |
+| `--target`        | Substitution style. Only `css-var` (the default) is supported today.                                                                                                                  |
+
+**Safety.** `apply` writes to your files in place, so by default it refuses to run when any target file has uncommitted changes (or when it can't verify git state) — commit or stash first, or pass `--force`. It never descends into `node_modules` and only touches source extensions (`.css`, `.scss`, `.sass`, `.less`, `.html`). Use `--dry-run` to preview, then let `git diff` be your review.
+
+> **Note:** in HTML files, CSS inside `<style>` blocks is rewritten, but inline `style="..."` attributes are left untouched.
 
 ### Authentication
 
