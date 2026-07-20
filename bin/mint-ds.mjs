@@ -174,6 +174,7 @@ ${styles.bold('EXAMPLES')}
   npx mint-ds export --target tailwind
   npx mint-ds export --target react --out ui/Components.tsx
   npx mint-ds export --target css --stdout > variables.css
+  npx mint-ds export --target design-md > DESIGN.md
   npx mint-ds validate tokens.json --spec dtcg
   npx mint-ds validate tokens.json --spec dtcg --json
   npx mint-ds diff old.tokens.json mint-ds.tokens.json
