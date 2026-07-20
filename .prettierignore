@@ -1,1 +1,4 @@
 examples/
+
+# Generated release infographic artifacts (HTML records + rendered PNGs)
+release-assets/
