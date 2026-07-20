@@ -24,6 +24,9 @@ import { formatLintSummary } from '../lib/audit-summary.mjs'
 import { checkCompat } from '../lib/css-compat-data.mjs'
 import { lintCss, lintGapDecorationAdoption } from '../lib/css-lint-rules.mjs'
 import { applyWsl2DnsWorkaround } from '../lib/net-utils.mjs'
+import { buildTokenIndex } from '../lib/token-index.mjs'
+import { applyCodemod } from '../lib/css-codemod.mjs'
+import { getDirtyFiles } from '../lib/git-status.mjs'
 import {
   DEFAULT_TOKENS_FILE,
   loadConfig,
@@ -108,6 +111,7 @@ ${styles.bold('COMMANDS')}
   validate <file> [options]    Validate tokens.json against a spec (e.g. dtcg)
   diff <old> <new>             Show changes between two token files
   cache --clear                Delete the local ${CACHE_FILE}
+  apply <path>                 Rewrite source CSS to use generated token variables
   compat <dir>                 Scan CSS for Interop 2026 browser-compat issues (warnings + suggestions)
   lint <dir>                   Run static CSS lint rules on files in <dir>
   score <dir>                  Compute the CSS health score and per-metric breakdown
@@ -130,6 +134,13 @@ ${styles.bold('EXPORT OPTIONS')}
   --tokens <file>              Tokens input path (default: ${DEFAULT_TOKENS_FILE})
   --out <file>                 Override the generated filename
   --stdout                     Print to stdout instead of writing a file
+
+${styles.bold('APPLY OPTIONS')}
+  --tokens <file>               Tokens file (default: ${DEFAULT_TOKENS_FILE})
+  --target <name>               Codemod target (default: css-var; only value supported for now)
+  --fuzzy                       Also snap near-duplicate/off-scale values
+  --dry-run                     Print the diff without writing
+  --force                       Skip the git-clean check
 
 ${styles.bold('VALIDATE OPTIONS')}
   --spec <name>                Spec to validate against (default: dtcg). Values: dtcg
@@ -179,6 +190,8 @@ ${styles.bold('EXAMPLES')}
   npx mint-ds lint ./src/styles
   npx mint-ds score ./src/styles
   npx mint-ds score ./src/styles --json
+  npx mint-ds apply ./src/styles --dry-run
+  npx mint-ds apply ./src/styles
 `)
 }
 
@@ -727,6 +740,135 @@ async function cmdScore(argv) {
   if (report.exitCode) process.exit(report.exitCode)
 }
 
+// Walk `target` (file or directory) for source files, reusing the same walk
+// used by `collectSources` but returning individual file paths rather than a
+// combined CSS blob — `apply` rewrites each file separately.
+async function collectSourceFiles(target, ignore = []) {
+  const root = path.resolve(target)
+  const stat = await fs.stat(root).catch(() => null)
+  if (!stat) die(`Path not found: ${target}`)
+
+  if (stat.isFile()) {
+    if (!SOURCE_EXTS.has(path.extname(root).toLowerCase())) {
+      die(
+        `Unsupported file type: ${target} (expected .css/.scss/.sass/.less/.html)`
+      )
+    }
+    // apply writes to disk — respect the ignore list even for an explicit file
+    if (matchesIgnore(path.relative(process.cwd(), root), ignore)) return []
+    return [root]
+  }
+
+  const files = []
+  for await (const file of walk(root, root, ignore)) files.push(file)
+  return files
+}
+
+async function cmdApply(argv) {
+  const { flags, rest } = parseFlags(argv)
+  const target = rest[0] || '.'
+
+  const targetFormat = flags.target ? String(flags.target) : 'css-var'
+  if (targetFormat !== 'css-var') {
+    die(
+      `Unsupported --target "${targetFormat}". Slice 1 supports only "css-var".`
+    )
+  }
+
+  const { config } = await loadConfig(process.cwd())
+  const { ignore } = resolveAuditOptions({ config })
+  const tokensPath = flags.tokens
+    ? String(flags.tokens)
+    : (config.tokens ?? DEFAULT_TOKENS_FILE)
+
+  const tokensRaw = await fs.readFile(tokensPath, 'utf8').catch(() => null)
+  if (tokensRaw === null) {
+    die(
+      `Tokens file not found: ${tokensPath}\n  Run "mint-ds audit <dir>" first, or pass --tokens <file>.`
+    )
+  }
+  let tokens
+  try {
+    tokens = JSON.parse(tokensRaw)
+  } catch {
+    die(`Tokens file is not valid JSON: ${tokensPath}`)
+  }
+  const index = buildTokenIndex(tokens)
+
+  log(styles.cyan('→') + ` Reading sources from ${styles.bold(target)}…`)
+  const files = await collectSourceFiles(target, ignore)
+  if (files.length === 0) {
+    process.stdout.write('No source files found.\n')
+    return
+  }
+
+  const fuzzy = Boolean(flags.fuzzy)
+  const dryRun = Boolean(flags['dry-run'])
+  const force = Boolean(flags.force)
+
+  const results = []
+  for (const abs of files) {
+    const src = await fs.readFile(abs, 'utf8')
+    const { output, edits } = applyCodemod(src, index, { fuzzy })
+    if (edits.length > 0) results.push({ abs, output, edits })
+  }
+
+  if (results.length === 0) {
+    process.stdout.write('No substitutions to make.\n')
+    return
+  }
+
+  if (dryRun) {
+    for (const r of results) {
+      process.stdout.write(`\n--- ${path.relative(process.cwd(), r.abs)}\n`)
+      for (const e of r.edits) {
+        process.stdout.write(`  ${e.from}  ->  ${e.to}\n`)
+      }
+    }
+    const total = results.reduce((n, r) => n + r.edits.length, 0)
+    process.stdout.write(
+      `\n${total} substitution(s) in ${results.length} file(s) (dry run).\n`
+    )
+    return
+  }
+
+  if (!force) {
+    const rel = results.map((r) => path.relative(process.cwd(), r.abs))
+    let status
+    try {
+      status = getDirtyFiles(rel, process.cwd())
+    } catch (err) {
+      die(
+        `Could not verify git status (${String(err.message).split('\n')[0]}); commit your changes or pass --force.`
+      )
+    }
+    if (!status.isRepo) {
+      die(
+        'Not a git repository — cannot verify a clean tree. Re-run with --force to proceed.'
+      )
+    }
+    if (status.dirty.length > 0) {
+      die(
+        `${status.dirty.length} file(s) have uncommitted changes; commit them or pass --force:\n  ` +
+          status.dirty.join('\n  ')
+      )
+    }
+  }
+
+  let total = 0
+  let lossy = 0
+  for (const r of results) {
+    await fs.writeFile(r.abs, r.output, 'utf8')
+    total += r.edits.length
+    lossy += r.edits.filter((e) => e.lossy).length
+  }
+  process.stdout.write(
+    `Rewrote ${results.length} file(s), ${total} substitution(s)` +
+      (lossy > 0 ? ` (${lossy} lossy)` : '') +
+      '.\n'
+  )
+}
+
 async function main() {
   // Mitigate WSL2 IPv6 fetch hangs to remote LLM APIs (issue #19).
   applyWsl2DnsWorkaround()
@@ -751,6 +893,7 @@ async function main() {
     else if (cmd === 'compat') await cmdCompat(rest)
     else if (cmd === 'lint') await cmdLint(rest)
     else if (cmd === 'score') await cmdScore(rest)
+    else if (cmd === 'apply') await cmdApply(rest)
     else {
       printHelp()
       die(`Unknown command: ${cmd}`)

@@ -39,6 +39,10 @@
     "lib/token-diff.mjs",
     "lib/mint-config.mjs",
     "lib/net-utils.mjs",
+    "lib/css-values.mjs",
+    "lib/token-index.mjs",
+    "lib/css-codemod.mjs",
+    "lib/git-status.mjs",
     "lib/llm_providers/**/*.mjs",
     "README.md"
   ],
