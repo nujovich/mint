@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Fragment+Mono&display=swap');
+
+      :root {
+        --bg: #1c2030;
+        --panel: #272c40;
+        --surface: #333852;
+        --surface-2: #424866;
+        --border: rgba(255, 255, 255, 0.16);
+        --text: #f5f6fc;
+        --text-muted: #c8cce0;
+        --text-faint: #a0a5c0;
+        --accent: #818cf8;
+        --accent-strong: #a5b0ff;
+        --font: 'Outfit', system-ui, sans-serif;
+        --mono: 'Fragment Mono', ui-monospace, monospace;
+        --radius: 10px;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        width: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font);
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap {
+        padding: 56px 64px;
+      }
+      header.hero {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 24px;
+      }
+      .wordmark {
+        font-size: 40px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+      .wordmark .dot {
+        color: var(--accent);
+      }
+      .version {
+        font-family: var(--mono);
+        font-size: 26px;
+        color: var(--accent-strong);
+      }
+      .date {
+        font-size: 15px;
+        color: var(--text-faint);
+        margin-top: 4px;
+        text-align: right;
+      }
+      .tagline {
+        font-size: 22px;
+        font-weight: 300;
+        color: var(--text-muted);
+        margin: 28px 0 8px;
+        line-height: 1.4;
+      }
+      .body {
+        margin: 32px 0;
+      }
+      /* Preset: bento */
+      .bento {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 22px 24px;
+      }
+      .card.wide {
+        grid-column: 1 / -1;
+      }
+      .card h3 {
+        font-size: 15px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--accent);
+        margin-bottom: 14px;
+      }
+      .card ul {
+        list-style: none;
+      }
+      .card li {
+        font-size: 17px;
+        color: var(--text);
+        padding: 6px 0 6px 20px;
+        position: relative;
+        line-height: 1.45;
+      }
+      .card li::before {
+        content: '›';
+        position: absolute;
+        left: 0;
+        color: var(--accent-strong);
+      }
+      .card li code {
+        font-family: var(--mono);
+        font-size: 15px;
+        background: var(--surface);
+        padding: 1px 6px;
+        border-radius: 5px;
+        color: var(--accent-strong);
+      }
+      footer.meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid var(--border);
+        padding-top: 22px;
+        font-size: 15px;
+        color: var(--text-faint);
+      }
+      footer.meta .stats {
+        font-family: var(--mono);
+        color: var(--text-muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="hero">
+        <div class="wordmark">mint<span class="dot">.</span></div>
+        <div>
+          <div class="version">v0.3.0</div>
+          <div class="date">July 20, 2026</div>
+        </div>
+      </header>
+      <p class="tagline">
+        Five new commands, four new export targets, and a Penpot bridge — mint's
+        biggest release yet.
+      </p>
+      <div class="body">
+        <div class="bento">
+          <div class="card wide">
+            <h3>New commands</h3>
+            <ul>
+              <li><code>mint-ds apply</code> — codemod source CSS straight to tokens</li>
+              <li><code>mint-ds lint</code> — flag a11y and gap-decoration CSS issues</li>
+              <li><code>mint-ds score</code> — grade your CSS health at a glance</li>
+              <li><code>mint-ds init</code> — scaffold a config in seconds</li>
+              <li><code>mint-ds diff</code> — compare two token files</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Export targets</h3>
+            <ul>
+              <li>SolidJS and Qwik targets</li>
+              <li>UnoCSS target</li>
+              <li>Vanilla Extract target</li>
+              <li><code>--target dtcg</code> deterministic export</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Smarter CSS &amp; interop</h3>
+            <ul>
+              <li>Interop 2026 safe-adoption rules</li>
+              <li>Modern, a11y-focused layout linting</li>
+              <li>Penpot token import plugin (DTCG)</li>
+            </ul>
+          </div>
+          <div class="card wide">
+            <h3>Bug fixes</h3>
+            <ul>
+              <li>WSL2: retry LLM calls and force IPv4 DNS</li>
+              <li>Ship compat/lint modules in the npm tarball</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <footer class="meta">
+        <span>github.com/nujovich/mint</span>
+        <span class="stats">13 features · 2 fixes</span>
+      </footer>
+    </div>
+  </body>
+</html>
