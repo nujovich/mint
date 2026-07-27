@@ -15,29 +15,53 @@ Both share the same prompts and Claude pipeline.
 CSS / SCSS / HTML  →  Claude Audit  →  Review & curate  →  Clean tokens  →  Export  →  Apply
 ```
 
-1. **Audit** — Claude analyzes your CSS, groups near-duplicate colors into clusters, detects fonts, flags spacing values that don't fit a 4px grid, identifies duplicate transition/animation declarations, and lints layout patterns for accessibility and modern-CSS pitfalls (see [CSS layout linting](#css-layout-linting)).
+1. **Audit** — Claude analyzes your CSS, groups near-duplicate colors into clusters, detects fonts, flags spacing values that don't fit a 4px grid, identifies duplicate transition/animation declarations, and lints layout patterns for accessibility, modern-CSS pitfalls, and `@property` type mismatches (see [CSS layout linting](#css-layout-linting)).
 2. **Curate** — Review each cluster. Pick the canonical color, rename tokens, include or exclude entries, and select which fonts to keep. (CLI applies sensible defaults: include every cluster, keep non-system fonts, use the suggested 4px scale.)
 3. **Export** — Generate production-ready output in any format.
 4. **Apply** — Rewrite your source CSS in place so raw values reference the generated tokens (`#1976d2` → `var(--color-primary)`). Deterministic, no LLM — adoption becomes a reviewable git diff. See [`mint-ds apply`](#applying-tokens-to-source-css).
 
 ## CSS layout linting
 
-Beyond color, font, and spacing tokens, the audit also lints your CSS for layout accessibility issues and modern-CSS pitfalls. These findings are returned in the raw `AuditReport` (write it to disk with `--report`); the accessibility and overflow checks also feed the chaos score.
+Beyond color, font, and spacing tokens, the audit also lints your CSS for layout accessibility issues, modern-CSS pitfalls, and broken `@property` type contracts. These findings are returned in the raw `AuditReport` (write it to disk with `--report`); the accessibility and overflow checks also feed the chaos score.
 
-| Category                   | Rule                                | Severity   | What it flags                                                                                                                   |
-| -------------------------- | ----------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| **Layout accessibility**   | `order` breaks DOM order            | warning    | A grid/flex child reordered with `order` so the visual order no longer matches the DOM — breaks keyboard navigation and SR flow |
-|                            | reordering without tabindex         | warning    | An element visually reordered via `order` with no matching `tabindex` adjustment, so keyboard users navigate in DOM order       |
-| **Modern best practices**  | `grid-when-flexbox-wrap-would-work` | suggestion | Single-column grid that a `flex` + `flex-wrap` layout would handle more simply                                                  |
-|                            | `legacy-centering`                  | suggestion | `margin: 0 auto` + fixed width, or absolute-position + `transform` centering, where modern `flex`/`grid` centering is cleaner   |
-|                            | `flex-min-width-zero-hack`          | suggestion | `min-width: 0` on a flex item — the classic overflow workaround that often hides a layout misunderstanding                      |
-|                            | `fragile-nested-selectors`          | suggestion | Selectors coupled to a brittle DOM shape (deep `>` / `+` chains) that a small HTML refactor would break                         |
-| **Feature adoption**       | `use-css-layers`                    | info       | Large stylesheets (20+ rules) with no `@layer` organization                                                                     |
-|                            | `use-container-queries`             | info       | Component-scoped width `@media` queries that a `@container` query would express better                                          |
-| **Overflow & wrap safety** | `flex-wrap-missing`                 | warning    | Flex container without `flex-wrap` — items can't wrap and may overflow on narrow viewports                                      |
-|                            | `missing-overflow-wrap`             | suggestion | Sized grid/flex container (fixed width/height) with no `overflow` handling, so content can be clipped                           |
+| Category                   | Rule                                | Severity   | What it flags                                                                                                                                           |
+| -------------------------- | ----------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Layout accessibility**   | `order` breaks DOM order            | warning    | A grid/flex child reordered with `order` so the visual order no longer matches the DOM — breaks keyboard navigation and SR flow                         |
+|                            | reordering without tabindex         | warning    | An element visually reordered via `order` with no matching `tabindex` adjustment, so keyboard users navigate in DOM order                               |
+| **Modern best practices**  | `grid-when-flexbox-wrap-would-work` | suggestion | Single-column grid that a `flex` + `flex-wrap` layout would handle more simply                                                                          |
+|                            | `legacy-centering`                  | suggestion | `margin: 0 auto` + fixed width, or absolute-position + `transform` centering, where modern `flex`/`grid` centering is cleaner                           |
+|                            | `flex-min-width-zero-hack`          | suggestion | `min-width: 0` on a flex item — the classic overflow workaround that often hides a layout misunderstanding                                              |
+|                            | `fragile-nested-selectors`          | suggestion | Selectors coupled to a brittle DOM shape (deep `>` / `+` chains) that a small HTML refactor would break                                                 |
+| **Feature adoption**       | `use-css-layers`                    | info       | Large stylesheets (20+ rules) with no `@layer` organization                                                                                             |
+|                            | `use-container-queries`             | info       | Component-scoped width `@media` queries that a `@container` query would express better                                                                  |
+| **Overflow & wrap safety** | `flex-wrap-missing`                 | warning    | Flex container without `flex-wrap` — items can't wrap and may overflow on narrow viewports                                                              |
+|                            | `missing-overflow-wrap`             | suggestion | Sized grid/flex container (fixed width/height) with no `overflow` handling, so content can be clipped                                                   |
+| **@property type safety**  | `invalid-initial-value`             | warning    | An `initial-value` that doesn't parse as the declared `syntax`, or a missing one on a non-universal syntax — the browser rejects the whole registration |
+|                            | `fallback-type-mismatch`            | warning    | A `var()` fallback that contradicts the registered syntax (`var(--my-color, 14px)` on a `<color>`), so the fallback can never apply                     |
+|                            | `property-type-mismatch`            | suggestion | A registered property used where its declared syntax can't apply — a `<length>` property assigned to `color`                                            |
 
-The chaos score gains **+1** when there are 3 or more layout-accessibility issues and **+1** when there are 4 or more overflow-safety issues. Adoption suggestions are informational only and never affect the score.
+The chaos score gains **+1** when there are 3 or more layout-accessibility issues and **+1** when there are 4 or more overflow-safety issues. Adoption suggestions and `@property` findings are informational for the score and never affect it.
+
+### `@property` type safety
+
+An `@property` at-rule declares a type contract for a custom property. Mint reads every registration in your CSS and checks it — and its `var()` usages — against the declared `syntax` descriptor:
+
+<!-- prettier-ignore-start -->
+```css
+@property --spacing-unit {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: red;                          /* invalid-initial-value — the browser drops this registration */
+}
+
+.button {
+  background-color: var(--brand-color, 14px);  /* fallback-type-mismatch — <color> can't fall back to a length */
+  color: var(--spacing-unit);                  /* property-type-mismatch — <length> used as a color */
+}
+```
+<!-- prettier-ignore-end -->
+
+`invalid-initial-value` is the one worth fixing first: when the `initial-value` doesn't match the declared `syntax`, the browser rejects the registration outright and the property silently reverts to unregistered behaviour — losing both the type contract and the ability to animate or transition it. Registrations declaring the universal syntax (`*`) are skipped, since any value satisfies them. Findings land in `propertyTypeIssues` on the `AuditReport`.
 
 ## Example — Frankenstein
 
