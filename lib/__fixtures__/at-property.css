@@ -1,0 +1,48 @@
+/* Fixture for STEP 13 — CSS @property type checking.
+   Covers one clean registration plus one case per reported rule. */
+
+/* Valid: initial-value parses as the declared syntax. */
+@property --brand-color {
+  syntax: '<color>';
+  inherits: false;
+  initial-value: #6366f1;
+}
+
+/* invalid-initial-value: declared <length>, initial-value is a color.
+   The browser rejects this registration outright. */
+@property --spacing-unit {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: red;
+}
+
+/* invalid-initial-value: non-universal syntax with no initial-value at all. */
+@property --card-radius {
+  syntax: '<length>';
+  inherits: true;
+}
+
+/* Universal syntax — not type-checkable, STEP 13 must skip it. */
+@property --anything {
+  syntax: '*';
+  inherits: false;
+}
+
+.button {
+  /* fallback-type-mismatch: <color> property falling back to a length. */
+  background-color: var(--brand-color, 14px);
+  padding: var(--spacing-unit, 8px);
+  border-radius: var(--card-radius, 4px);
+}
+
+.card {
+  /* property-type-mismatch: a <length> property used as a color value. */
+  color: var(--spacing-unit);
+  gap: var(--spacing-unit, 12px);
+}
+
+.badge {
+  /* Correct usage — must not be reported. */
+  background-color: var(--brand-color, #4f46e5);
+  border-radius: var(--card-radius, 6px);
+}

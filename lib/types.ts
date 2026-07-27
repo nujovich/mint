@@ -159,6 +159,16 @@ export interface OverflowSafetyIssue {
   reason: string
 }
 
+export interface PropertyTypeIssue {
+  selector: string
+  property: string
+  rule: string // 'invalid-initial-value' | 'fallback-type-mismatch' | 'property-type-mismatch'
+  severity: 'warning' | 'suggestion'
+  reason: string
+  propertyName: string // the registered custom property, e.g. '--my-color'
+  declaredSyntax: string // the @property syntax descriptor, e.g. '<color>'
+}
+
 export interface AuditReport {
   brand: string
   chaosScore: number
@@ -172,6 +182,7 @@ export interface AuditReport {
   modernPracticeIssues?: ModernPracticeIssue[]
   adoptionSuggestions?: AdoptionSuggestion[]
   overflowSafetyIssues?: OverflowSafetyIssue[]
+  propertyTypeIssues?: PropertyTypeIssue[]
 }
 
 export interface ColorDecision {
