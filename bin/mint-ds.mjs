@@ -20,6 +20,7 @@ import { getCssAuditor } from '../lib/css-auditor.mjs'
 import { validateFile } from '../lib/dtcg-validator.mjs'
 import { diffFiles } from '../lib/token-diff.mjs'
 import { convertTokensToDTCG, serializeDTCG } from '../lib/dtcg-exporter.mjs'
+import { convertTokensToDesignMd } from '../lib/design-md.mjs'
 import { formatLintSummary } from '../lib/audit-summary.mjs'
 import { checkCompat } from '../lib/css-compat-data.mjs'
 import { lintCss, lintGapDecorationAdoption } from '../lib/css-lint-rules.mjs'
@@ -184,6 +185,7 @@ ${styles.bold('EXAMPLES')}
   npx mint-ds export --target tailwind
   npx mint-ds export --target react --out ui/Components.tsx
   npx mint-ds export --target css --stdout > variables.css
+  npx mint-ds export --target design-md > DESIGN.md
   npx mint-ds validate tokens.json --spec dtcg
   npx mint-ds validate tokens.json --spec dtcg --json
   npx mint-ds diff old.tokens.json mint-ds.tokens.json
@@ -605,6 +607,9 @@ async function cmdExport(argv) {
     // Deterministic conversion — no LLM
     const dtcg = convertTokensToDTCG(tokens)
     code = serializeDTCG(dtcg)
+  } else if (target === 'design-md') {
+    // Deterministic conversion — no LLM
+    code = convertTokensToDesignMd(tokens)
   } else {
     const cssAuditor = getCssAuditor(flags)
     code = await cssAuditor.export(buildExportPrompt(tokens, target))
