@@ -159,6 +159,13 @@ export interface OverflowSafetyIssue {
   reason: string
 }
 
+export interface LegacyPatternIssue {
+  selector: string
+  pattern: 'obsolete-vendor-prefix' | 'clearfix-hack' | 'ie-specific-hack'
+  severity: 'warning' | 'suggestion'
+  suggestion: string
+}
+
 export interface AuditReport {
   brand: string
   chaosScore: number
@@ -172,6 +179,7 @@ export interface AuditReport {
   modernPracticeIssues?: ModernPracticeIssue[]
   adoptionSuggestions?: AdoptionSuggestion[]
   overflowSafetyIssues?: OverflowSafetyIssue[]
+  legacyPatterns?: LegacyPatternIssue[]
 }
 
 export interface ColorDecision {
