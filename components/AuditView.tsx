@@ -13,7 +13,8 @@ interface LintIssue {
   selector?: string
   rule?: string
   severity: string
-  reason: string
+  reason?: string
+  suggestion?: string
 }
 
 function nearestScaleValue(
@@ -870,7 +871,7 @@ export default function AuditView({ audit, onResolve }: Props) {
                             marginTop: 2,
                           }}
                         >
-                          {issue.reason}
+                          {issue.reason || issue.suggestion || ''}
                         </div>
                       </div>
                     </div>
