@@ -1,0 +1,45 @@
+/* Test fixture for legacy CSS pattern detection */
+
+/* Obsolete vendor prefixes */
+.vendor-prefix-demo {
+  -webkit-border-radius: 8px;
+  -moz-border-radius: 8px;
+  border-radius: 8px;
+  -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+  -webkit-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Clearfix hack */
+.clearfix::after {
+  content: '';
+  display: table;
+  clear: both;
+}
+
+.container::after {
+  content: '';
+  display: block;
+  clear: both;
+}
+
+/* IE-specific hacks */
+.ie-hacks {
+  *zoom: 1;
+  _width: 100%;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FF0000', endColorstr='#00FF00');
+}
+
+/* Valid modern CSS (should NOT be flagged) */
+.modern-container {
+  display: flow-root;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transform: none;
+}
