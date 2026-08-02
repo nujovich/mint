@@ -169,6 +169,20 @@ export interface PropertyTypeIssue {
   declaredSyntax: string // the @property syntax descriptor, e.g. '<color>'
 }
 
+export interface LogicalPropertiesIssue {
+  selector: string
+  property: string // the physical property found, e.g. 'margin-left'
+  value: string // the original value, e.g. '16px'
+  suggestion: string // the logical equivalent, e.g. 'margin-inline-start: 16px'
+  reason: string
+  severity: 'suggestion'
+}
+
+export interface LogicalPropertiesAudit {
+  found: LogicalPropertiesIssue[]
+  logicalVsPhysicalRatio: number // 0-1, e.g. 0.65 means 65% logical
+}
+
 export interface AuditReport {
   brand: string
   chaosScore: number
@@ -183,6 +197,7 @@ export interface AuditReport {
   adoptionSuggestions?: AdoptionSuggestion[]
   overflowSafetyIssues?: OverflowSafetyIssue[]
   propertyTypeIssues?: PropertyTypeIssue[]
+  logicalProperties?: LogicalPropertiesAudit
 }
 
 export interface ColorDecision {
