@@ -801,6 +801,110 @@ export default function AuditView({ audit, onResolve }: Props) {
         </div>
       </section>
 
+      {/* Logical properties */}
+      {audit.logicalProperties && audit.logicalProperties.found.length > 0 && (
+        <section>
+          <SectionLabel>
+            Logical properties -- {audit.logicalProperties.found.length} issue
+            {audit.logicalProperties.found.length === 1 ? '' : 's'} ·{' '}
+            {Math.round(audit.logicalProperties.logicalVsPhysicalRatio * 100)}%
+            logical
+          </SectionLabel>
+
+          <div
+            style={{
+              padding: '10px 14px',
+              borderRadius: 8,
+              background: 'rgba(129,140,248,0.06)',
+              border: '1px solid rgba(129,140,248,0.15)',
+              fontSize: 11,
+              color: 'var(--text-muted)',
+              lineHeight: 1.65,
+              marginBottom: 12,
+            }}
+          >
+            <strong style={{ color: 'var(--text)', fontWeight: 500 }}>
+              Why logical properties?
+            </strong>{' '}
+            CSS logical properties (like{' '}
+            <code style={{ fontFamily: 'var(--mono)', fontSize: 10 }}>
+              margin-inline-start
+            </code>{' '}
+            instead of{' '}
+            <code style={{ fontFamily: 'var(--mono)', fontSize: 10 }}>
+              margin-left
+            </code>
+            ) adapt automatically to writing modes (LTR, RTL, vertical). This
+            stylesheet is{' '}
+            {Math.round(audit.logicalProperties.logicalVsPhysicalRatio * 100)}%
+            logical —
+            {audit.logicalProperties.logicalVsPhysicalRatio >= 0.7
+              ? ' solid i18n readiness.'
+              : audit.logicalProperties.logicalVsPhysicalRatio >= 0.4
+                ? ' moderate physical property usage remains.'
+                : ' significant physical property usage needs migration.'}
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {audit.logicalProperties.found.map((issue, i) => (
+              <div
+                key={`logical-${i}`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  gap: 8,
+                  padding: '8px 12px',
+                  borderRadius: 8,
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                }}
+              >
+                <span
+                  style={{
+                    flexShrink: 0,
+                    fontSize: 10,
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                    color: '#818cf8',
+                  }}
+                >
+                  suggestion
+                </span>
+                <div style={{ minWidth: 0 }}>
+                  <code
+                    style={{
+                      fontSize: 11,
+                      fontFamily: 'var(--mono)',
+                      color: 'var(--text)',
+                    }}
+                  >
+                    {issue.selector}
+                  </code>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: 'var(--text-muted)',
+                      lineHeight: 1.55,
+                      marginTop: 2,
+                    }}
+                  >
+                    <code style={{ fontFamily: 'var(--mono)', fontSize: 10 }}>
+                      {issue.property}: {issue.value}
+                    </code>{' '}
+                    <span style={{ opacity: 0.6 }}>→</span>{' '}
+                    <code style={{ fontFamily: 'var(--mono)', fontSize: 10 }}>
+                      {issue.suggestion}
+                    </code>
+                    {issue.reason && <> -- {issue.reason}</>}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Layout linting */}
       {lintGroups.length > 0 && (
         <section>
