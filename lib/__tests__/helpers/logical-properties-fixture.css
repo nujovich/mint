@@ -1,0 +1,53 @@
+/* Mixed logical and physical directional properties for testing STEP 14 */
+
+.sidebar {
+  margin-left: 16px;
+  padding-top: 8px;
+  left: 0;
+}
+
+.content {
+  margin-inline-start: 16px;
+  padding-block-end: 12px;
+  inset-inline-start: 240px;
+}
+
+.header {
+  border-bottom: 2px solid #ccc;
+  border-right-color: #999;
+}
+
+.footer-links {
+  padding-right: 24px;
+  margin-block: 16px;
+  text-align: right;
+}
+
+.card {
+  width: 300px;
+  height: auto;
+  max-width: 100%;
+  min-height: 100px;
+}
+
+.responsive {
+  inline-size: 100%;
+  block-size: auto;
+  max-inline-size: 1200px;
+  min-block-size: 0;
+}
+
+.text-block {
+  text-align: start;
+}
+
+.legacy-block {
+  text-align: left;
+}
+
+.actions {
+  border-left-style: solid;
+  border-bottom-width: 1px;
+  margin-top: 8px;
+  padding-inline: 16px;
+}
