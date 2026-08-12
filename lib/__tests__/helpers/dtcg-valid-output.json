@@ -1,0 +1,148 @@
+{
+  "color": {
+    "$type": "color",
+    "primary": {
+      "500": {
+        "$value": "#1976d2"
+      },
+      "700": {
+        "$value": "#0d47a1"
+      }
+    },
+    "error": {
+      "$value": "#e53935"
+    },
+    "background": {
+      "$value": "#f5f5f5"
+    }
+  },
+  "spacing": {
+    "$type": "dimension",
+    "1": {
+      "$value": {
+        "value": 4,
+        "unit": "px"
+      }
+    },
+    "2": {
+      "$value": {
+        "value": 8,
+        "unit": "px"
+      }
+    },
+    "gutter": {
+      "$value": {
+        "value": 1.5,
+        "unit": "rem"
+      }
+    }
+  },
+  "border-radius": {
+    "$type": "dimension",
+    "sm": {
+      "$value": {
+        "value": 4,
+        "unit": "px"
+      }
+    },
+    "md": {
+      "$value": {
+        "value": 8,
+        "unit": "px"
+      }
+    }
+  },
+  "shadow": {
+    "$type": "shadow",
+    "sm": {
+      "$value": [
+        {
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 2,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 4,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          },
+          "color": "#0000001a"
+        }
+      ]
+    },
+    "md": {
+      "$value": [
+        {
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 4,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 8,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          },
+          "color": "#00000026"
+        }
+      ]
+    }
+  },
+  "typography": {
+    "font-family": {
+      "$type": "fontFamily",
+      "body": {
+        "$value": "Inter"
+      },
+      "heading": {
+        "$value": ["Roboto", "sans-serif"]
+      }
+    },
+    "font-weight": {
+      "$type": "fontWeight",
+      "normal": {
+        "$value": 400
+      },
+      "bold": {
+        "$value": 700
+      }
+    },
+    "font-size": {
+      "$type": "dimension",
+      "sm": {
+        "$value": {
+          "value": 14,
+          "unit": "px"
+        }
+      },
+      "md": {
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      }
+    },
+    "line-height": {
+      "$type": "number",
+      "tight": {
+        "$value": 1.25
+      },
+      "normal": {
+        "$value": 1.5
+      }
+    }
+  }
+}
