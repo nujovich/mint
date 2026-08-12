@@ -365,3 +365,30 @@ export const EXPORT_TARGETS: ExportConfig[] = [
     description: 'Resumable component$ with typed props and Slot',
   },
 ]
+
+// ─── DTCG v1 Format Types ────────────────────────────────────────────────────
+// Based on https://www.designtokens.org/TR/2025.10/format/
+// Used by the dtcg-exporter, dtcg-validator, and the LLM-based dtcg export prompt.
+
+/** DTCG dimension token value: { value: number, unit: string }. */
+export interface DTCGDimension {
+  value: number
+  unit: string
+}
+
+/** A single shadow entry within a DTCG shadow array ($type: shadow). */
+export interface DTCGShadowEntry {
+  offsetX: DTCGDimension
+  offsetY: DTCGDimension
+  blur: DTCGDimension
+  spread: DTCGDimension
+  color: string
+}
+
+/** DTCG typography sub-group with $type inheritance from the parent. */
+export interface DTCGTypographyGroup {
+  'font-family'?: Record<string, { $type: 'fontFamily'; $value: string }>
+  'font-size'?: Record<string, { $type: 'dimension'; $value: DTCGDimension }>
+  'font-weight'?: Record<string, { $type: 'fontWeight'; $value: number }>
+  'line-height'?: Record<string, { $type: 'number'; $value: number }>
+}

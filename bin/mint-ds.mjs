@@ -126,6 +126,7 @@ ${styles.bold('INIT OPTIONS')}
 ${styles.bold('AUDIT OPTIONS')}
   --out <file>                 Tokens output path (default: ${DEFAULT_TOKENS_FILE})
   --report <file>              Also write the raw audit report to <file>
+  --format <name>              Token output format (default: mint). Values: mint, dtcg
   --quiet                      Suppress chaos summary
   --no-cache                   Skip cache lookup and overwrite any existing entry
 
@@ -182,6 +183,7 @@ ${styles.bold('EXAMPLES')}
   npx mint-ds init
   npx mint-ds audit ./src/styles
   npx mint-ds audit ./src/styles --provider openrouter
+  npx mint-ds audit ./src/styles --format dtcg
   npx mint-ds export --target tailwind
   npx mint-ds export --target react --out ui/Components.tsx
   npx mint-ds export --target css --stdout > variables.css
@@ -327,6 +329,11 @@ async function cmdAudit(argv) {
   })
   if (!target) die('Usage: mint-ds audit <directory>')
 
+  const format = flags.format ? String(flags.format).toLowerCase() : 'mint'
+  if (format !== 'mint' && format !== 'dtcg') {
+    die(`Unknown --format "${flags.format}". Supported: mint, dtcg`)
+  }
+
   const reportFile = flags.report ? String(flags.report) : null
   const quiet = Boolean(flags.quiet)
   const noCache = Boolean(flags['no-cache'])
@@ -391,6 +398,19 @@ async function cmdAudit(argv) {
   }
 
   await fs.writeFile(outFile, JSON.stringify(tokens, null, 2) + '\n', 'utf8')
+
+  // --format dtcg: produce DTCG v1 tokens alongside the mint-format file.
+  if (format === 'dtcg') {
+    log(styles.cyan('→') + ' Converting to DTCG format...')
+    const dtcgCode = await cssAuditor.export(buildExportPrompt(tokens, 'dtcg'))
+    const dtcgOut =
+      flags.out != null
+        ? String(flags.out).replace(/(\.json)?$/, '.dtcg.json')
+        : outFile.replace(/(\.json)?$/, '.dtcg.json')
+    await fs.mkdir(path.dirname(dtcgOut), { recursive: true })
+    await fs.writeFile(dtcgOut, dtcgCode + '\n', 'utf8')
+    log(styles.green('✓') + ` DTCG tokens written to ${styles.bold(dtcgOut)}`)
+  }
 
   if (!quiet) {
     log('')
