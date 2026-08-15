@@ -2,7 +2,10 @@
 
 import { useState } from 'react'
 import type { AuditReport, ColorDecision, UserDecisions } from '@/lib/types'
-import { collectLintGroups } from '@/lib/audit-summary.mjs'
+import {
+  collectLintGroups,
+  collectModernFeatures,
+} from '@/lib/audit-summary.mjs'
 
 interface Props {
   audit: AuditReport
@@ -53,6 +56,8 @@ export default function AuditView({ audit, onResolve }: Props) {
   const motionDurations = audit.motion?.durations?.suggestedScale ?? {}
   const motionEasings = audit.motion?.easings?.suggestedScale ?? {}
   const lintGroups = collectLintGroups(audit)
+  const modernFeatures = collectModernFeatures(audit)
+  const adoptedFeatureCount = modernFeatures.filter((f) => f.used).length
 
   const chaosColor =
     audit.chaosScore <= 3
@@ -875,6 +880,87 @@ export default function AuditView({ audit, onResolve }: Props) {
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Modern CSS adoption */}
+      {modernFeatures.length > 0 && (
+        <section>
+          <SectionLabel>
+            Modern CSS Adoption — {adoptedFeatureCount} of{' '}
+            {modernFeatures.length} adopted
+          </SectionLabel>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {modernFeatures.map((feature) => (
+              <div
+                key={feature.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 12,
+                  padding: '10px 14px',
+                  borderRadius: 8,
+                  background: 'var(--panel)',
+                  border: '1px solid var(--border)',
+                }}
+              >
+                <span
+                  style={{
+                    flexShrink: 0,
+                    width: 12,
+                    height: 12,
+                    marginTop: 3,
+                    borderRadius: '50%',
+                    background: feature.used ? '#4ade80' : 'var(--surface-2)',
+                    border: feature.used ? 'none' : '1px solid var(--border)',
+                  }}
+                />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'baseline',
+                      gap: 8,
+                    }}
+                  >
+                    <code
+                      style={{
+                        fontSize: 12,
+                        fontFamily: 'var(--mono)',
+                        color: 'var(--text)',
+                      }}
+                    >
+                      {feature.label}
+                    </code>
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 600,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
+                        color: feature.used ? '#4ade80' : 'var(--text-faint)',
+                      }}
+                    >
+                      {feature.used ? 'adopted' : 'not adopted'}
+                    </span>
+                  </div>
+                  {!feature.used && feature.suggestion && (
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: 'var(--text-muted)',
+                        lineHeight: 1.55,
+                        marginTop: 3,
+                      }}
+                    >
+                      {feature.suggestion}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
