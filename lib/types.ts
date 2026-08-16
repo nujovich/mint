@@ -169,6 +169,22 @@ export interface PropertyTypeIssue {
   declaredSyntax: string // the @property syntax descriptor, e.g. '<color>'
 }
 
+export interface ModernFeatureStatus {
+  used: boolean
+  suggestion?: string
+}
+
+export interface ModernFeatures {
+  property: ModernFeatureStatus // @property at-rules registering typed custom properties
+  layer: ModernFeatureStatus // @layer cascade layers (statement or block form)
+  container: ModernFeatureStatus // @container queries / container-type / container-name
+  supports: ModernFeatureStatus // @supports feature-query blocks
+  nesting: ModernFeatureStatus // native CSS nesting
+  'color-mix': ModernFeatureStatus // color-mix() function usage
+  scope: ModernFeatureStatus // @scope at-rules for scoped styles
+  has: ModernFeatureStatus // :has() relational pseudo-class
+}
+
 export interface AuditReport {
   brand: string
   chaosScore: number
@@ -183,6 +199,7 @@ export interface AuditReport {
   adoptionSuggestions?: AdoptionSuggestion[]
   overflowSafetyIssues?: OverflowSafetyIssue[]
   propertyTypeIssues?: PropertyTypeIssue[]
+  modernFeatures?: ModernFeatures
 }
 
 export interface ColorDecision {

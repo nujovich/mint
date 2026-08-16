@@ -1,0 +1,78 @@
+/* Fixture for STEP 14 - modern CSS feature adoption scan.
+   Uses all eight tracked modern features plus a legacy block
+   that exercises none of them (so every id reports used: false
+   there and the scan can suggest adoption). */
+
+/* property: typed custom property registration. */
+@property --brand-color {
+  syntax: '<color>';
+  inherits: false;
+  initial-value: #6366f1;
+}
+
+/* layer: cascade layers in statement form. */
+@layer reset, base, components;
+
+/* layer: cascade layers in block form. */
+@layer base {
+  body {
+    margin: 0;
+    font-family: system-ui;
+  }
+}
+
+/* container: container-type plus a container query. */
+.product-card {
+  container-type: inline-size;
+}
+
+@container (min-width: 400px) {
+  .product-card {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* supports: feature query. */
+@supports (display: grid) {
+  .product-grid {
+    display: grid;
+  }
+}
+
+/* nesting: native CSS nesting with the & selector. */
+.alert {
+  padding: 1rem;
+
+  & .alert-title {
+    font-weight: 600;
+  }
+}
+
+/* color-mix: runtime color derivation. */
+.theme-accent {
+  background-color: color-mix(in srgb, #6366f1 50%, white);
+}
+
+/* scope: scoped component styles. */
+@scope (.pricing) {
+  .price {
+    color: var(--brand-color);
+  }
+}
+
+/* has: relational pseudo-class. */
+.gallery:has(> img) {
+  display: grid;
+}
+
+/* Legacy block: no modern features, so every tracked id is absent here. */
+.legacy-sidebar {
+  float: left;
+  width: 240px;
+}
+
+.legacy-clearfix::after {
+  content: '';
+  display: table;
+  clear: both;
+}
