@@ -169,6 +169,13 @@ export interface PropertyTypeIssue {
   declaredSyntax: string // the @property syntax descriptor, e.g. '<color>'
 }
 
+export interface LayoutWarning {
+  pattern: string // 'nested-grid-without-subgrid' | 'flex-overflow-risk'
+  element: string // the selector of the offending container or item
+  severity: 'warning' | 'suggestion'
+  suggestion: string // human-readable explanation and concrete fix
+}
+
 export interface AuditReport {
   brand: string
   chaosScore: number
@@ -183,6 +190,7 @@ export interface AuditReport {
   adoptionSuggestions?: AdoptionSuggestion[]
   overflowSafetyIssues?: OverflowSafetyIssue[]
   propertyTypeIssues?: PropertyTypeIssue[]
+  layoutWarnings?: LayoutWarning[]
 }
 
 export interface ColorDecision {
