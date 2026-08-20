@@ -1,0 +1,89 @@
+/* Layout patterns test fixture
+ * Exercises the two layout anti-patterns detected by STEP 14 (LAYOUT HEALTH):
+ * 1. nested-grid-without-subgrid — a grid container inside another grid that
+ *    re-declares its own tracks instead of using subgrid
+ * 2. flex-overflow-risk — a flex item with a fixed flex-basis inside a nowrap
+ *    flex container
+ *
+ * Also includes clean cases that should NOT trigger either pattern.
+ */
+
+/* --- NESTED GRID WITHOUT SUBGRID (should trigger) --- */
+
+.page-grid {
+  display: grid;
+  grid-template-columns: 1fr 3fr 1fr;
+  gap: 1rem;
+}
+
+/* .card-grid is a child of .page-grid and re-declares its own explicit tracks
+ * instead of using subgrid — columns and gutters will not align */
+.page-grid .card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+/* .card-grid .inner is nested yet another level and also uses explicit tracks */
+.card-grid .inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+/* --- FLEX OVERFLOW RISK (should trigger) --- */
+
+.nav {
+  display: flex;
+  /* no flex-wrap — items will not wrap */
+  gap: 8px;
+  padding: 0 16px;
+}
+
+/* .nav-item has a fixed flex-basis of 300px inside a nowrap flex container,
+ * risking overflow when the container is narrower than the sum of all items */
+.nav-item {
+  flex-basis: 300px;
+  min-width: 200px;
+}
+
+/* Another flex item with a large fixed width inside a nowrap container */
+.toolbar {
+  display: flex;
+}
+
+.toolbar-button {
+  width: 250px;
+  flex-shrink: 0;
+}
+
+/* --- CLEAN CASES (should NOT trigger) --- */
+
+/* Grid with subgrid — correct usage, no warning expected */
+.page-grid .subgrid-section {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+}
+
+/* Flex container WITH flex-wrap — safe, no overflow risk */
+.wrap-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wrap-nav .wrap-item {
+  flex-basis: 300px;
+}
+
+/* Standalone grid (not nested) — no warning expected */
+.standalone-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+/* Flex item with flexible sizing — no overflow risk */
+.flex-auto {
+  flex: 1;
+}

@@ -11,9 +11,11 @@ interface Props {
 
 interface LintIssue {
   selector?: string
+  element?: string
   rule?: string
   severity: string
-  reason: string
+  reason?: string
+  suggestion?: string
 }
 
 function nearestScaleValue(
@@ -860,7 +862,7 @@ export default function AuditView({ audit, onResolve }: Props) {
                             color: 'var(--text)',
                           }}
                         >
-                          {issue.selector || issue.rule || '—'}
+                          {issue.selector || issue.element || issue.rule || '—'}
                         </code>
                         <div
                           style={{
@@ -870,7 +872,7 @@ export default function AuditView({ audit, onResolve }: Props) {
                             marginTop: 2,
                           }}
                         >
-                          {issue.reason}
+                          {issue.reason || issue.suggestion}
                         </div>
                       </div>
                     </div>
