@@ -84,6 +84,8 @@ export interface ColorCluster {
   suggestedName: string
   representative: string
   samples: ColorSample[]
+  contrastRatio?: number
+  failsWCAG?: { aa: boolean; aaa: boolean }
 }
 
 export interface FontEntry {
