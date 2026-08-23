@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { buildAuditPrompt } from '@/lib/prompts.mjs'
 import { getCssAuditor } from '@/lib/css-auditor.mjs'
-import { annotateColorClusters } from '@/lib/css-contrast.mjs'
+import {
+  annotateColorClusters,
+  buildContrastPairs,
+} from '@/lib/css-contrast.mjs'
 
 export async function POST(req: NextRequest) {
   const { css } = await req.json()
@@ -14,6 +17,7 @@ export async function POST(req: NextRequest) {
     const cssAuditor = getCssAuditor()
     const auditResult = await cssAuditor.audit(buildAuditPrompt(css))
     auditResult.colorClusters = annotateColorClusters(auditResult.colorClusters)
+    auditResult.contrastPairs = buildContrastPairs(auditResult.colorClusters)
     return NextResponse.json({ auditResult })
   } catch (err) {
     const errorMsg = 'Error auditing CSS'
