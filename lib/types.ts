@@ -84,6 +84,18 @@ export interface ColorCluster {
   suggestedName: string
   representative: string
   samples: ColorSample[]
+  contrastRatio?: number
+  failsWCAG?: { aa: boolean; aaa: boolean }
+}
+
+export interface ContrastPairIssue {
+  foregroundName: string
+  foreground: string
+  background: string
+  contrastRatio: number
+  failsAA: boolean
+  failsAAA: boolean
+  suggestion: string
 }
 
 export interface FontEntry {
@@ -174,6 +186,7 @@ export interface AuditReport {
   chaosScore: number
   summary: string
   colorClusters: ColorCluster[]
+  contrastPairs?: ContrastPairIssue[]
   fonts: FontEntry[]
   spacing: SpacingAudit
   lineHeights: LineHeightAudit
