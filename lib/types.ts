@@ -169,6 +169,24 @@ export interface PropertyTypeIssue {
   declaredSyntax: string // the @property syntax descriptor, e.g. '<color>'
 }
 
+export interface CascadeLayerIssue {
+  selector: string
+  rule: string // 'rules-outside-layers'
+  severity: 'suggestion'
+  reason: string
+}
+
+export interface CascadeLayerAudit {
+  /** Layer names in declaration order (first-declared = lowest priority). */
+  layers: string[]
+  /** Number of distinct layers detected. */
+  layerCount: number
+  /** Count of style rules declared outside any @layer block. */
+  rulesOutsideLayers: number
+  /** Per-selector findings for rules outside @layer. */
+  issues: CascadeLayerIssue[]
+}
+
 export interface AuditReport {
   brand: string
   chaosScore: number
@@ -183,6 +201,7 @@ export interface AuditReport {
   adoptionSuggestions?: AdoptionSuggestion[]
   overflowSafetyIssues?: OverflowSafetyIssue[]
   propertyTypeIssues?: PropertyTypeIssue[]
+  cascadeLayers?: CascadeLayerAudit
 }
 
 export interface ColorDecision {
