@@ -171,9 +171,11 @@ export interface PropertyTypeIssue {
 
 export interface CascadeLayerIssue {
   selector: string
-  rule: string // 'rules-outside-layers'
-  severity: 'suggestion'
+  rule: string // 'rules-outside-layers' | 'post-layer-specificity' | 'important-in-layer'
+  severity: 'suggestion' | 'warning'
   reason: string
+  /** Layer name for 'important-in-layer' findings. */
+  layer?: string
 }
 
 export interface CascadeLayerAudit {
@@ -183,7 +185,9 @@ export interface CascadeLayerAudit {
   layerCount: number
   /** Count of style rules declared outside any @layer block. */
   rulesOutsideLayers: number
-  /** Per-selector findings for rules outside @layer. */
+  /** Style-rule selectors grouped by the named @layer block that contains them. */
+  rulesByLayer: Record<string, string[]>
+  /** Per-selector findings for rules outside @layer and layer anti-patterns. */
   issues: CascadeLayerIssue[]
 }
 
