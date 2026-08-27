@@ -527,7 +527,7 @@ async function cmdLint(argv) {
   )
 
   const result = lintCss(css)
-  const { findings } = result
+  const { findings, cascadeLayers } = result
 
   if (findings.length === 0) {
     log(styles.green('✓') + ' No lint issues found.')
@@ -545,6 +545,44 @@ async function cmdLint(argv) {
       log(styles.dim(`       ${finding.message}`))
       log('')
     }
+  }
+
+  // Cascade Layers: hierarchy visualization + implicit/explicit order warnings.
+  if (cascadeLayers && cascadeLayers.layerCount > 0) {
+    log('')
+    log(styles.bold('Cascade Layers'))
+    log('')
+    if (cascadeLayers.orderExplicit) {
+      log(styles.dim('  Order: explicit (@layer order statement)'))
+    } else {
+      log(styles.dim('  Order: implicit (first-appearance order)'))
+      log(
+        '  ' +
+          styles.yellow('WARN') +
+          ' Layer order is implicit. Add an explicit order statement (e.g. @layer reset, base, theme;) to pin cascade precedence.'
+      )
+    }
+    log('')
+    log(styles.dim('  Layer hierarchy (lowest priority first):'))
+    for (const entry of cascadeLayers.hierarchy) {
+      const tag = entry.order === 'explicit' ? 'explicit' : 'implicit'
+      log(
+        '    ' +
+          (entry.rank + 1) +
+          '. ' +
+          entry.name +
+          '  ' +
+          styles.dim('(' + tag + ', ' + entry.rulesCount + ' rule(s))')
+      )
+    }
+    log(
+      styles.dim(
+        '    - unlayered styles (highest priority; override all layers, ' +
+          cascadeLayers.rulesOutsideLayers +
+          ' rule(s))'
+      )
+    )
+    log('')
   }
 
   // Modern CSS Opportunities: adoption report for gap decorations.

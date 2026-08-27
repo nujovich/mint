@@ -178,6 +178,17 @@ export interface CascadeLayerIssue {
   layer?: string
 }
 
+export interface LayerHierarchyEntry {
+  /** Layer name. */
+  name: string
+  /** Priority rank: 0 = lowest priority (first in the cascade). */
+  rank: number
+  /** 'explicit' if named in an @layer order statement, 'implicit' if order is by first appearance only. */
+  order: 'explicit' | 'implicit'
+  /** Number of style rules directly inside this layer's block(s). */
+  rulesCount: number
+}
+
 export interface CascadeLayerAudit {
   /** Layer names in declaration order (first-declared = lowest priority). */
   layers: string[]
@@ -189,6 +200,10 @@ export interface CascadeLayerAudit {
   rulesByLayer: Record<string, string[]>
   /** Per-selector findings for rules outside @layer and layer anti-patterns. */
   issues: CascadeLayerIssue[]
+  /** Whether layer order was established by an explicit `@layer a, b, c;` statement. */
+  orderExplicit: boolean
+  /** Ordered layer hierarchy for CLI visualization (lowest priority first). */
+  hierarchy: LayerHierarchyEntry[]
 }
 
 export interface AuditReport {
