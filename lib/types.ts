@@ -169,6 +169,43 @@ export interface PropertyTypeIssue {
   declaredSyntax: string // the @property syntax descriptor, e.g. '<color>'
 }
 
+export interface CascadeLayerIssue {
+  selector: string
+  rule: string // 'rules-outside-layers' | 'post-layer-specificity' | 'important-in-layer'
+  severity: 'suggestion' | 'warning'
+  reason: string
+  /** Layer name for 'important-in-layer' findings. */
+  layer?: string
+}
+
+export interface LayerHierarchyEntry {
+  /** Layer name. */
+  name: string
+  /** Priority rank: 0 = lowest priority (first in the cascade). */
+  rank: number
+  /** 'explicit' if named in an @layer order statement, 'implicit' if order is by first appearance only. */
+  order: 'explicit' | 'implicit'
+  /** Number of style rules directly inside this layer's block(s). */
+  rulesCount: number
+}
+
+export interface CascadeLayerAudit {
+  /** Layer names in declaration order (first-declared = lowest priority). */
+  layers: string[]
+  /** Number of distinct layers detected. */
+  layerCount: number
+  /** Count of style rules declared outside any @layer block. */
+  rulesOutsideLayers: number
+  /** Style-rule selectors grouped by the named @layer block that contains them. */
+  rulesByLayer: Record<string, string[]>
+  /** Per-selector findings for rules outside @layer and layer anti-patterns. */
+  issues: CascadeLayerIssue[]
+  /** Whether layer order was established by an explicit `@layer a, b, c;` statement. */
+  orderExplicit: boolean
+  /** Ordered layer hierarchy for CLI visualization (lowest priority first). */
+  hierarchy: LayerHierarchyEntry[]
+}
+
 export interface AuditReport {
   brand: string
   chaosScore: number
@@ -183,6 +220,7 @@ export interface AuditReport {
   adoptionSuggestions?: AdoptionSuggestion[]
   overflowSafetyIssues?: OverflowSafetyIssue[]
   propertyTypeIssues?: PropertyTypeIssue[]
+  cascadeLayers?: CascadeLayerAudit
 }
 
 export interface ColorDecision {

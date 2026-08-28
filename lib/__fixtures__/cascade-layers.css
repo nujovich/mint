@@ -1,0 +1,77 @@
+/* Fixture for the Cascade Layers audit — a real-world multi-layer project.
+   Mirrors a design-system stylesheet: an explicit layer order, four named
+   @layer blocks (reset, base, components, utilities), legacy unlayered
+   overrides, a high-specificity unlayered rule declared after the layer
+   order, and an !important inside the reset layer. */
+
+@layer reset, base, components, utilities;
+
+@layer reset {
+  * {
+    margin: 0 !important;
+    box-sizing: border-box;
+  }
+  img {
+    display: block;
+    max-width: 100%;
+  }
+}
+
+@layer base {
+  :root {
+    --color-text: #111111;
+    --color-bg: #ffffff;
+  }
+  body {
+    font-family: system-ui, sans-serif;
+    color: var(--color-text);
+    background: var(--color-bg);
+  }
+  h1,
+  h2,
+  h3 {
+    line-height: 1.2;
+  }
+}
+
+@layer components {
+  .card {
+    display: grid;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-radius: 8px;
+  }
+  .button {
+    border: none;
+    padding: 0.5rem 1rem;
+  }
+  .modal {
+    position: fixed;
+    inset: 0;
+  }
+}
+
+@layer utilities {
+  .mt-0 {
+    margin-top: 0;
+  }
+  .text-center {
+    text-align: center;
+  }
+}
+
+/* Legacy overrides declared outside any layer — they outrank every layer. */
+.legacy-clearfix::after {
+  content: '';
+  display: table;
+  clear: both;
+}
+
+.footer {
+  margin-top: 2rem;
+}
+
+/* High-specificity unlayered rule declared after the layer order. */
+#hero {
+  font-size: 3rem !important;
+}
