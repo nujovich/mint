@@ -169,6 +169,73 @@ export interface PropertyTypeIssue {
   declaredSyntax: string // the @property syntax descriptor, e.g. '<color>'
 }
 
+export interface LogicalPropertyIssue {
+  selector: string
+  property: string // the physical property, e.g. 'margin-left'
+  value: string // the property value, e.g. '20px'
+  logicalEquivalent: string // the suggested flow-relative property, e.g. 'margin-inline-start'
+  reason: string
+  severity: 'suggestion' | 'warning'
+}
+
+export interface LogicalPropertyAudit {
+  issues: LogicalPropertyIssue[]
+  totalPhysicalProperties: number
+  migratableProperties: number
+  migrationRatio: number // 0.0-1.0, fraction that can be migrated
+}
+
+export const PHYSICAL_TO_LOGICAL: Record<string, string> = {
+  // Margin
+  'margin-left': 'margin-inline-start',
+  'margin-right': 'margin-inline-end',
+  'margin-top': 'margin-block-start',
+  'margin-bottom': 'margin-block-end',
+  // Padding
+  'padding-left': 'padding-inline-start',
+  'padding-right': 'padding-inline-end',
+  'padding-top': 'padding-block-start',
+  'padding-bottom': 'padding-block-end',
+  // Border
+  'border-left': 'border-inline-start',
+  'border-right': 'border-inline-end',
+  'border-top': 'border-block-start',
+  'border-bottom': 'border-block-end',
+  'border-left-color': 'border-inline-start-color',
+  'border-right-color': 'border-inline-end-color',
+  'border-left-style': 'border-inline-start-style',
+  'border-right-style': 'border-inline-end-style',
+  'border-left-width': 'border-inline-start-width',
+  'border-right-width': 'border-inline-end-width',
+  // Border radius
+  'border-top-left-radius': 'border-start-start-radius',
+  'border-top-right-radius': 'border-start-end-radius',
+  'border-bottom-left-radius': 'border-end-start-radius',
+  'border-bottom-right-radius': 'border-end-end-radius',
+  // Inset / positioning
+  'left': 'inset-inline-start',
+  'right': 'inset-inline-end',
+  'top': 'inset-block-start',
+  'bottom': 'inset-block-end',
+  // Size
+  'width': 'inline-size',
+  'height': 'block-size',
+  'min-width': 'min-inline-size',
+  'min-height': 'min-block-size',
+  'max-width': 'max-inline-size',
+  'max-height': 'max-block-size',
+  // Overflow
+  'overflow-x': 'overflow-inline',
+  'overflow-y': 'overflow-block',
+}
+
+export const PHYSICAL_VALUE_TO_LOGICAL: Record<string, Record<string, string>> = {
+  'text-align': { 'left': 'start', 'right': 'end' },
+  'float': { 'left': 'inline-start', 'right': 'inline-end' },
+  'clear': { 'left': 'inline-start', 'right': 'inline-end' },
+  'resize': { 'horizontal': 'inline', 'vertical': 'block' },
+}
+
 export interface AuditReport {
   brand: string
   chaosScore: number
@@ -183,6 +250,7 @@ export interface AuditReport {
   adoptionSuggestions?: AdoptionSuggestion[]
   overflowSafetyIssues?: OverflowSafetyIssue[]
   propertyTypeIssues?: PropertyTypeIssue[]
+  logicalProperties?: LogicalPropertyAudit
 }
 
 export interface ColorDecision {
