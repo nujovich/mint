@@ -23,7 +23,7 @@ import { convertTokensToDTCG, serializeDTCG } from '../lib/dtcg-exporter.mjs'
 import { convertTokensToDesignMd } from '../lib/design-md.mjs'
 import { formatLintSummary } from '../lib/audit-summary.mjs'
 import { checkCompat } from '../lib/css-compat-data.mjs'
-import { lintCss, lintGapDecorationAdoption } from '../lib/css-lint-rules.mjs'
+import { lintCss, lintGapDecorationAdoption, lintLogicalProperties } from '../lib/css-lint-rules.mjs'
 import { applyWsl2DnsWorkaround } from '../lib/net-utils.mjs'
 import { buildTokenIndex } from '../lib/token-index.mjs'
 import { applyCodemod } from '../lib/css-codemod.mjs'
@@ -365,6 +365,9 @@ async function cmdAudit(argv) {
   log(styles.cyan('→') + ' Auditing CSS...')
   const audit = await cssAuditor.audit(buildAuditPrompt(css))
 
+  // Merge deterministic logical properties lint into audit for summary display.
+  audit.logicalProperties = lintLogicalProperties(css)
+
   if (reportFile) {
     await fs.writeFile(
       reportFile,
@@ -544,6 +547,41 @@ async function cmdLint(argv) {
       log(`  ${badge}  ${finding.selector}`)
       log(styles.dim(`       ${finding.message}`))
       log('')
+    }
+  }
+
+  // Logical Properties: migration audit.
+  const logicalResult = lintLogicalProperties(css)
+  if (logicalResult.totalPhysicalProperties > 0) {
+    const pct = Math.round(logicalResult.migrationRatio * 100)
+    log('')
+    log(styles.bold('Logical Properties'))
+    const ratioColor =
+      logicalResult.migrationRatio >= 0.75
+        ? styles.green
+        : logicalResult.migrationRatio >= 0.4
+        ? styles.yellow
+        : styles.red
+    log(
+      styles.dim(
+        `  ${logicalResult.migratableProperties}/${logicalResult.totalPhysicalProperties} migratable (${ratioColor(pct + '%')})`
+      )
+    )
+    if (logicalResult.issues.length > 0) {
+      log('')
+      for (const issue of logicalResult.issues) {
+        const badge =
+          issue.severity === 'warning'
+            ? styles.yellow('WARN')
+            : styles.dim('INFO')
+        log(`  ${badge}  ${issue.selector}`)
+        log(
+          styles.dim(
+            `       ${issue.property}: ${issue.value} → ${issue.logicalEquivalent}`
+          )
+        )
+        log('')
+      }
     }
   }
 
