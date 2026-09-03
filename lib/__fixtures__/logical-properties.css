@@ -1,0 +1,67 @@
+/*
+ * Mixed logical/physical CSS fixture for the logical-properties audit.
+ * Exercises the Stylelint 17.10 layout-mappings rule families:
+ *   - property-layout-mappings  (physical property -> logical property)
+ *   - value-keyword-layout-mappings (physical value -> logical value)
+ *
+ * .card        physical-only directional properties (all migratable)
+ * .toolbar     already flow-relative (logical) properties (no findings)
+ * .direction-sensitive  physical value keywords on direction-aware properties
+ * .neutral     direction-agnostic declarations (no findings)
+ */
+
+.card {
+  margin-left: 20px;
+  margin-right: 12px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  border-left: 1px solid #ccc;
+  border-right-color: #999;
+  border-top-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  height: 50vh;
+  min-width: 240px;
+  max-height: 400px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.toolbar {
+  margin-inline-start: 16px;
+  margin-inline-end: 12px;
+  padding-block-start: 8px;
+  padding-block-end: 8px;
+  border-inline-start: 1px solid #eee;
+  border-inline-end-color: #ddd;
+  border-start-start-radius: 4px;
+  border-end-end-radius: 4px;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  inset-block-start: 0;
+  inset-block-end: 0;
+  inline-size: 100%;
+  block-size: auto;
+  min-inline-size: 200px;
+  max-block-size: 300px;
+  overflow-inline: hidden;
+  overflow-block: auto;
+}
+
+.direction-sensitive {
+  text-align: left;
+  float: right;
+  clear: left;
+  resize: horizontal;
+}
+
+.neutral {
+  color: red;
+  font-size: 16px;
+  display: flex;
+  gap: 8px;
+}
