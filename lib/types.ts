@@ -169,6 +169,20 @@ export interface PropertyTypeIssue {
   declaredSyntax: string // the @property syntax descriptor, e.g. '<color>'
 }
 
+export interface UnusedCustomPropertyIssue {
+  name: string // the unused custom property, e.g. '--tw-bg-opacity'
+  definedIn: string // selector or context where it is defined, e.g. ':root'
+  suggestion: string // cleanup suggestion
+}
+
+export interface UnusedCustomPropertiesAudit {
+  defined: string[] // every custom property declared (--*) across the audited CSS
+  used: string[] // every custom property referenced via var(--*)
+  unused: UnusedCustomPropertyIssue[] // declared but never referenced
+  totalDefined: number
+  unusedCount: number
+}
+
 export interface AuditReport {
   brand: string
   chaosScore: number
@@ -183,6 +197,7 @@ export interface AuditReport {
   adoptionSuggestions?: AdoptionSuggestion[]
   overflowSafetyIssues?: OverflowSafetyIssue[]
   propertyTypeIssues?: PropertyTypeIssue[]
+  unusedCustomProperties?: UnusedCustomPropertiesAudit
 }
 
 export interface ColorDecision {
