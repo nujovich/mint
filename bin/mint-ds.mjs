@@ -23,7 +23,7 @@ import { convertTokensToDTCG, serializeDTCG } from '../lib/dtcg-exporter.mjs'
 import { convertTokensToDesignMd } from '../lib/design-md.mjs'
 import { formatLintSummary } from '../lib/audit-summary.mjs'
 import { checkCompat } from '../lib/css-compat-data.mjs'
-import { lintCss, lintGapDecorationAdoption } from '../lib/css-lint-rules.mjs'
+import { lintCss, lintGapDecorationAdoption, lintUnusedCustomProperties } from '../lib/css-lint-rules.mjs'
 import { applyWsl2DnsWorkaround } from '../lib/net-utils.mjs'
 import { buildTokenIndex } from '../lib/token-index.mjs'
 import { applyCodemod } from '../lib/css-codemod.mjs'
@@ -514,9 +514,11 @@ async function cmdCache(argv) {
 }
 
 async function cmdLint(argv) {
-  const { rest } = parseFlags(argv)
+  const { flags, rest } = parseFlags(argv)
   const target = rest[0]
   if (!target) die('Usage: mint-ds lint <directory>')
+
+  const removeUnused = Boolean(flags['remove-unused'])
 
   log(styles.cyan('→') + ` Linting sources from ${styles.bold(target)}…`)
   const { files, css } = await collectSources(target)
@@ -547,6 +549,29 @@ async function cmdLint(argv) {
     }
   }
 
+  // Unused CSS custom properties: dead-variable analysis.
+  const unusedAudit = lintUnusedCustomProperties(css)
+  log('')
+  log(styles.bold('Unused CSS Custom Properties'))
+  log(
+    styles.dim(
+      `  ${unusedAudit.totalDefined} defined, ${unusedAudit.used.length} referenced, ${unusedAudit.unusedCount} unused`
+    )
+  )
+  if (unusedAudit.unused.length > 0) {
+    for (const u of unusedAudit.unused) {
+      log(styles.yellow(`  ${u.name}`))
+      log(styles.dim(`      declared in ${u.definedIn}`))
+      log(styles.dim(`      ${u.suggestion}`))
+      log('')
+    }
+  } else if (unusedAudit.totalDefined > 0) {
+    log(styles.green('  All defined custom properties are referenced -- no dead variables.'))
+  } else {
+    log(styles.dim('  No custom properties found in the audited sources.'))
+  }
+  log('')
+
   // Modern CSS Opportunities: adoption report for gap decorations.
   const { adoption } = lintGapDecorationAdoption(css, {
     stylesheetCount: files.length,
@@ -566,6 +591,59 @@ async function cmdLint(argv) {
     )
     for (const [pattern, count] of Object.entries(adoption.byPattern)) {
       log(styles.dim(`    - ${pattern}: ${count}`))
+    }
+    log('')
+  }
+
+  // --remove-unused: rewrite files, stripping unused custom property declarations.
+  if (removeUnused && unusedAudit.unused.length > 0) {
+    const unusedNames = new Set(unusedAudit.unused.map((u) => u.name))
+    let removedTotal = 0
+
+    log(styles.cyan('→') + ' Removing unused custom properties...')
+    for (const file of files) {
+      let src = await fs.readFile(file, 'utf8')
+      let removed = 0
+
+      for (const name of unusedNames) {
+        // Strip comments per-file for accurate detection.
+        const stripped = src
+          .replace(/\/\*[\s\S]*?\*\//g, ' ')
+          .replace(/\/\/[^\n]*/g, ' ')
+        const declRe = new RegExp(
+          `${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*:\\s*[^;]+;`,
+          'g'
+        )
+        if (declRe.test(stripped)) {
+          declRe.lastIndex = 0
+          src = src.replace(declRe, '')
+          removed++
+          // Reset regex state for the next iteration on the same file.
+          declRe.lastIndex = 0
+        }
+      }
+
+      if (removed > 0) {
+        // Clean up excess blank lines left by removal.
+        src = src.replace(/\n{3,}/g, '\n\n')
+        await fs.writeFile(file, src, 'utf8')
+        removedTotal += removed
+        log(
+          styles.green('✓') +
+            ` Removed ${removed} unused custom propert${removed === 1 ? 'y' : 'ies'} from ${path.relative(process.cwd(), file)}`
+        )
+      }
+    }
+
+    if (removedTotal > 0) {
+      log('')
+      log(
+        styles.bold(
+          `Removed ${removedTotal} unused declaration(s) across the project.`
+        )
+      )
+    } else {
+      log(styles.dim('  No files modified.'))
     }
     log('')
   }
