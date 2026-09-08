@@ -169,6 +169,19 @@ export interface PropertyTypeIssue {
   declaredSyntax: string // the @property syntax descriptor, e.g. '<color>'
 }
 
+export interface NestingIssue {
+  selector: string
+  depth: number
+  reason: string
+  severity: 'warning' | 'suggestion'
+}
+
+export interface NestingAudit {
+  maxDepth: number
+  specificityGrowth: NestingIssue[]
+  unnecessaryAmpersand: NestingIssue[]
+}
+
 export interface AuditReport {
   brand: string
   chaosScore: number
@@ -183,6 +196,7 @@ export interface AuditReport {
   adoptionSuggestions?: AdoptionSuggestion[]
   overflowSafetyIssues?: OverflowSafetyIssue[]
   propertyTypeIssues?: PropertyTypeIssue[]
+  nesting?: NestingAudit
 }
 
 export interface ColorDecision {
