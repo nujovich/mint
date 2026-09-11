@@ -23,7 +23,11 @@ import { convertTokensToDTCG, serializeDTCG } from '../lib/dtcg-exporter.mjs'
 import { convertTokensToDesignMd } from '../lib/design-md.mjs'
 import { formatLintSummary } from '../lib/audit-summary.mjs'
 import { checkCompat } from '../lib/css-compat-data.mjs'
-import { lintCss, lintGapDecorationAdoption } from '../lib/css-lint-rules.mjs'
+import {
+  lintCss,
+  lintGapDecorationAdoption,
+  nestingDepthHeatmap,
+} from '../lib/css-lint-rules.mjs'
 import { applyWsl2DnsWorkaround } from '../lib/net-utils.mjs'
 import { buildTokenIndex } from '../lib/token-index.mjs'
 import { applyCodemod } from '../lib/css-codemod.mjs'
@@ -153,6 +157,10 @@ ${styles.bold('DIFF OPTIONS')}
   --json                       Output the diff as JSON (for CI / PR bots)
                                  Exits non-zero on breaking changes (removed / value-changed)
 
+${styles.bold('LINT OPTIONS')}
+  --max-nesting-depth <n>      Max allowed CSS nesting depth before a rule is flagged
+                                 in the nesting heatmap (default: 3)
+
 ${styles.bold('AUTH (any command)')}
   --api-key <value>            LLM provider API key (overrides API_KEY env var)
 
@@ -216,6 +224,13 @@ function parseFlags(argv) {
     }
   }
   return { flags, rest }
+}
+
+function parseMaxNestingDepth(flags) {
+  const raw = flags['max-nesting-depth']
+  if (raw === undefined || raw === true) return 3
+  const n = Number.parseInt(String(raw), 10)
+  return Number.isFinite(n) && n >= 0 ? n : 3
 }
 
 async function* walk(dir, root, ignore = []) {
@@ -514,7 +529,7 @@ async function cmdCache(argv) {
 }
 
 async function cmdLint(argv) {
-  const { rest } = parseFlags(argv)
+  const { flags, rest } = parseFlags(argv)
   const target = rest[0]
   if (!target) die('Usage: mint-ds lint <directory>')
 
@@ -568,6 +583,44 @@ async function cmdLint(argv) {
       log(styles.dim(`    - ${pattern}: ${count}`))
     }
     log('')
+  }
+
+  // Nesting complexity heatmap with a configurable depth threshold.
+  const maxNestingDepth = parseMaxNestingDepth(flags)
+  const heatmap = nestingDepthHeatmap(css, { maxDepth: maxNestingDepth })
+
+  if (heatmap.totalRules > 0) {
+    log('')
+    log(
+      styles.bold(
+        `Nesting Complexity Heatmap (max depth threshold ${maxNestingDepth})`
+      )
+    )
+
+    const maxCount = Math.max(1, ...heatmap.counts.map((c) => c.count))
+    const barWidth = 40
+    for (const { depth, count } of heatmap.counts) {
+      const over = depth > maxNestingDepth
+      const barLen = Math.max(1, Math.round((count / maxCount) * barWidth))
+      const bar = '#'.repeat(barLen)
+      const coloredBar = over
+        ? styles.red(bar)
+        : depth === maxNestingDepth
+          ? styles.yellow(bar)
+          : styles.green(bar)
+      const suffix = over ? '  over threshold' : ''
+      log(
+        `  depth ${String(depth).padEnd(2)}  ${String(count).padStart(4)} rule(s)  ${coloredBar}${suffix}`
+      )
+    }
+
+    for (const ex of heatmap.excessive) {
+      log(
+        styles.yellow(
+          `  WARN  ${ex.selector}  nested ${ex.depth} level(s) deep (threshold ${maxNestingDepth})`
+        )
+      )
+    }
   }
 }
 
