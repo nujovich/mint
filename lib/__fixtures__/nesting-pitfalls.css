@@ -1,0 +1,157 @@
+/* CSS nesting pitfalls — test fixture for Milestone 4.
+   Covers patterns flagged by Piccalilli (Andy Bell) and Kilian Valkhof
+   as common sources of confusion with native CSS nesting. */
+
+/* === KILIAN VALKHOF PITFALLS === */
+
+/* Pitfall 1: :is() specificity compounding (Kilian Valkhof, 2023-06-13).
+   `#page, .content { & p { ... } }` becomes `:is(#page, .content) p`
+   with specificity 1,0,1 (from #page), not 0,0,2. The ID bleeds through. */
+#page,
+.content {
+  & p {
+    margin-block: 1rem;
+    color: var(--text);
+  }
+}
+
+/* Pitfall 2: Media query interleaving reorders property priority.
+   `body { @media all { background: red; } background: blue; }`
+   The browser splits this: body{background:blue} then @media{:is(body){background:red}}
+   so red wins even though blue appears later in source order. */
+body {
+  @media all {
+    background: red;
+  }
+  background: blue;
+
+  @media all {
+    color: deeppink;
+  }
+
+  rotate: 20deg;
+}
+
+/* Pitfall 3: Nested @media with parent wrappers.
+   Both nested rules inside the body block should have depth 1 with
+   parentSelector 'body'. The @media block is transparent. */
+body {
+  @media (min-width: 600px) {
+    & .sidebar {
+      display: none;
+    }
+  }
+
+  @media (max-width: 599px) {
+    & .sidebar {
+      display: block;
+    }
+  }
+}
+
+/* === PICCALILLI (ANDY BELL) PITFALLS === */
+
+/* Pitfall 4: BEM modifier with nested child (Piccalilli, 2025-01-30).
+   `.component { &--reversed { &__child { ... } } }`
+   The inner `&` resolves to `.component--reversed`, so the compiled selector
+   becomes `.component--reversed__child-element` instead of the intended
+   `.component--reversed .component__child-element`.
+   This fixture has both the problematic deep &__ nesting AND a correct
+   flat alternative so the auditor can measure depth and flag deep nesting. */
+.component {
+  display: block;
+
+  &--reversed {
+    background: white;
+
+    &__child-element {
+      background: rebeccapurple;
+    }
+  }
+}
+
+/* Correct alternative: flat BEM with no deep nesting. */
+.component--correct {
+  background: white;
+
+  & .component__child-element {
+    background: rebeccapurple;
+  }
+}
+
+/* Pitfall 5: Deep nesting (4+ levels) that mirrors DOM structure (Piccalilli).
+   Nesting should be kept shallow (max 1-2 levels). This exercises the
+   maxDepth and heatmap threshold (default 3). */
+.page {
+  & .section {
+    & .card {
+      & .card-body {
+        & .card-text {
+          color: var(--text-secondary);
+          font-size: 0.875rem;
+        }
+      }
+    }
+  }
+}
+
+/* Pitfall 6: Redundant & before combinators (both authors).
+   `& .title`, `& > .item`, `& + .sibling`, `& ~ .next` all have
+   unnecessary `&` — the relative selector form already works. */
+.card {
+  padding: 1rem;
+
+  & .title {
+    font-weight: 700;
+  }
+
+  & > .body {
+    margin-top: 0.5rem;
+  }
+
+  & + .card {
+    margin-top: 1rem;
+  }
+
+  & ~ .divider {
+    border-top: 1px solid #eee;
+  }
+}
+
+/* Pitfall 7: Legitimate compound & (should NOT be flagged).
+   These `&` uses are necessary: pseudo-classes, class concatenation,
+   attribute selectors, pseudo-elements. */
+.button {
+  display: inline-flex;
+
+  &:hover {
+    background: var(--hover-bg);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--focus-ring);
+  }
+
+  &.primary {
+    background: var(--primary);
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &::after {
+    content: '';
+    display: block;
+  }
+}
+
+/* Pitfall 8: Non-leading & (should NOT be flagged).
+   `&` in the middle of a selector is a valid BEM/suffix pattern
+   and is not a redundant combinator. */
+.theme-dark {
+  & .button {
+    color: white;
+  }
+}
