@@ -86,6 +86,46 @@ export interface ColorCluster {
   samples: ColorSample[]
 }
 
+// ─── Color space / OKLCH adoption audit ──────────────────────────────────────
+
+/**
+ * The syntactic color format a CSS color literal uses. Legacy formats are
+ * sRGB-bound (hex, rgb, hsl); wide-gamut formats can express colors beyond
+ * sRGB (oklch, oklab, and the display-p3 predefined color space).
+ */
+export type ColorFormat =
+  | 'hex'
+  | 'rgb'
+  | 'hsl'
+  | 'oklch'
+  | 'oklab'
+  | 'display-p3'
+
+export type ColorSpaceCategory = 'legacy' | 'wide-gamut'
+
+/** A single detected color literal, classified by its syntactic format. */
+export interface ColorSpaceSample {
+  value: string
+  format: ColorFormat
+  category: ColorSpaceCategory
+  /** The selector of the rule this color was found in, when known. */
+  selector?: string
+}
+
+/**
+ * Aggregate of an OKLCH adoption scan: how many colors use legacy sRGB formats
+ * vs wide-gamut formats, the wide-gamut adoption rate, and the list of legacy
+ * colors that are candidates for migration.
+ */
+export interface ColorSpaceAudit {
+  legacyCount: number
+  wideGamutCount: number
+  /** Fraction of detected colors using wide-gamut formats (0..1). */
+  adoptionRate: number
+  samples: ColorSpaceSample[]
+  legacyCandidates: ColorSpaceSample[]
+}
+
 export interface FontEntry {
   family: string
   usages: string[]
@@ -183,6 +223,7 @@ export interface AuditReport {
   adoptionSuggestions?: AdoptionSuggestion[]
   overflowSafetyIssues?: OverflowSafetyIssue[]
   propertyTypeIssues?: PropertyTypeIssue[]
+  colorSpaceAudit?: ColorSpaceAudit
 }
 
 export interface ColorDecision {
