@@ -110,6 +110,12 @@ export interface ColorSpaceSample {
   category: ColorSpaceCategory
   /** The selector of the rule this color was found in, when known. */
   selector?: string
+  /**
+   * For legacy samples only: the suggested OKLCH equivalent (e.g.
+   * "oklch(62.8% 0.258 29.3)"). Absent when the color has alpha < 1 or
+   * otherwise cannot be statically converted to an opaque OKLCH literal.
+   */
+  oklch?: string
 }
 
 /**
