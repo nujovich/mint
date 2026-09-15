@@ -1,0 +1,40 @@
+/*
+ * Realistic design-system color palettes in multiple color formats.
+ *
+ * Exercises auditColorSpaces() against real-world palette declarations
+ * rather than synthetic one-liners. Every supported format is present.
+ *
+ * Literal counts (asserted in css-lint-rules.test.mjs):
+ *   hex        x4  -- brand scale
+ *   rgb()      x2  -- neutral scale
+ *   hsl()      x2  -- status scale
+ *   oklch()    x2  -- accent scale
+ *   oklab()    x1  -- accent-soft
+ *   display-p3 x1  -- accent-vivid
+ *
+ *   legacy  = 4 + 2 + 2 = 8
+ *   wide    = 2 + 1 + 1 = 4
+ *   adoption rate = 4 / 12 = 1/3
+ */
+
+:root {
+  /* Brand scale -- hex (legacy) */
+  --brand-50: #e3f2fd;
+  --brand-500: #1976d2;
+  --brand-700: #0d47a1;
+  --brand-900: #0d3a66;
+
+  /* Neutral scale -- rgb() (legacy) */
+  --neutral-100: rgb(245, 245, 245);
+  --neutral-900: rgb(17, 24, 39);
+
+  /* Status scale -- hsl() (legacy) */
+  --status-success: hsl(207, 79%, 46%);
+  --status-warning: hsl(40, 100%, 50%);
+
+  /* Accent scale -- wide-gamut */
+  --accent-primary: oklch(70% 0.12 250);
+  --accent-muted: oklch(95% 0.02 250);
+  --accent-soft: oklab(70% 0.1 0.1);
+  --accent-vivid: color(display-p3 0.3 0.6 1);
+}
