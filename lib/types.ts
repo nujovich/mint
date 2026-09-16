@@ -130,6 +130,29 @@ export interface MotionAudit {
   duplicateDeclarations: number
 }
 
+/**
+ * A single motion declaration (animation/transition) that is not wrapped in a
+ * `@media (prefers-reduced-motion: reduce)` block. Users who opt into reduced
+ * motion should never have these play at full strength.
+ */
+export interface MotionAccessibilityIssue {
+  selector: string
+  property: string // 'animation' | 'animation-name' | 'transition' | 'transition-property'
+  value: string
+  suggestion: string
+}
+
+/**
+ * Aggregate of a reduced-motion accessibility scan: how many motion
+ * declarations were found, how many of them sit outside a
+ * `prefers-reduced-motion: reduce` wrapper, and the per-declaration issues.
+ */
+export interface MotionAccessibilityAudit {
+  totalMotionDeclarations: number
+  unwrappedCount: number
+  issues: MotionAccessibilityIssue[]
+}
+
 export interface LayoutA11yIssue {
   selector: string
   property: string // 'order' or 'tabindex'
@@ -183,6 +206,7 @@ export interface AuditReport {
   adoptionSuggestions?: AdoptionSuggestion[]
   overflowSafetyIssues?: OverflowSafetyIssue[]
   propertyTypeIssues?: PropertyTypeIssue[]
+  motionAccessibilityAudit?: MotionAccessibilityAudit
 }
 
 export interface ColorDecision {
