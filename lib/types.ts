@@ -137,7 +137,7 @@ export interface MotionAudit {
  */
 export interface MotionAccessibilityIssue {
   selector: string
-  property: string // 'animation' | 'animation-name' | 'transition' | 'transition-property'
+  property: string // 'animation' | 'animation-name' | 'transition' | 'transition-property' | 'transform'
   value: string
   suggestion: string
 }
