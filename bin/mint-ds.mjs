@@ -527,11 +527,11 @@ async function cmdLint(argv) {
   )
 
   const result = lintCss(css)
-  const { findings } = result
+  const { findings, motionAccessibility } = result
 
-  if (findings.length === 0) {
+  if (findings.length === 0 && motionAccessibility.unwrappedCount === 0) {
     log(styles.green('✓') + ' No lint issues found.')
-  } else {
+  } else if (findings.length > 0) {
     log('')
     log(styles.bold(`Found ${findings.length} issue(s):`))
     log('')
@@ -568,6 +568,24 @@ async function cmdLint(argv) {
       log(styles.dim(`    - ${pattern}: ${count}`))
     }
     log('')
+  }
+
+  // Reduced Motion: report declarations that are not wrapped in a
+  // @media (prefers-reduced-motion: reduce) block.
+  if (motionAccessibility.unwrappedCount > 0) {
+    log('')
+    log(styles.bold('Reduced Motion'))
+    log(
+      styles.dim(
+        `  ${motionAccessibility.unwrappedCount} of ${motionAccessibility.totalMotionDeclarations} motion declaration(s) do not respect prefers-reduced-motion: reduce`
+      )
+    )
+    for (const issue of motionAccessibility.issues) {
+      log(styles.yellow('  WARN') + `  ${issue.selector}`)
+      log(styles.dim(`       ${issue.property}: ${issue.value}`))
+      log(styles.dim(`       ${issue.suggestion}`))
+      log('')
+    }
   }
 }
 
