@@ -1,0 +1,78 @@
+/**
+ * Fixture modeled on the stylelint `prefers-reduced-motion` rule dataset.
+ *
+ * The dataset splits CSS into "rejected" cases (motion declarations not
+ * wrapped in a `@media (prefers-reduced-motion: reduce)` block that must be
+ * flagged) and "accepted" cases (declarations that are wrapped, keyframe
+ * internals, or the `none` overrides that define the reduced experience).
+ *
+ * Coverage:
+ *  - animation / transition shorthands on a single selector
+ *  - animation-name / transition-property longhands (rejected when unwrapped)
+ *  - an `@media (prefers-reduced-motion: reduce)` override block (accepted)
+ *  - a `@-webkit-keyframes` block whose internals must be skipped (accepted)
+ *  - a `@keyframes` block plus the animation reference that triggers it
+ *  - a `transform` declaration (flagged since milestone 2)
+ *  - a `prefers-reduced-motion: no-preference` frame (NOT a reduce wrapper,
+ *    so its motion is still rejected)
+ */
+
+.spin {
+  animation: spin 2s linear infinite;
+}
+
+.fade {
+  transition: opacity 0.3s ease;
+}
+
+.menu {
+  animation: slide-in 0.4s;
+  transition: transform 0.2s;
+}
+
+.trace {
+  animation-name: pulse;
+  transition-property: transform;
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .hero {
+    animation: bounce 1s ease infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin,
+  .hero {
+    animation: none;
+  }
+  .fade {
+    transition: none;
+  }
+}
+
+@-webkit-keyframes pulse {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.slide {
+  animation: slide 0.5s ease-out;
+}
+
+.card {
+  transform: translateX(24px) rotate(3deg);
+}
