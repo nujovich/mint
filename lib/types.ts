@@ -169,6 +169,32 @@ export interface PropertyTypeIssue {
   declaredSyntax: string // the @property syntax descriptor, e.g. '<color>'
 }
 
+/**
+ * A single dead-CSS finding produced by the deterministic static analyzer.
+ * `rule` identifies which heuristic fired; `property`/`deadValue`/`liveValue`
+ * are populated only for overridden-property findings.
+ */
+export interface DeadCssIssue {
+  selector: string
+  rule: 'overridden-property' | 'zero-specificity' | 'duplicate-selector'
+  severity: 'warning' | 'suggestion'
+  reason: string
+  property?: string
+  deadValue?: string
+  liveValue?: string
+}
+
+/**
+ * Aggregate of the static dead-CSS scan: rules estimated to never apply.
+ * No browser/DOM is involved, so the signals are static heuristics only.
+ */
+export interface DeadCssAudit {
+  totalIssues: number
+  overriddenDeclarations: DeadCssIssue[]
+  zeroSpecificitySelectors: DeadCssIssue[]
+  duplicateSelectors: DeadCssIssue[]
+}
+
 export interface AuditReport {
   brand: string
   chaosScore: number
