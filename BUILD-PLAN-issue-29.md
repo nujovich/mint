@@ -6,6 +6,6 @@
 
 ## Milestones
 
-- [ ] Milestone 1 — Add `DeadCssIssue` / `DeadCssAudit` types to lib/types.ts and a `lintDeadCss()` scanner in lib/css-lint-rules.mjs that detects overridden declarations, zero-specificity selectors, and duplicate selectors, with unit tests
-- [ ] Milestone 2 — Add `mint-ds audit --dead-css` flag wiring the heuristics into the audit command with a dead-CSS report
+- [x] Milestone 1 — Add `DeadCssIssue` / `DeadCssAudit` types to lib/types.ts and a `lintDeadCss()` scanner in lib/css-lint-rules.mjs that detects overridden declarations, zero-specificity selectors, and duplicate selectors, with unit tests
+- [x] Milestone 2 — Add `mint-ds audit --dead-css` flag wiring the heuristics into the audit command with a dead-CSS report
 - [ ] Milestone 3 — Add a benchmark fixture comparing the static heuristics against a real-world reference dataset to validate precision
