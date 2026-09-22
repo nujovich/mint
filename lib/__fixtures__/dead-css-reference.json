@@ -1,0 +1,29 @@
+{
+  "name": "Real-world dead-CSS reference dataset",
+  "deadPatterns": [
+    {
+      "rule": "overridden-property",
+      "selector": ".btn",
+      "property": "padding",
+      "count": 1
+    },
+    {
+      "rule": "overridden-property",
+      "selector": ".card",
+      "property": "margin",
+      "count": 2
+    },
+    {
+      "rule": "duplicate-selector",
+      "selector": ".alert",
+      "count": 1
+    }
+  ],
+  "knownFalsePositives": [
+    {
+      "rule": "zero-specificity",
+      "selector": "*",
+      "count": 1
+    }
+  ]
+}
