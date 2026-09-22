@@ -1,0 +1,49 @@
+/* Real-world reference dataset for the static dead-CSS heuristics.
+ *
+ * A curated stylesheet that mixes genuinely dead CSS (ground-truth positives)
+ * with clean rules and one known false positive, so the precision of the
+ * lintDeadCss() heuristics can be measured against a human-verified reference.
+ *
+ * Ground truth for this dataset lives in dead-css-reference.json.
+ */
+
+/* Dead: overridden declaration left behind by a refactor. */
+.btn {
+  padding: 8px 16px;
+  padding: 10px 20px;
+}
+
+/* Dead: property declared three times; the first two values are dead. */
+.card {
+  margin: 0;
+  margin: 4px;
+  margin: 8px;
+}
+
+/* Dead: duplicate selector; the earlier rule is shadowed in cascade order. */
+.alert {
+  color: #333;
+}
+.alert {
+  color: #d33;
+  background: #fee;
+}
+
+/* Intentional: universal box-sizing reset. The zero-specificity heuristic
+ * flags this even though it is a deliberate, widely-used pattern, so it is
+ * recorded as a known false positive in the reference manifest. */
+* {
+  box-sizing: border-box;
+}
+
+/* Clean rules with real specificity; the heuristics must not flag these. */
+.nav {
+  display: flex;
+  gap: 16px;
+}
+.nav-item {
+  padding: 4px 8px;
+}
+#app {
+  min-height: 100vh;
+}

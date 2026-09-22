@@ -23,7 +23,12 @@ import { convertTokensToDTCG, serializeDTCG } from '../lib/dtcg-exporter.mjs'
 import { convertTokensToDesignMd } from '../lib/design-md.mjs'
 import { formatLintSummary } from '../lib/audit-summary.mjs'
 import { checkCompat } from '../lib/css-compat-data.mjs'
-import { lintCss, lintGapDecorationAdoption } from '../lib/css-lint-rules.mjs'
+import {
+  lintCss,
+  lintGapDecorationAdoption,
+  lintDeadCss,
+  formatDeadCssReport,
+} from '../lib/css-lint-rules.mjs'
 import { applyWsl2DnsWorkaround } from '../lib/net-utils.mjs'
 import { buildTokenIndex } from '../lib/token-index.mjs'
 import { applyCodemod } from '../lib/css-codemod.mjs'
@@ -128,6 +133,7 @@ ${styles.bold('AUDIT OPTIONS')}
   --report <file>              Also write the raw audit report to <file>
   --quiet                      Suppress chaos summary
   --no-cache                   Skip cache lookup and overwrite any existing entry
+  --dead-css                   Run the static dead-CSS scan and print a report
 
 ${styles.bold('EXPORT OPTIONS')}
   --target <name>              Required. ${ADVERTISED_TARGETS.slice(0, 5).join(', ')},
@@ -330,6 +336,7 @@ async function cmdAudit(argv) {
   const reportFile = flags.report ? String(flags.report) : null
   const quiet = Boolean(flags.quiet)
   const noCache = Boolean(flags['no-cache'])
+  const deadCss = Boolean(flags['dead-css'])
 
   log(styles.cyan('→') + ` Reading sources from ${styles.bold(target)}…`)
   const { files, css } = await collectSources(target, ignore)
@@ -338,6 +345,16 @@ async function cmdAudit(argv) {
       `  ${files.length} file(s), ${(css.length / 1000).toFixed(1)}k chars`
     )
   )
+
+  if (deadCss) {
+    log('')
+    log(styles.bold('Dead CSS report'))
+    const deadCssReport = formatDeadCssReport(lintDeadCss(css), files.length)
+    for (const line of deadCssReport.split('\n')) {
+      log(styles.dim(`  ${line}`))
+    }
+    log('')
+  }
 
   const processedCss = preprocessCss(css)
   const cssHash = hashCss(processedCss)
