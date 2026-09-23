@@ -130,6 +130,32 @@ export interface MotionAudit {
   duplicateDeclarations: number
 }
 
+/**
+ * A single scroll-driven animation declaration found in CSS. The
+ * `timelineFunction` records which CSS Scroll-driven Animations primitive the
+ * declaration relies on: the anonymous `scroll()` timeline, the anonymous
+ * `view()` timeline, or a named timeline (anything else).
+ */
+export interface ScrollDrivenAnimationIssue {
+  selector: string
+  property: string // 'animation-timeline'
+  value: string
+  timelineFunction: 'scroll()' | 'view()' | 'other'
+  suggestion: string
+}
+
+/**
+ * Aggregate of a scroll-driven animations scan: how many `animation-timeline`
+ * declarations exist, how many of them use the `scroll()` / `view()` timeline
+ * functions, and the per-declaration issues.
+ */
+export interface ScrollDrivenAnimationAudit {
+  totalAnimationTimelines: number
+  scrollTimelineCount: number
+  viewTimelineCount: number
+  issues: ScrollDrivenAnimationIssue[]
+}
+
 export interface LayoutA11yIssue {
   selector: string
   property: string // 'order' or 'tabindex'
@@ -183,6 +209,7 @@ export interface AuditReport {
   adoptionSuggestions?: AdoptionSuggestion[]
   overflowSafetyIssues?: OverflowSafetyIssue[]
   propertyTypeIssues?: PropertyTypeIssue[]
+  scrollDrivenAnimationAudit?: ScrollDrivenAnimationAudit
 }
 
 export interface ColorDecision {
