@@ -135,24 +135,32 @@ export interface MotionAudit {
  * `timelineFunction` records which CSS Scroll-driven Animations primitive the
  * declaration relies on: the anonymous `scroll()` timeline, the anonymous
  * `view()` timeline, or a named timeline (anything else).
+ *
+ * `hasFallback` and `fallbackType` capture whether the declaration is guarded
+ * for browsers without scroll-timeline support: wrapped in an `@supports`
+ * block, paired with a time-based animation in the same rule, or neither.
  */
 export interface ScrollDrivenAnimationIssue {
   selector: string
   property: string // 'animation-timeline'
   value: string
   timelineFunction: 'scroll()' | 'view()' | 'other'
+  hasFallback: boolean
+  fallbackType: 'time-based-animation' | 'supports-guard' | 'none'
   suggestion: string
 }
 
 /**
  * Aggregate of a scroll-driven animations scan: how many `animation-timeline`
  * declarations exist, how many of them use the `scroll()` / `view()` timeline
- * functions, and the per-declaration issues.
+ * functions, how many lack a fallback for unsupported browsers, and the
+ * per-declaration issues.
  */
 export interface ScrollDrivenAnimationAudit {
   totalAnimationTimelines: number
   scrollTimelineCount: number
   viewTimelineCount: number
+  missingFallbackCount: number
   issues: ScrollDrivenAnimationIssue[]
 }
 
