@@ -23,7 +23,11 @@ import { convertTokensToDTCG, serializeDTCG } from '../lib/dtcg-exporter.mjs'
 import { convertTokensToDesignMd } from '../lib/design-md.mjs'
 import { formatLintSummary } from '../lib/audit-summary.mjs'
 import { checkCompat } from '../lib/css-compat-data.mjs'
-import { lintCss, lintGapDecorationAdoption } from '../lib/css-lint-rules.mjs'
+import {
+  lintCss,
+  lintGapDecorationAdoption,
+  lintScrollDrivenCoverage,
+} from '../lib/css-lint-rules.mjs'
 import { applyWsl2DnsWorkaround } from '../lib/net-utils.mjs'
 import { buildTokenIndex } from '../lib/token-index.mjs'
 import { applyCodemod } from '../lib/css-codemod.mjs'
@@ -566,6 +570,24 @@ async function cmdLint(argv) {
     )
     for (const [pattern, count] of Object.entries(adoption.byPattern)) {
       log(styles.dim(`    - ${pattern}: ${count}`))
+    }
+    log('')
+  }
+
+  // Scroll-driven animations: coverage report for animation-timeline usage.
+  const { coverage, warnings } = lintScrollDrivenCoverage(css)
+  if (coverage.total > 0) {
+    log('')
+    log(styles.bold('Scroll-driven animations coverage'))
+    const pct = Math.round(coverage.coverageRatio * 100)
+    log(
+      styles.dim(
+        `  ${coverage.withFallback}/${coverage.total} timeline(s) guarded by a fallback (${pct}% coverage)`
+      )
+    )
+    for (const w of warnings) {
+      log(`  ${styles.yellow('WARN')}  ${w.selector} (${w.timelineFunction})`)
+      log(styles.dim(`       ${w.suggestion}`))
     }
     log('')
   }
