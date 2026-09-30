@@ -35,12 +35,16 @@ import {
   matchesIgnore,
   resolveAuditOptions,
   resolveExportOptions,
+  resolveComplexityOptions,
 } from '../lib/mint-config.mjs'
 import {
   computeMetrics,
   buildHealthReport,
   renderHealthReport,
   DEFAULT_SEVERITY_THRESHOLDS,
+  buildComplexityReport,
+  renderComplexityReport,
+  renderComplexityMarkdown,
 } from '../lib/css-health-score.mjs'
 
 const require = createRequire(import.meta.url)
@@ -119,6 +123,7 @@ ${styles.bold('COMMANDS')}
   score <dir> --json           Emit the structured report (status, exitCode) as JSON
   score <dir> --thresholds-warning <n>   Percentile below which a metric is a warning (0-100)
   score <dir> --thresholds-error <n>     Percentile below which a metric is an error (0-100)
+  complexity <dir>             Compute CSS complexity metrics for CI (JSON/Markdown output)
 
 ${styles.bold('INIT OPTIONS')}
   --force                      Overwrite an existing mint.config.{mjs,js,cjs}
@@ -152,6 +157,12 @@ ${styles.bold('VALIDATE OPTIONS')}
 ${styles.bold('DIFF OPTIONS')}
   --json                       Output the diff as JSON (for CI / PR bots)
                                  Exits non-zero on breaking changes (removed / value-changed)
+
+${styles.bold('COMPLEXITY OPTIONS')}
+  --json                       Output metrics as JSON (exit code 1 when a threshold is exceeded)
+  --markdown                   Output metrics as a Markdown table (exit code 1 on exceedance)
+  --max-selectors <n>          Fail when selector count exceeds <n> (default: 1000)
+  --max-specificity <n>        Fail when avg specificity exceeds <n> (default: 200)
 
 ${styles.bold('AUTH (any command)')}
   --api-key <value>            LLM provider API key (overrides API_KEY env var)
@@ -192,6 +203,8 @@ ${styles.bold('EXAMPLES')}
   npx mint-ds lint ./src/styles
   npx mint-ds score ./src/styles
   npx mint-ds score ./src/styles --json
+  npx mint-ds complexity ./src/styles --json
+  npx mint-ds complexity ./src/styles --markdown
   npx mint-ds apply ./src/styles --dry-run
   npx mint-ds apply ./src/styles
 `)
@@ -745,6 +758,38 @@ async function cmdScore(argv) {
   if (report.exitCode) process.exit(report.exitCode)
 }
 
+async function cmdComplexity(argv) {
+  const { flags, rest } = parseFlags(argv)
+  const target = rest[0]
+  if (!target) die('Usage: mint-ds complexity <directory-or-file>')
+
+  const { config } = await loadConfig(process.cwd())
+  const thresholds = resolveComplexityOptions({ flags, config })
+
+  log(styles.cyan('→') + ` Reading sources from ${styles.bold(target)}…`)
+  const { files, css } = await collectSources(target)
+  log(
+    styles.dim(
+      `  ${files.length} file(s), ${(css.length / 1000).toFixed(1)}k chars`
+    )
+  )
+
+  const report = buildComplexityReport(css, thresholds)
+
+  if (flags.json) {
+    process.stdout.write(
+      JSON.stringify({ files: files.length, ...report }, null, 2) + '\n'
+    )
+  } else if (flags.markdown) {
+    process.stdout.write(renderComplexityMarkdown(report))
+  } else {
+    log('')
+    log(renderComplexityReport(report))
+  }
+
+  if (report.exitCode) process.exit(report.exitCode)
+}
+
 // Walk `target` (file or directory) for source files, reusing the same walk
 // used by `collectSources` but returning individual file paths rather than a
 // combined CSS blob — `apply` rewrites each file separately.
@@ -898,6 +943,7 @@ async function main() {
     else if (cmd === 'compat') await cmdCompat(rest)
     else if (cmd === 'lint') await cmdLint(rest)
     else if (cmd === 'score') await cmdScore(rest)
+    else if (cmd === 'complexity') await cmdComplexity(rest)
     else if (cmd === 'apply') await cmdApply(rest)
     else {
       printHelp()

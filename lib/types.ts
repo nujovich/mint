@@ -169,6 +169,26 @@ export interface PropertyTypeIssue {
   declaredSyntax: string // the @property syntax descriptor, e.g. '<color>'
 }
 
+/**
+ * Aggregate CSS complexity metrics for a stylesheet. These are computed
+ * deterministically from the parsed source (no browser) and are intended to
+ * be surfaced in CI so builds can fail when a threshold is exceeded.
+ */
+export interface ComplexityMetrics {
+  /** Total number of style rule selectors found in the audited CSS. */
+  selectorCount: number
+  /** Average specificity across all selectors (0 = least specific). */
+  avgSpecificity: number
+  /** Total number of declarations (property: value pairs) found. */
+  declarationCount: number
+  /** Maximum depth of nested `@import` statements. */
+  importDepth: number
+  /** Maximum selector nesting depth across the audited CSS. */
+  nestingDepth: number
+  /** Mirrors the existing chaos score so complexity is reported alongside it. */
+  chaosScore: number
+}
+
 export interface AuditReport {
   brand: string
   chaosScore: number
@@ -183,6 +203,7 @@ export interface AuditReport {
   adoptionSuggestions?: AdoptionSuggestion[]
   overflowSafetyIssues?: OverflowSafetyIssue[]
   propertyTypeIssues?: PropertyTypeIssue[]
+  complexity?: ComplexityMetrics
 }
 
 export interface ColorDecision {

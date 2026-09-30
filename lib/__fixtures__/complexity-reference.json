@@ -1,0 +1,13 @@
+{
+  "name": "Mint complexity reference dataset",
+  "description": "Reference values for the Mint CSS complexity metrics engine, hand-computed from complexity-reference.css. Validates that lintComplexityMetrics() stays stable: selector and declaration counts, average specificity, structural import/nesting depth, and the derived chaos score.",
+  "cssFile": "complexity-reference.css",
+  "expected": {
+    "selectorCount": 5,
+    "declarationCount": 6,
+    "avgSpecificity": 28.2,
+    "importDepth": 2,
+    "nestingDepth": 2,
+    "chaosScore": 0.8
+  }
+}
