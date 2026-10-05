@@ -140,27 +140,19 @@ export interface MotionAudit {
   duplicateDeclarations: number
 }
 
-/**
- * A single motion declaration (animation/transition) that is not wrapped in a
- * `@media (prefers-reduced-motion: reduce)` block. Users who opt into reduced
- * motion should never have these play at full strength.
- */
 export interface MotionAccessibilityIssue {
   selector: string
-  property: string // 'animation' | 'animation-name' | 'transition' | 'transition-property' | 'transform'
+  rule: 'motion-without-reduced-motion'
+  severity: 'warning'
+  reason: string
+  property: string // 'animation' | 'animation-name' | 'transition' | 'transition-property' | 'scroll-behavior'
   value: string
-  suggestion: string
 }
 
-/**
- * Aggregate of a reduced-motion accessibility scan: how many motion
- * declarations were found, how many of them sit outside a
- * `prefers-reduced-motion: reduce` wrapper, and the per-declaration issues.
- */
-export interface MotionAccessibilityAudit {
+export interface MotionAccessibilityStats {
   totalMotionDeclarations: number
-  unwrappedCount: number
-  issues: MotionAccessibilityIssue[]
+  protectedCount: number // opted in via no-preference, or overridden under reduce
+  unprotectedCount: number
 }
 
 export interface LayoutA11yIssue {
@@ -243,6 +235,8 @@ export interface AuditReport {
   logicalPropertyIssues?: LogicalPropertyIssue[]
   contrastIssues?: ContrastIssue[]
   logicalPropertyStats?: LogicalPropertyStats
+  motionAccessibilityIssues?: MotionAccessibilityIssue[]
+  motionAccessibilityStats?: MotionAccessibilityStats
 }
 
 export interface ColorDecision {

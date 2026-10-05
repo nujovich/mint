@@ -28,6 +28,7 @@ import {
   lintCss,
   lintGapDecorationAdoption,
   lintLogicalProperties,
+  lintMotionAccessibility,
 } from '../lib/css-lint-rules.mjs'
 import { applyWsl2DnsWorkaround } from '../lib/net-utils.mjs'
 import { buildTokenIndex } from '../lib/token-index.mjs'
@@ -376,6 +377,10 @@ async function cmdAudit(argv) {
   audit.logicalPropertyIssues = logical.issues
   audit.logicalPropertyStats = logical.stats
 
+  const motion = lintMotionAccessibility(css)
+  audit.motionAccessibilityIssues = motion.issues
+  audit.motionAccessibilityStats = motion.stats
+
   if (reportFile) {
     await fs.writeFile(
       reportFile,
@@ -540,7 +545,7 @@ async function cmdLint(argv) {
   const result = lintCss(css)
   const { findings, motionAccessibility } = result
 
-  if (findings.length === 0 && motionAccessibility.unwrappedCount === 0) {
+  if (findings.length === 0 && motionAccessibility.issues.length === 0) {
     log(styles.green('✓') + ' No lint issues found.')
   } else if (findings.length > 0) {
     log('')
@@ -613,20 +618,20 @@ async function cmdLint(argv) {
     log('')
   }
 
-  // Reduced Motion: report declarations that are not wrapped in a
-  // @media (prefers-reduced-motion: reduce) block.
-  if (motionAccessibility.unwrappedCount > 0) {
+  // Reduced Motion: motion that ignores prefers-reduced-motion.
+  const { issues: motionIssues, stats: motionStats } = motionAccessibility
+  if (motionIssues.length > 0) {
     log('')
     log(styles.bold('Reduced Motion'))
     log(
       styles.dim(
-        `  ${motionAccessibility.unwrappedCount} of ${motionAccessibility.totalMotionDeclarations} motion declaration(s) do not respect prefers-reduced-motion: reduce`
+        `  ${motionStats.unprotectedCount}/${motionStats.totalMotionDeclarations} motion declaration(s) ignore prefers-reduced-motion`
       )
     )
-    for (const issue of motionAccessibility.issues) {
-      log(styles.yellow('  WARN') + `  ${issue.selector}`)
-      log(styles.dim(`       ${issue.property}: ${issue.value}`))
-      log(styles.dim(`       ${issue.suggestion}`))
+    log('')
+    for (const issue of motionIssues) {
+      log(`  ${styles.yellow('WARN')}  ${issue.selector}`)
+      log(styles.dim(`       ${issue.reason}`))
       log('')
     }
   }
