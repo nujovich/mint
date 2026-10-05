@@ -17,10 +17,7 @@ import {
   resolveTarget,
 } from '../lib/prompts.mjs'
 import { getCssAuditor } from '../lib/css-auditor.mjs'
-import {
-  annotateColorClusters,
-  buildContrastPairs,
-} from '../lib/css-contrast.mjs'
+import { lintContrast } from '../lib/css-contrast.mjs'
 import { validateFile } from '../lib/dtcg-validator.mjs'
 import { diffFiles } from '../lib/token-diff.mjs'
 import { convertTokensToDTCG, serializeDTCG } from '../lib/dtcg-exporter.mjs'
@@ -372,8 +369,7 @@ async function cmdAudit(argv) {
   const cssAuditor = getCssAuditor(flags)
   log(styles.cyan('→') + ' Auditing CSS...')
   const audit = await cssAuditor.audit(buildAuditPrompt(css))
-  audit.colorClusters = annotateColorClusters(audit.colorClusters)
-  audit.contrastPairs = buildContrastPairs(audit.colorClusters)
+  audit.contrastIssues = lintContrast(css).issues
 
   // Merge deterministic logical properties lint into audit for summary display.
   const logical = lintLogicalProperties(css)

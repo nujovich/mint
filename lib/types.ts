@@ -84,18 +84,16 @@ export interface ColorCluster {
   suggestedName: string
   representative: string
   samples: ColorSample[]
-  contrastRatio?: number
-  failsWCAG?: { aa: boolean; aaa: boolean }
 }
 
-export interface ContrastPairIssue {
-  foregroundName: string
-  foreground: string
-  background: string
-  contrastRatio: number
-  failsAA: boolean
-  failsAAA: boolean
-  suggestion: string
+export interface ContrastIssue {
+  selector: string // rule that declares both colors
+  rule: 'insufficient-contrast'
+  severity: 'warning'
+  reason: string
+  foreground: string // '#rrggbb'
+  background: string // '#rrggbb'
+  contrastRatio: number // rounded to 2 decimals
 }
 
 export interface FontEntry {
@@ -209,7 +207,6 @@ export interface AuditReport {
   chaosScore: number
   summary: string
   colorClusters: ColorCluster[]
-  contrastPairs?: ContrastPairIssue[]
   fonts: FontEntry[]
   spacing: SpacingAudit
   lineHeights: LineHeightAudit
@@ -221,6 +218,7 @@ export interface AuditReport {
   propertyTypeIssues?: PropertyTypeIssue[]
   legacyPatterns?: LegacyPatternIssue[]
   logicalPropertyIssues?: LogicalPropertyIssue[]
+  contrastIssues?: ContrastIssue[]
   logicalPropertyStats?: LogicalPropertyStats
 }
 
