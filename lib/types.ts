@@ -169,6 +169,13 @@ export interface PropertyTypeIssue {
   declaredSyntax: string // the @property syntax descriptor, e.g. '<color>'
 }
 
+export interface LegacyPatternIssue {
+  selector: string
+  rule: 'obsolete-vendor-prefix' | 'clearfix-hack' | 'ie-specific-hack'
+  severity: 'warning' | 'suggestion'
+  reason: string
+}
+
 export interface LogicalPropertyIssue {
   selector: string
   rule: 'physical-property' | 'physical-value'
@@ -253,6 +260,7 @@ export interface AuditReport {
   adoptionSuggestions?: AdoptionSuggestion[]
   overflowSafetyIssues?: OverflowSafetyIssue[]
   propertyTypeIssues?: PropertyTypeIssue[]
+  legacyPatterns?: LegacyPatternIssue[]
   logicalPropertyIssues?: LogicalPropertyIssue[]
   logicalPropertyStats?: LogicalPropertyStats
 }
