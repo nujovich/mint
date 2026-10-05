@@ -171,9 +171,9 @@ export interface PropertyTypeIssue {
 
 export interface LegacyPatternIssue {
   selector: string
-  pattern: 'obsolete-vendor-prefix' | 'clearfix-hack' | 'ie-specific-hack'
+  rule: 'obsolete-vendor-prefix' | 'clearfix-hack' | 'ie-specific-hack'
   severity: 'warning' | 'suggestion'
-  suggestion: string
+  reason: string
 }
 
 export interface AuditReport {
