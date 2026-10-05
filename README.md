@@ -15,14 +15,14 @@ Both share the same prompts and Claude pipeline.
 CSS / SCSS / HTML  →  Claude Audit  →  Review & curate  →  Clean tokens  →  Export  →  Apply
 ```
 
-1. **Audit** — Claude analyzes your CSS, groups near-duplicate colors into clusters, detects fonts, flags spacing values that don't fit a 4px grid, identifies duplicate transition/animation declarations, and lints layout patterns for accessibility, modern-CSS pitfalls, and `@property` type mismatches (see [CSS layout linting](#css-layout-linting)).
+1. **Audit** — Claude analyzes your CSS, groups near-duplicate colors into clusters, detects fonts, flags spacing values that don't fit a 4px grid, identifies duplicate transition/animation declarations, and lints layout patterns for accessibility, modern-CSS pitfalls, `@property` type mismatches, and legacy CSS patterns (see [CSS layout linting](#css-layout-linting)).
 2. **Curate** — Review each cluster. Pick the canonical color, rename tokens, include or exclude entries, and select which fonts to keep. (CLI applies sensible defaults: include every cluster, keep non-system fonts, use the suggested 4px scale.)
 3. **Export** — Generate production-ready output in any format.
 4. **Apply** — Rewrite your source CSS in place so raw values reference the generated tokens (`#1976d2` → `var(--color-primary)`). Deterministic, no LLM — adoption becomes a reviewable git diff. See [`mint-ds apply`](#applying-tokens-to-source-css).
 
 ## CSS layout linting
 
-Beyond color, font, and spacing tokens, the audit also lints your CSS for layout accessibility issues, modern-CSS pitfalls, and broken `@property` type contracts. These findings are returned in the raw `AuditReport` (write it to disk with `--report`); the accessibility and overflow checks also feed the chaos score.
+Beyond color, font, and spacing tokens, the audit also lints your CSS for layout accessibility issues, modern-CSS pitfalls, broken `@property` type contracts, and legacy patterns that modern CSS has made obsolete. These findings are returned in the raw `AuditReport` (write it to disk with `--report`); the accessibility and overflow checks also feed the chaos score.
 
 | Category                   | Rule                                | Severity   | What it flags                                                                                                                                           |
 | -------------------------- | ----------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -39,8 +39,11 @@ Beyond color, font, and spacing tokens, the audit also lints your CSS for layout
 | **@property type safety**  | `invalid-initial-value`             | warning    | An `initial-value` that doesn't parse as the declared `syntax`, or a missing one on a non-universal syntax — the browser rejects the whole registration |
 |                            | `fallback-type-mismatch`            | warning    | A `var()` fallback that contradicts the registered syntax (`var(--my-color, 14px)` on a `<color>`), so the fallback can never apply                     |
 |                            | `property-type-mismatch`            | suggestion | A registered property used where its declared syntax can't apply — a `<length>` property assigned to `color`                                            |
+| **Legacy CSS patterns**    | `obsolete-vendor-prefix`            | warning    | Vendor prefixes whose unprefixed property is Baseline Widely Available (`-webkit-border-radius`, `-moz-box-shadow`, `-ms-transform`, `-o-*`)            |
+|                            | `clearfix-hack`                     | suggestion | The `::after { content: ""; display: table; clear: both }` clearfix, which `display: flow-root` on the container replaces                               |
+|                            | `ie-specific-hack`                  | warning    | Internet Explorer hacks — `*zoom` / `_height` property prefixes, `filter: progid:DXImageTransform…`, `-ms-filter`, `expression()`                       |
 
-The chaos score gains **+1** when there are 3 or more layout-accessibility issues and **+1** when there are 4 or more overflow-safety issues. Adoption suggestions and `@property` findings are informational for the score and never affect it.
+The chaos score gains **+1** when there are 3 or more layout-accessibility issues and **+1** when there are 4 or more overflow-safety issues. Adoption suggestions, `@property` findings, and legacy patterns are informational for the score and never affect it.
 
 ### `@property` type safety
 
@@ -62,6 +65,28 @@ An `@property` at-rule declares a type contract for a custom property. Mint read
 <!-- prettier-ignore-end -->
 
 `invalid-initial-value` is the one worth fixing first: when the `initial-value` doesn't match the declared `syntax`, the browser rejects the registration outright and the property silently reverts to unregistered behaviour — losing both the type contract and the ability to animate or transition it. Registrations declaring the universal syntax (`*`) are skipped, since any value satisfies them. Findings land in `propertyTypeIssues` on the `AuditReport`.
+
+### Legacy CSS patterns
+
+Stylesheets that have been around for a while accumulate workarounds for browsers nobody ships to anymore. Mint flags them and names the modern replacement:
+
+<!-- prettier-ignore-start -->
+```css
+.card {
+  -webkit-border-radius: 8px;  /* obsolete-vendor-prefix — border-radius is unprefixed everywhere */
+  border-radius: 8px;
+  *zoom: 1;                    /* ie-specific-hack — IE6/7 only */
+}
+
+.grid::after {                 /* clearfix-hack — use display: flow-root on .grid */
+  content: "";
+  display: table;
+  clear: both;
+}
+```
+<!-- prettier-ignore-end -->
+
+Prefixes that are still required are deliberately left alone — `-webkit-background-clip: text` and `-webkit-text-fill-color` are not flagged. Up to 10 findings are reported, IE hacks and obsolete prefixes first. They land in `legacyPatterns` on the `AuditReport`.
 
 ## Example — Frankenstein
 
@@ -398,7 +423,7 @@ npx mint-ds export --target tailwind --provider ollama
 | `mint-ds diff <old> <new>`       | Show what changed between two token files — added, removed, renamed, value-changed, scale-changed (no LLM)                  |
 | `mint-ds cache --clear`          | Delete the local `mint-ds.cache.json` cache file                                                                            |
 | `mint-ds compat <dir>`           | Flag CSS properties below Baseline / Interop 2026 for your browserslist target, with fallback suggestions (no LLM)          |
-| `mint-ds lint <dir>`             | Run static CSS lint rules (gap-decoration hacks) plus a modern-CSS adoption report — no LLM                                 |
+| `mint-ds lint <dir>`             | Run static CSS lint rules (gap-decoration hacks, physical → logical properties) plus a modern-CSS adoption report — no LLM  |
 | `mint-ds score <dir>`            | Compute a 0–100 CSS health score with a per-metric breakdown, benchmarked against Project Wallace 2026 percentiles (no LLM) |
 | `mint-ds --help`                 | Show full usage                                                                                                             |
 
@@ -515,6 +540,15 @@ Every finding carries the `web-features` feature name and a concrete `@supports`
 `mint-ds lint <dir>` runs Mint's static CSS lint rules over every CSS/SCSS/HTML file in `<dir>` — deterministic pattern checks that complement the LLM audit, with no API key or LLM call required.
 
 Today it ships the **gap-decoration** rules. They flag hand-rolled ways of drawing lines between grid/flex tracks — borders on direct children, `::before`/`::after` pseudo-elements, or backgrounds used alongside `gap` — and point you at the native `gap-rule-color` / `gap-rule-style` / `gap-rule-width` properties (Chrome 149+, Firefox 132+).
+
+It also flags **physical properties that break in right-to-left layouts** and names their logical equivalent:
+
+| Rule                | Flags                                                                                                                                                     | Suggests                                                                  |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `physical-property` | `margin-left/right`, `padding-left/right`, `border-left/right` (and their `-color`/`-style`/`-width`), `left`/`right`, the four `border-*-radius` corners | `margin-inline-start`, `inset-inline-end`, `border-start-start-radius`, … |
+| `physical-value`    | `text-align`, `float`, and `clear` set to `left` / `right`                                                                                                | `start` / `end`, `inline-start` / `inline-end`                            |
+
+Only direction-sensitive mappings are reported. `top`/`bottom`, `width`/`height` and `overflow-x`/`overflow-y` only differ from their logical counterparts in vertical writing modes, so they are left alone; custom properties and vendor-prefixed names are ignored. The section header shows how many physical declarations can migrate, and `mint-ds audit` attaches the same findings to the `AuditReport` as `logicalPropertyIssues` (with totals in `logicalPropertyStats`).
 
 ```bash
 npx mint-ds lint ./src/styles

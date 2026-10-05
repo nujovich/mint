@@ -181,6 +181,29 @@ export interface PropertyTypeIssue {
   declaredSyntax: string // the @property syntax descriptor, e.g. '<color>'
 }
 
+export interface LegacyPatternIssue {
+  selector: string
+  rule: 'obsolete-vendor-prefix' | 'clearfix-hack' | 'ie-specific-hack'
+  severity: 'warning' | 'suggestion'
+  reason: string
+}
+
+export interface LogicalPropertyIssue {
+  selector: string
+  rule: 'physical-property' | 'physical-value'
+  property: string // the physical property, e.g. 'margin-left'
+  value: string // the property value, e.g. '20px'
+  logicalEquivalent: string // the suggested flow-relative property, e.g. 'margin-inline-start'
+  reason: string
+  severity: 'suggestion'
+}
+
+export interface LogicalPropertyStats {
+  totalPhysicalProperties: number
+  migratableProperties: number
+  migrationRatio: number // 0.0-1.0, fraction that can be migrated
+}
+
 export interface AuditReport {
   brand: string
   chaosScore: number
@@ -196,6 +219,9 @@ export interface AuditReport {
   adoptionSuggestions?: AdoptionSuggestion[]
   overflowSafetyIssues?: OverflowSafetyIssue[]
   propertyTypeIssues?: PropertyTypeIssue[]
+  legacyPatterns?: LegacyPatternIssue[]
+  logicalPropertyIssues?: LogicalPropertyIssue[]
+  logicalPropertyStats?: LogicalPropertyStats
 }
 
 export interface ColorDecision {
