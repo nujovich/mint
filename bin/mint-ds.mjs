@@ -17,13 +17,18 @@ import {
   resolveTarget,
 } from '../lib/prompts.mjs'
 import { getCssAuditor } from '../lib/css-auditor.mjs'
+import { lintContrast } from '../lib/css-contrast.mjs'
 import { validateFile } from '../lib/dtcg-validator.mjs'
 import { diffFiles } from '../lib/token-diff.mjs'
 import { convertTokensToDTCG, serializeDTCG } from '../lib/dtcg-exporter.mjs'
 import { convertTokensToDesignMd } from '../lib/design-md.mjs'
 import { formatLintSummary } from '../lib/audit-summary.mjs'
 import { checkCompat } from '../lib/css-compat-data.mjs'
-import { lintCss, lintGapDecorationAdoption } from '../lib/css-lint-rules.mjs'
+import {
+  lintCss,
+  lintGapDecorationAdoption,
+  lintLogicalProperties,
+} from '../lib/css-lint-rules.mjs'
 import { applyWsl2DnsWorkaround } from '../lib/net-utils.mjs'
 import { buildTokenIndex } from '../lib/token-index.mjs'
 import { applyCodemod } from '../lib/css-codemod.mjs'
@@ -364,6 +369,12 @@ async function cmdAudit(argv) {
   const cssAuditor = getCssAuditor(flags)
   log(styles.cyan('→') + ' Auditing CSS...')
   const audit = await cssAuditor.audit(buildAuditPrompt(css))
+  audit.contrastIssues = lintContrast(css).issues
+
+  // Merge deterministic logical properties lint into audit for summary display.
+  const logical = lintLogicalProperties(css)
+  audit.logicalPropertyIssues = logical.issues
+  audit.logicalPropertyStats = logical.stats
 
   if (reportFile) {
     await fs.writeFile(
@@ -544,6 +555,38 @@ async function cmdLint(argv) {
       log(`  ${badge}  ${finding.selector}`)
       log(styles.dim(`       ${finding.message}`))
       log('')
+    }
+  }
+
+  // Logical Properties: migration audit.
+  const logicalResult = lintLogicalProperties(css)
+  const logicalStats = logicalResult.stats
+  if (logicalStats.totalPhysicalProperties > 0) {
+    const pct = Math.round(logicalStats.migrationRatio * 100)
+    log('')
+    log(styles.bold('Logical Properties'))
+    const ratioColor =
+      logicalStats.migrationRatio >= 0.75
+        ? styles.green
+        : logicalStats.migrationRatio >= 0.4
+          ? styles.yellow
+          : styles.red
+    log(
+      styles.dim(
+        `  ${logicalStats.migratableProperties}/${logicalStats.totalPhysicalProperties} migratable (${ratioColor(pct + '%')})`
+      )
+    )
+    if (logicalResult.issues.length > 0) {
+      log('')
+      for (const issue of logicalResult.issues) {
+        log(`  ${styles.dim('INFO')}  ${issue.selector}`)
+        log(
+          styles.dim(
+            `       ${issue.property}: ${issue.value} → ${issue.logicalEquivalent}`
+          )
+        )
+        log('')
+      }
     }
   }
 
