@@ -28,6 +28,7 @@ import {
   lintCss,
   lintGapDecorationAdoption,
   lintLogicalProperties,
+  lintMotionAccessibility,
 } from '../lib/css-lint-rules.mjs'
 import { applyWsl2DnsWorkaround } from '../lib/net-utils.mjs'
 import { buildTokenIndex } from '../lib/token-index.mjs'
@@ -376,6 +377,10 @@ async function cmdAudit(argv) {
   audit.logicalPropertyIssues = logical.issues
   audit.logicalPropertyStats = logical.stats
 
+  const motion = lintMotionAccessibility(css)
+  audit.motionAccessibilityIssues = motion.issues
+  audit.motionAccessibilityStats = motion.stats
+
   if (reportFile) {
     await fs.writeFile(
       reportFile,
@@ -538,11 +543,11 @@ async function cmdLint(argv) {
   )
 
   const result = lintCss(css)
-  const { findings } = result
+  const { findings, motionAccessibility } = result
 
-  if (findings.length === 0) {
+  if (findings.length === 0 && motionAccessibility.issues.length === 0) {
     log(styles.green('✓') + ' No lint issues found.')
-  } else {
+  } else if (findings.length > 0) {
     log('')
     log(styles.bold(`Found ${findings.length} issue(s):`))
     log('')
@@ -611,6 +616,24 @@ async function cmdLint(argv) {
       log(styles.dim(`    - ${pattern}: ${count}`))
     }
     log('')
+  }
+
+  // Reduced Motion: motion that ignores prefers-reduced-motion.
+  const { issues: motionIssues, stats: motionStats } = motionAccessibility
+  if (motionIssues.length > 0) {
+    log('')
+    log(styles.bold('Reduced Motion'))
+    log(
+      styles.dim(
+        `  ${motionStats.unprotectedCount}/${motionStats.totalMotionDeclarations} motion declaration(s) ignore prefers-reduced-motion`
+      )
+    )
+    log('')
+    for (const issue of motionIssues) {
+      log(`  ${styles.yellow('WARN')}  ${issue.selector}`)
+      log(styles.dim(`       ${issue.reason}`))
+      log('')
+    }
   }
 }
 
