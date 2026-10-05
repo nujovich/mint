@@ -23,7 +23,11 @@ import { convertTokensToDTCG, serializeDTCG } from '../lib/dtcg-exporter.mjs'
 import { convertTokensToDesignMd } from '../lib/design-md.mjs'
 import { formatLintSummary } from '../lib/audit-summary.mjs'
 import { checkCompat } from '../lib/css-compat-data.mjs'
-import { lintCss, lintGapDecorationAdoption, lintLogicalProperties } from '../lib/css-lint-rules.mjs'
+import {
+  lintCss,
+  lintGapDecorationAdoption,
+  lintLogicalProperties,
+} from '../lib/css-lint-rules.mjs'
 import { applyWsl2DnsWorkaround } from '../lib/net-utils.mjs'
 import { buildTokenIndex } from '../lib/token-index.mjs'
 import { applyCodemod } from '../lib/css-codemod.mjs'
@@ -366,7 +370,9 @@ async function cmdAudit(argv) {
   const audit = await cssAuditor.audit(buildAuditPrompt(css))
 
   // Merge deterministic logical properties lint into audit for summary display.
-  audit.logicalProperties = lintLogicalProperties(css)
+  const logical = lintLogicalProperties(css)
+  audit.logicalPropertyIssues = logical.issues
+  audit.logicalPropertyStats = logical.stats
 
   if (reportFile) {
     await fs.writeFile(
@@ -552,19 +558,20 @@ async function cmdLint(argv) {
 
   // Logical Properties: migration audit.
   const logicalResult = lintLogicalProperties(css)
-  if (logicalResult.totalPhysicalProperties > 0) {
-    const pct = Math.round(logicalResult.migrationRatio * 100)
+  const logicalStats = logicalResult.stats
+  if (logicalStats.totalPhysicalProperties > 0) {
+    const pct = Math.round(logicalStats.migrationRatio * 100)
     log('')
     log(styles.bold('Logical Properties'))
     const ratioColor =
-      logicalResult.migrationRatio >= 0.75
+      logicalStats.migrationRatio >= 0.75
         ? styles.green
-        : logicalResult.migrationRatio >= 0.4
-        ? styles.yellow
-        : styles.red
+        : logicalStats.migrationRatio >= 0.4
+          ? styles.yellow
+          : styles.red
     log(
       styles.dim(
-        `  ${logicalResult.migratableProperties}/${logicalResult.totalPhysicalProperties} migratable (${ratioColor(pct + '%')})`
+        `  ${logicalStats.migratableProperties}/${logicalStats.totalPhysicalProperties} migratable (${ratioColor(pct + '%')})`
       )
     )
     if (logicalResult.issues.length > 0) {
