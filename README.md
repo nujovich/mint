@@ -423,7 +423,7 @@ npx mint-ds export --target tailwind --provider ollama
 | `mint-ds diff <old> <new>`       | Show what changed between two token files — added, removed, renamed, value-changed, scale-changed (no LLM)                  |
 | `mint-ds cache --clear`          | Delete the local `mint-ds.cache.json` cache file                                                                            |
 | `mint-ds compat <dir>`           | Flag CSS properties below Baseline / Interop 2026 for your browserslist target, with fallback suggestions (no LLM)          |
-| `mint-ds lint <dir>`             | Run static CSS lint rules (gap-decoration hacks) plus a modern-CSS adoption report — no LLM                                 |
+| `mint-ds lint <dir>`             | Run static CSS lint rules (gap-decoration hacks, physical → logical properties) plus a modern-CSS adoption report — no LLM  |
 | `mint-ds score <dir>`            | Compute a 0–100 CSS health score with a per-metric breakdown, benchmarked against Project Wallace 2026 percentiles (no LLM) |
 | `mint-ds --help`                 | Show full usage                                                                                                             |
 
@@ -540,6 +540,15 @@ Every finding carries the `web-features` feature name and a concrete `@supports`
 `mint-ds lint <dir>` runs Mint's static CSS lint rules over every CSS/SCSS/HTML file in `<dir>` — deterministic pattern checks that complement the LLM audit, with no API key or LLM call required.
 
 Today it ships the **gap-decoration** rules. They flag hand-rolled ways of drawing lines between grid/flex tracks — borders on direct children, `::before`/`::after` pseudo-elements, or backgrounds used alongside `gap` — and point you at the native `gap-rule-color` / `gap-rule-style` / `gap-rule-width` properties (Chrome 149+, Firefox 132+).
+
+It also flags **physical properties that break in right-to-left layouts** and names their logical equivalent:
+
+| Rule                | Flags                                                                                                                                                     | Suggests                                                                  |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `physical-property` | `margin-left/right`, `padding-left/right`, `border-left/right` (and their `-color`/`-style`/`-width`), `left`/`right`, the four `border-*-radius` corners | `margin-inline-start`, `inset-inline-end`, `border-start-start-radius`, … |
+| `physical-value`    | `text-align`, `float`, and `clear` set to `left` / `right`                                                                                                | `start` / `end`, `inline-start` / `inline-end`                            |
+
+Only direction-sensitive mappings are reported. `top`/`bottom`, `width`/`height` and `overflow-x`/`overflow-y` only differ from their logical counterparts in vertical writing modes, so they are left alone; custom properties and vendor-prefixed names are ignored. The section header shows how many physical declarations can migrate, and `mint-ds audit` attaches the same findings to the `AuditReport` as `logicalPropertyIssues` (with totals in `logicalPropertyStats`).
 
 ```bash
 npx mint-ds lint ./src/styles
