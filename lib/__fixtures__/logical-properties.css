@@ -1,26 +1,46 @@
 /*
  * Mixed logical/physical CSS fixture for the logical-properties audit.
- * Exercises the Stylelint 17.10 layout-mappings rule families:
- *   - property-layout-mappings  (physical property -> logical property)
- *   - value-keyword-layout-mappings (physical value -> logical value)
+ * Only direction-sensitive (RTL-breaking) mappings are in scope:
+ *   - physical left/right properties and corner radii -> logical properties
+ *   - physical left/right value keywords -> logical keywords
  *
- * .card        physical-only directional properties (all migratable)
- * .toolbar     already flow-relative (logical) properties (no findings)
- * .direction-sensitive  physical value keywords on direction-aware properties
- * .neutral     direction-agnostic declarations (no findings)
+ * .card                physical-only directional properties (all migratable)
+ * .toolbar             already flow-relative (logical) properties (no findings)
+ * .vertical-and-size   block-axis / size / axis-based declarations (out of scope)
+ * .direction-sensitive physical value keywords on direction-aware properties
+ * .neutral             direction-agnostic declarations (no findings)
  */
 
 .card {
   margin-left: 20px;
   margin-right: 12px;
-  padding-top: 8px;
-  padding-bottom: 8px;
+  padding-left: 8px;
+  padding-right: 8px;
   border-left: 1px solid #ccc;
   border-right-color: #999;
   border-top-left-radius: 4px;
   border-bottom-right-radius: 4px;
   left: 0;
   right: 0;
+}
+
+.toolbar {
+  margin-inline-start: 16px;
+  margin-inline-end: 12px;
+  padding-inline-start: 8px;
+  padding-inline-end: 8px;
+  border-inline-start: 1px solid #eee;
+  border-inline-end-color: #ddd;
+  border-start-start-radius: 4px;
+  border-end-end-radius: 4px;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+}
+
+.vertical-and-size {
+  margin-top: 4px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #ccc;
   top: 0;
   bottom: 0;
   width: 100%;
@@ -29,34 +49,13 @@
   max-height: 400px;
   overflow-x: hidden;
   overflow-y: auto;
-}
-
-.toolbar {
-  margin-inline-start: 16px;
-  margin-inline-end: 12px;
-  padding-block-start: 8px;
-  padding-block-end: 8px;
-  border-inline-start: 1px solid #eee;
-  border-inline-end-color: #ddd;
-  border-start-start-radius: 4px;
-  border-end-end-radius: 4px;
-  inset-inline-start: 0;
-  inset-inline-end: 0;
-  inset-block-start: 0;
-  inset-block-end: 0;
-  inline-size: 100%;
-  block-size: auto;
-  min-inline-size: 200px;
-  max-block-size: 300px;
-  overflow-inline: hidden;
-  overflow-block: auto;
+  resize: horizontal;
 }
 
 .direction-sensitive {
   text-align: left;
   float: right;
   clear: left;
-  resize: horizontal;
 }
 
 .neutral {

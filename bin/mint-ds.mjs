@@ -577,11 +577,7 @@ async function cmdLint(argv) {
     if (logicalResult.issues.length > 0) {
       log('')
       for (const issue of logicalResult.issues) {
-        const badge =
-          issue.severity === 'warning'
-            ? styles.yellow('WARN')
-            : styles.dim('INFO')
-        log(`  ${badge}  ${issue.selector}`)
+        log(`  ${styles.dim('INFO')}  ${issue.selector}`)
         log(
           styles.dim(
             `       ${issue.property}: ${issue.value} → ${issue.logicalEquivalent}`
