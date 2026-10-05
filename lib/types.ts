@@ -86,6 +86,16 @@ export interface ColorCluster {
   samples: ColorSample[]
 }
 
+export interface ContrastIssue {
+  selector: string // rule that declares both colors
+  rule: 'insufficient-contrast'
+  severity: 'warning'
+  reason: string
+  foreground: string // '#rrggbb'
+  background: string // '#rrggbb'
+  contrastRatio: number // rounded to 2 decimals
+}
+
 export interface FontEntry {
   family: string
   usages: string[]
@@ -208,6 +218,7 @@ export interface AuditReport {
   propertyTypeIssues?: PropertyTypeIssue[]
   legacyPatterns?: LegacyPatternIssue[]
   logicalPropertyIssues?: LogicalPropertyIssue[]
+  contrastIssues?: ContrastIssue[]
   logicalPropertyStats?: LogicalPropertyStats
 }
 
