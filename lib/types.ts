@@ -119,6 +119,18 @@ export interface ColorSpaceSample {
 }
 
 /**
+ * A wide-gamut color literal (oklch, oklab, display-p3) whose sRGB
+ * representation clips — i.e. it exceeds the sRGB gamut and therefore renders
+ * correctly only on P3-capable displays. These colors need an sRGB fallback.
+ */
+export interface P3WideGamutSample {
+  value: string
+  format: ColorFormat
+  /** The selector of the rule this color was found in, when known. */
+  selector?: string
+}
+
+/**
  * Aggregate of an OKLCH adoption scan: how many colors use legacy sRGB formats
  * vs wide-gamut formats, the wide-gamut adoption rate, and the list of legacy
  * colors that are candidates for migration.
@@ -130,6 +142,8 @@ export interface ColorSpaceAudit {
   adoptionRate: number
   samples: ColorSpaceSample[]
   legacyCandidates: ColorSpaceSample[]
+  /** Wide-gamut colors that exceed sRGB and need an sRGB fallback. */
+  p3WideGamut: P3WideGamutSample[]
 }
 
 export interface FontEntry {
