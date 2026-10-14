@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.4.0](https://github.com/nujovich/mint/compare/v0.3.0...v0.4.0) (2026-10-14)
+
+### Features
+
+- add design-md export target (DESIGN.md generator) ([#103](https://github.com/nujovich/mint/issues/103)) ([735617a](https://github.com/nujovich/mint/commit/735617a8be5a7858293f9b39a26e863c794f2c4e))
+- **mint:** add `@property` type-check analysis to CSS audit ([#104](https://github.com/nujovich/mint/issues/104)) ([7735100](https://github.com/nujovich/mint/commit/77351000bb1699c4b100e6e3b89135021b4de9d5)), closes [#8](https://github.com/nujovich/mint/issues/8)
+- **mint:** add legacy pattern detection to CSS audit prompt ([#105](https://github.com/nujovich/mint/issues/105)) ([359b80d](https://github.com/nujovich/mint/commit/359b80d08278ae7f63cf1582542b300fad3b6f52))
+- **mint:** add logical properties migration audit types and mapping ([#112](https://github.com/nujovich/mint/issues/112)) ([d28f75e](https://github.com/nujovich/mint/commit/d28f75ee2f4cf0a29bc406503d6ec2474e337fef))
+- **mint:** add WCAG color contrast lint ([#110](https://github.com/nujovich/mint/issues/110)) ([04a8879](https://github.com/nujovich/mint/commit/04a88794cd8eb0b4929b3b86ea746f5e4c5576d5)), closes [#20](https://github.com/nujovich/mint/issues/20)
+
 ## [0.3.0](https://github.com/nujovich/mint/compare/v0.2.1...v0.3.0) (2026-07-20)
 
 ### Features
