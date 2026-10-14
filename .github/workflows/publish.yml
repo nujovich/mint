@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  # Re-run the publish for an existing tag using the workflow from main.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing release tag to publish (e.g. v0.4.0)'
+        required: true
 
 permissions:
   contents: read
@@ -15,6 +21,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
 
       - uses: actions/setup-node@v4
         with:
@@ -25,8 +33,10 @@ jobs:
       - run: npm ci
 
       - name: Verify tag matches package.json version
+        env:
+          TAG_NAME: ${{ inputs.tag || github.ref_name }}
         run: |
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          TAG_VERSION="${TAG_NAME#v}"
           PKG_VERSION="$(node -p "require('./package.json').version")"
           if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
             echo "::error::Tag v$TAG_VERSION does not match package.json version $PKG_VERSION"
@@ -35,7 +45,9 @@ jobs:
 
       - run: npm test
 
-      - name: Publish to npm
-        run: npm publish --provenance
+      # Bypass-2FA tokens can only stage a publish; a maintainer approves it
+      # with 2FA (`npm stage approve <stage-id>`) before it goes live.
+      - name: Stage publish to npm
+        run: npm stage publish --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

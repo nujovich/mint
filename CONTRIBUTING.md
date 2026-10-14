@@ -132,4 +132,19 @@ GITHUB_TOKEN=<your-token> npm run release
 4. Create and push the git tag `vX.Y.Z`
 5. Publish a GitHub Release with the generated notes
 
-Pushing the `vX.Y.Z` tag triggers the `publish.yml` workflow, which publishes the package to npm with provenance via OIDC trusted publishing — there is no manual `npm publish` step.
+Pushing the `vX.Y.Z` tag triggers the `publish.yml` workflow, which runs the tests and **stages** the package on npm with `npm stage publish --provenance` (authenticated via the `NPM_TOKEN` secret). npm no longer allows bypass-2FA tokens to publish directly, so a maintainer must approve the staged version with 2FA before it goes live:
+
+```bash
+npm stage list mint-ds        # find the stage id
+npm stage approve <stage-id>  # prompts for 2FA, then publishes
+```
+
+You can also approve it from the **Staged Packages** tab on npmjs.com.
+
+To re-run the publish for an existing tag (for example, after a CI fix), trigger the workflow manually with that tag. The workflow definition comes from `main`, and the package is built from the tag:
+
+```bash
+gh workflow run publish.yml -f tag=vX.Y.Z
+```
+
+Note that a manual re-run records `main` (not the tag) as the source ref in the npm provenance attestation. Prefer the tag-triggered path for regular releases.
