@@ -140,6 +140,21 @@ export interface MotionAudit {
   duplicateDeclarations: number
 }
 
+export interface MotionAccessibilityIssue {
+  selector: string
+  rule: 'motion-without-reduced-motion'
+  severity: 'warning'
+  reason: string
+  property: string // 'animation' | 'animation-name' | 'transition' | 'transition-property' | 'scroll-behavior'
+  value: string
+}
+
+export interface MotionAccessibilityStats {
+  totalMotionDeclarations: number
+  protectedCount: number // opted in via no-preference, or overridden under reduce
+  unprotectedCount: number
+}
+
 export interface LayoutA11yIssue {
   selector: string
   property: string // 'order' or 'tabindex'
@@ -220,6 +235,8 @@ export interface AuditReport {
   logicalPropertyIssues?: LogicalPropertyIssue[]
   contrastIssues?: ContrastIssue[]
   logicalPropertyStats?: LogicalPropertyStats
+  motionAccessibilityIssues?: MotionAccessibilityIssue[]
+  motionAccessibilityStats?: MotionAccessibilityStats
 }
 
 export interface ColorDecision {
